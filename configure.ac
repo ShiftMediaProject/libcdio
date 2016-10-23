@@ -14,14 +14,14 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-define(RELEASE_NUM, 93)
+define(RELEASE_NUM, 94)
 define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.61)
 
 AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)], [https://savannah.gnu.org/bugs/?group=libcdio])
 AC_CONFIG_SRCDIR(src/cd-info.c)
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS(config.h)
@@ -100,30 +100,46 @@ AC_AIX
 
 cd_drivers='cdrdao, BIN/CUE, NRG'
 
+WARN_CFLAGS=''
 if test "x$GCC" != "xyes"; then
   AC_MSG_WARN([
   *** non GNU CC compiler detected.
   *** This package has not been tested very well with non GNU compilers
   *** you should try to use 'gcc' for compiling this package.])
 else
-  WARN_CFLAGS="-Wall -Wchar-subscripts -Wmissing-prototypes -Wmissing-declarations -Wunused -Wpointer-arith -Wwrite-strings -Wnested-externs -Wno-sign-compare"
-
-  for WOPT in $WARN_CFLAGS; do
+  # FIXME: add in:
+  #   -W -Wshadow -Wundef
+  CHECK_CFLAGS="
+	-Wall
+	-Wcast-align
+	-Wchar-subscripts
+	-Wdisabled-optimization
+	-Wendif-labels
+	-Winline
+	-Wmissing-declarations
+	-Wmissing-prototypes
+	-Wnested-externs
+	-Wno-sign-compare
+	-Wpointer-arith
+	-Wstrict-prototypes
+	-Wunused
+	-Wwrite-strings
+"
+  for OPT in $CHECK_CFLAGS; do
     SAVE_CFLAGS="$CFLAGS"
-    CFLAGS="$CFLAGS $WOPT"
-    AC_MSG_CHECKING([whether $CC understands $WOPT])
+    CFLAGS="$CFLAGS $OPT"
+    AC_MSG_CHECKING([whether $CC understands $OPT])
     AC_TRY_COMPILE([], [], has_option=yes, has_option=no,)
     CFLAGS="$SAVE_CFLAGS"
     AC_MSG_RESULT($has_option)
     if test "x$has_option" = "xyes"; then
-      warning_flags="$warning_flags $option"
+        WARN_CFLAGS="$WARN_CFLAGS $OPT"
     fi
     unset has_option
     unset SAVE_CFLAGS
   done
-  WARNING_FLAGS="$warning_flags"
-  unset warning_flags
 fi
+CFLAGS="$CFLAGS $WARN_CFLAGS"
 
 # We use Perl for documentation and regression tests
 AC_PATH_PROG(PERL, perl, false)
@@ -271,7 +287,6 @@ dnl system
 # I believe some OS's require -lm, but I don't recall for what function
 # When we find it, put it in below instead of "cos".
 AC_CHECK_LIB(m, cos, [LIBS="$LIBS -lm"; COS_LIB="-lm"])
-CFLAGS="$CFLAGS $WARN_CFLAGS"
 AC_SUBST(COS_LIB)
 
 # Do we have GNU ld? If we don't, we can't build versioned symbols.
@@ -365,7 +380,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin[[6-9]].*|darwin1[[0-4]].*)
+     darwin[[6-9]].*|darwin1[[0-6]].*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h,
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then
@@ -541,7 +556,7 @@ AC_DEFINE_UNQUOTED(LIBCDIO_SOURCE_PATH, "$LIBCDIO_SOURCE_PATH",
 AC_SUBST(LIBCDIO_SOURCE_PATH)
 
 AC_CHECK_FUNCS( [chdir drand48 fseeko fseeko64 ftruncate geteuid getgid \
-		 getuid getpwuid gettimeofday lseek64 lstat memcpy memset rand \
+		 getuid getpwuid gettimeofday lseek64 lstat memcpy memset mkstemp rand \
 		 seteuid setegid snprintf setenv strndup unsetenv tzset sleep \
 		 _stati64 usleep vsnprintf readlink realpath gmtime_r localtime_r] )
 
@@ -716,16 +731,6 @@ AC_CONFIG_FILES([
        test/check_common_fn \
        test/data/Makefile \
        test/driver/Makefile \
-       test/driver/bincue.c \
-       test/driver/cdrdao.c \
-       test/driver/nrg.c \
-       test/driver/track.c \
-       test/testgetdevices.c \
-       test/testisocd_joliet.c \
-       test/testisorr.c \
-       test/testisocd2.c \
-       test/testpregap.c \
-       test/testudf.c \
        test/Makefile \
        ])
 
@@ -744,8 +749,7 @@ AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
 AC_CONFIG_FILES([test/check_udf.sh], [chmod +x test/check_udf.sh])
-AC_CONFIG_FILES([test/check_iso_read.sh],
-		[chmod +x test/check_iso_read.sh])
+AC_CONFIG_FILES([test/check_iso_read.sh], [chmod +x test/check_iso_read.sh])
 AC_OUTPUT
 
 AC_MSG_NOTICE([

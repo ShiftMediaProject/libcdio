@@ -27,6 +27,7 @@ noinst_PROGRAMS = \
 	cdchange \
 	cdio-eject \
 	cdtext \
+	cdtext-raw \
 	device \
 	discid \
 	drives \
@@ -49,7 +50,7 @@ noinst_PROGRAMS = \
 	udf1 \
 	udffile
 
-check_PROGRAMS  = cdtext device drives isofile2 \
+check_PROGRAMS  = device drives isofile2 \
                    mmc1 mmc2 mmc2a mmc3 sample4
 
 #: run regression tests. "test" is the same thing as "check"
@@ -73,6 +74,9 @@ cdio_eject_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 cdtext_DEPENDENCIES   = $(LIBCDIO_DEPS)
 cdtext_LDADD          = $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+cdtext_raw_DEPENDENCIES = $(LIBCDIO_DEPS)
+cdtext_raw_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 device_DEPENDENCIES   = $(LIBCDIO_DEPS)
 device_LDADD          = $(LIBCDIO_LIBS) $(LTLIBICONV)

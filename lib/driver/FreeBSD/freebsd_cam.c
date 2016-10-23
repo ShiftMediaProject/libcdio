@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2008, 2009, 2010, 2012
+  Copyright (C) 2004, 2005, 2008, 2009, 2010, 2012, 2016
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -24,26 +24,24 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.12 2008/04/21 18:30:20 karl Exp $";
-
 #ifdef HAVE_FREEBSD_CDROM
 
 #include "freebsd.h"
 #include <cdio/mmc.h>
 
-/* Default value in seconds we will wait for a command to 
+/* Default value in seconds we will wait for a command to
    complete. */
 #define DEFAULT_TIMEOUT_MSECS 10000
 
 /*!
-  Run a SCSI MMC command. 
- 
+  Run a SCSI MMC command.
+
   p_user_data   internal CD structure.
   i_timeout_ms  time in milliseconds we will wait for the command
-                to complete. If this value is -1, use the default 
+                to complete. If this value is -1, use the default
 		time-out value.
   i_cdb	        Size of p_cdb
-  p_cdb	        CDB bytes. 
+  p_cdb	        CDB bytes.
   e_direction	direction the transfer is to go.
   i_buf	        Size of buffer
   p_buf	        Buffer for data, both sending and receiving
@@ -52,8 +50,8 @@ static const char _rcsid[] = "$Id: freebsd_cam.c,v 1.12 2008/04/21 18:30:20 karl
  */
 int
 run_mmc_cmd_freebsd_cam( void *p_user_data, unsigned int i_timeout_ms,
-			 unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-			 cdio_mmc_direction_t e_direction, 
+			 unsigned int i_cdb, const mmc_cdb_t *p_cdb,
+			 cdio_mmc_direction_t e_direction,
 			 unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
@@ -63,7 +61,7 @@ run_mmc_cmd_freebsd_cam( void *p_user_data, unsigned int i_timeout_ms,
 
   p_env->gen.scsi_mmc_sense_valid = 0;
   if (!p_env || !p_env->cam) return -2;
-    
+
   memset(&ccb, 0, sizeof(ccb));
 
   ccb.ccb_h.path_id    = p_env->cam->path_id;
@@ -78,13 +76,13 @@ run_mmc_cmd_freebsd_cam( void *p_user_data, unsigned int i_timeout_ms,
   else
     direction |= (e_direction == SCSI_MMC_DATA_READ)?CAM_DIR_IN : CAM_DIR_OUT;
 
- 
+
    memcpy(ccb.csio.cdb_io.cdb_bytes, p_cdb->field, i_cdb);
    ccb.csio.cdb_len =
      mmc_get_cmd_len(ccb.csio.cdb_io.cdb_bytes[0]);
-   
-  cam_fill_csio (&(ccb.csio), 1, NULL, 
-		 direction | CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, p_buf, i_buf, 
+
+  cam_fill_csio (&(ccb.csio), 1, NULL,
+		 direction | CAM_DEV_QFRZDIS, MSG_SIMPLE_Q_TAG, p_buf, i_buf,
  		 sizeof(ccb.csio.sense_data), ccb.csio.cdb_len, 30*1000);
 
   if (cam_send_ccb(p_env->cam, &ccb) < 0)
@@ -125,12 +123,12 @@ bool
 init_freebsd_cam (_img_private_t *p_env)
 {
   char pass[100];
-  
+
   p_env->cam=NULL;
   memset (&p_env->ccb, 0, sizeof(p_env->ccb));
   p_env->ccb.ccb_h.func_code = XPT_GDEVLIST;
 
-  if (-1 == p_env->gen.fd) 
+  if (-1 == p_env->gen.fd)
     p_env->gen.fd = open (p_env->device, O_RDONLY, 0);
 
   if (p_env->gen.fd < 0)
@@ -152,7 +150,7 @@ init_freebsd_cam (_img_private_t *p_env)
 	   p_env->ccb.cgdl.unit_number);
   p_env->cam = cam_open_pass (pass,O_RDWR,NULL);
   if (!p_env->cam) return false;
-  
+
   p_env->gen.init   = true;
   p_env->b_cam_init = true;
   return true;
@@ -176,7 +174,7 @@ free_freebsd_cam (void *user_data)
 }
 
 driver_return_code_t
-read_mode2_sector_freebsd_cam (_img_private_t *p_env, void *data, lsn_t lsn, 
+read_mode2_sector_freebsd_cam (_img_private_t *p_env, void *data, lsn_t lsn,
 			       bool b_form2)
 {
   if ( b_form2 )
@@ -194,10 +192,10 @@ read_mode2_sector_freebsd_cam (_img_private_t *p_env, void *data, lsn_t lsn,
 /*!
    Reads nblocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 int
-read_mode2_sectors_freebsd_cam (_img_private_t *p_env, void *p_buf, 
+read_mode2_sectors_freebsd_cam (_img_private_t *p_env, void *p_buf,
 				lsn_t lsn, unsigned int nblocks)
 {
   mmc_cdb_t cdb = {{0, }};
@@ -205,72 +203,72 @@ read_mode2_sectors_freebsd_cam (_img_private_t *p_env, void *p_buf,
   bool b_read_10 = false;
 
   CDIO_MMC_SET_READ_LBA(cdb.field, lsn);
-  
+
   if (b_read_10) {
     int retval;
-    
+
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_10);
     CDIO_MMC_SET_READ_LENGTH16(cdb.field, nblocks);
     if ((retval = mmc_set_blocksize (p_env->gen.cdio, M2RAW_SECTOR_SIZE)))
       return retval;
-    
-    if ((retval = run_mmc_cmd_freebsd_cam (p_env, 0, 
+
+    if ((retval = run_mmc_cmd_freebsd_cam (p_env, 0,
 					   mmc_get_cmd_len(cdb.field[0]),
-					   &cdb, 
+					   &cdb,
 					   SCSI_MMC_DATA_READ,
-					   M2RAW_SECTOR_SIZE * nblocks, 
+					   M2RAW_SECTOR_SIZE * nblocks,
 					   p_buf)))
       {
 	mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
 	return retval;
       }
-    
+
     return mmc_set_blocksize (p_env->gen.cdio, CDIO_CD_FRAMESIZE);
   } else {
     CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_CD);
     CDIO_MMC_SET_READ_LENGTH24(cdb.field, nblocks);
     cdb.field[1] = 0; /* sector size mode2 */
     cdb.field[9] = 0x58; /* 2336 mode2 */
-    return run_mmc_cmd_freebsd_cam (p_env, 0, 
-				    mmc_get_cmd_len(cdb.field[0]), 
-				    &cdb, 
+    return run_mmc_cmd_freebsd_cam (p_env, 0,
+				    mmc_get_cmd_len(cdb.field[0]),
+				    &cdb,
 				    SCSI_MMC_DATA_READ,
 				    M2RAW_SECTOR_SIZE * nblocks, p_buf);
-    
+
   }
 }
 
 /*!
-  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful, 
+  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful,
   DRIVER_OP_ERROR on error.
  */
 driver_return_code_t
-eject_media_freebsd_cam (_img_private_t *p_env) 
+eject_media_freebsd_cam (_img_private_t *p_env)
 {
   int i_status;
   mmc_cdb_t cdb = {{0, }};
   uint8_t buf[1];
-  
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_ALLOW_MEDIUM_REMOVAL);
 
   i_status = run_mmc_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
-				      mmc_get_cmd_len(cdb.field[0]), 
+				      mmc_get_cmd_len(cdb.field[0]),
 				      &cdb, SCSI_MMC_DATA_WRITE, 0, &buf);
   if (i_status) return i_status;
-  
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
   cdb.field[4] = 1;
   i_status = run_mmc_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
-				 mmc_get_cmd_len(cdb.field[0]), &cdb, 
+				 mmc_get_cmd_len(cdb.field[0]), &cdb,
 				 SCSI_MMC_DATA_WRITE, 0, &buf);
   if (i_status) return i_status;
-  
+
   CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_START_STOP);
   cdb.field[4] = 2; /* eject */
 
   return run_mmc_cmd_freebsd_cam (p_env, DEFAULT_TIMEOUT_MSECS,
-				  mmc_get_cmd_len(cdb.field[0]), 
-				  &cdb, 
+				  mmc_get_cmd_len(cdb.field[0]),
+				  &cdb,
 				  SCSI_MMC_DATA_WRITE, 0, &buf);
 }
 
@@ -346,7 +344,7 @@ static int sg_init_enumerator(burn_drive_enumerator_t *idx_)
 
   *idx_ = idx;
 
-  return 1; 
+  return 1;
 }
 
 
@@ -417,11 +415,11 @@ int give_next_adr_freebsd_cam(burn_drive_enumerator_t *idx_,
     sg_destroy_enumerator(idx_);
     return 0;
   }
-    
+
   idx = *idx_;
 
   do {
-    if (idx->i >= idx->ccb.cdm.num_matches) { 
+    if (idx->i >= idx->ccb.cdm.num_matches) {
       ret = sg_next_enumeration_buffer(idx_);
       if (ret<=0)
         return -1;

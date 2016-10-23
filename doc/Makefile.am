@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2008, 2012, 2016 Rocky Bernstein <rocky@gnu.org>
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
@@ -13,7 +13,7 @@
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 EXTRA_DIST = doxygen/Doxyfile.in doxygen/run_doxygen
-info_TEXINFOS = libcdio.texi 
+info_TEXINFOS = libcdio.texi
 libcdio_TEXINFOS = fdl.texi glossary.texi
 
 reference:
@@ -34,17 +34,20 @@ html: libcdio.html cd-text-format.html
 %.ps.gz: %.ps
 	gzip -9c $< > $@
 
+.texi.dvi:
+	@echo texi2dvi is broken
+
 .texi.pdf: stamp-vti
 	texi2pdf $<
 
 .texi.html: stamp-vti
 	texi2html $<
 
-.texi.txt: 
+.texi.txt:
 	makeinfo --no-headers $< > $@
 
-# Create documentation in all formats, e.g. PDF, DVI, plain text and HTML
-all-formats: pdf dvi txt ps html
+#: Create documentation in all formats, e.g. PDF, DVI, plain text and HTML
+all-formats: pdf txt ps html
 
 MOSTLYCLEANFILES = \
 	libcdio.html libcdio.pdf libcdio.ps.gz \

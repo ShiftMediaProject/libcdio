@@ -18,7 +18,7 @@
 
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
-#endif 
+#endif
 
 #ifdef HAVE_STDIO_H
 # include <stdio.h>
@@ -62,21 +62,6 @@
 # define CharNext(p) ((p) + 1)
 #endif
 
-#ifndef HAVE_STRNDUP
-static inline char *strndup(const char *s, size_t n)
-{
-    char *result;
-    size_t len = strlen (s);
-    if (n < len)
-        len = n;
-    result = (char *) malloc (len + 1);
-    if (!result)
-        return 0;
-    result[len] = '\0';
-    return (char *) strncpy (result, s, len);
-}
-#endif /*HAVE_STRNDUP*/
-
 static char *
 strrdirsep(const char *path)
 {
@@ -112,7 +97,7 @@ cdio_abspath(const char *cwd, const char *fname)
 
     size_t len   = strlen(cwd) + strlen(fname) + 2;
     char* result = calloc(sizeof(char), len);
-    snprintf(result, len, "%s%c%s", 
+    snprintf(result, len, "%s%c%s",
 	     cwd, CDIO_FILE_SEPARATOR, fname);
     return result;
 }

@@ -58,9 +58,9 @@ main(int argc, const char *argv[])
 
     old_log_handler = cdio_log_set_handler(test_log_handler);
     if (old_log_handler != cdio_default_log_handler) {
-      fprintf(stderr, "Should have gotten old log handler back %x vs %x\n",
-	      (unsigned int) old_log_handler,
-	      (unsigned int) cdio_default_log_handler);
+      fprintf(stderr, "Should have gotten old log handler back %p vs %p\n",
+	      (void *) old_log_handler,
+	      (void *) cdio_default_log_handler);
 	exit(1);
     }
 #else
@@ -72,8 +72,18 @@ main(int argc, const char *argv[])
 
     test_msg = "debug";
     cdio_debug("%s", test_msg);
-    if (strncmp(test_msg, last_debugmsg, strlen(test_msg)) != 0) {
-	fprintf(stderr, "debug message %s did not get handled\n", last_debugmsg);
+
+    if (last_debugmsg != NULL) {
+	fprintf(stderr, "debug message should have been ignored due to default log level\n");
+	exit(2);
+    }
+
+    cdio_loglevel_default = CDIO_LOG_DEBUG;
+    cdio_debug("%s", test_msg);
+    if (last_debugmsg == NULL ||
+	strncmp(test_msg, last_debugmsg, strlen(test_msg)) != 0) {
+	fprintf(stderr, "debug message %s did not get handled\n",
+		last_debugmsg);
 	exit(2);
     }
 

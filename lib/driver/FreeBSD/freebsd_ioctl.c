@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2008, 2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003, 2004, 2005, 2008, 2013, 2016
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -24,13 +25,11 @@
 # include "config.h"
 #endif
 
-static const char _rcsid[] = "$Id: freebsd_ioctl.c,v 1.7 2008/04/21 18:30:20 karl Exp $";
-
 #ifdef HAVE_FREEBSD_CDROM
 
 #include "freebsd.h"
 
-/* Check a drive to see if it is a CD-ROM 
+/* Check a drive to see if it is a CD-ROM
    Return 1 if a CD-ROM. 0 if it exists but isn't a CD-ROM drive
    and -1 if no device exists .
 */
@@ -40,7 +39,7 @@ cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype)
   bool is_cd=false;
   int cdfd;
   struct ioc_toc_header    tochdr;
-  
+
   /* If it doesn't exist, return -1 */
   if ( !cdio_is_device_quiet_generic(drive) ) {
     return(false);
@@ -56,7 +55,7 @@ cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype)
  return(true);
 
 #ifndef Libcdio_on_freeBSD_unsuitable_code
-  
+
   /* If it does exist, verify that it's an available CD-ROM */
   cdfd = open(drive, (O_RDONLY|O_EXCL|O_NONBLOCK), 0);
 
@@ -72,7 +71,7 @@ cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype)
 /*
   fprintf(stderr, "libcdio_DEBUG: ioctl(\"%s\", (O_RDONLY|O_EXCL|O_NONBLOCK) = %d (errno= %d)\n", drive, ret, errno);
 */
-  
+
     if ( ret != -1 ) {
       is_cd = true;
     } else if ( errno == ENXIO ) { /* Device not configured */
@@ -104,32 +103,32 @@ cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype)
 
 /*!
    Reads a single mode2 sector from cd device into data starting from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 int
 read_audio_sectors_freebsd_ioctl (_img_private_t *_obj, void *data, lsn_t lsn,
 				  unsigned int nblocks)
 {
-  int bsize = CDIO_CD_FRAMESIZE_RAW; 
-    
+  int bsize = CDIO_CD_FRAMESIZE_RAW;
+
   /* set block size */
-  if (ioctl(_obj->gen.fd, CDRIOCSETBLOCKSIZE, &bsize) == -1) return 1; 
- 
+  if (ioctl(_obj->gen.fd, CDRIOCSETBLOCKSIZE, &bsize) == -1) return 1;
+
   /* read a frame */
-  if (pread(_obj->gen.fd, data, nblocks*bsize, lsn*bsize) != nblocks*bsize) { 
+  if (pread(_obj->gen.fd, data, nblocks*bsize, lsn*bsize) != nblocks*bsize) {
     perror("read_audio_sectors_freebsd_ioctl");
     return 1;
   }
- 
+
   return 0;
 }
 
 /*!
    Reads a single mode2 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from lsn. Returns 0 if no error.
  */
 int
-read_mode2_sector_freebsd_ioctl (_img_private_t *p_env, void *data, lsn_t lsn, 
+read_mode2_sector_freebsd_ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
 				 bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -137,12 +136,12 @@ read_mode2_sector_freebsd_ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
 
   if ( !b_form2 )
     return cdio_generic_read_form1_sector (p_env, buf, lsn);
-  
+
   if ( (retval = read_audio_sectors_freebsd_ioctl (p_env, buf, lsn, 1)) )
     return retval;
-    
+
   memcpy (data, buf + CDIO_CD_XA_SYNC_HEADER, M2RAW_SECTOR_SIZE);
-  
+
   return 0;
 }
 
@@ -169,11 +168,11 @@ get_disc_last_lsn_freebsd_ioctl (_img_private_t *p_obj)
 }
 
 /*!
-  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful, 
+  Eject media in CD-ROM drive. Return DRIVER_OP_SUCCESS if successful,
   DRIVER_OP_ERROR on error.
  */
 driver_return_code_t
-eject_media_freebsd_ioctl (_img_private_t *p_env) 
+eject_media_freebsd_ioctl (_img_private_t *p_env)
 {
   _img_private_t *p_obj = p_env;
   int ret=DRIVER_OP_ERROR;
@@ -195,7 +194,7 @@ eject_media_freebsd_ioctl (_img_private_t *p_env)
   Note: string is malloc'd so caller should free() then returned
   string when done with it.
 
-  FIXME: This is just a guess. 
+  FIXME: This is just a guess.
 
  */
 char *
@@ -215,23 +214,23 @@ get_mcn_freebsd_ioctl (const _img_private_t *p_env) {
     return NULL;
   }
 
-  /* Probably need a loop over tracks rather than give up if we 
+  /* Probably need a loop over tracks rather than give up if we
      can't find in track 0.
    */
   if (subchannel_info.what.media_catalog.mc_valid)
     return strdup((char *)subchannel_info.what.media_catalog.mc_number);
-  else 
+  else
     return NULL;
 }
 
-/*!  
-  Get format of track. 
+/*!
+  Get format of track.
 
   FIXME: We're just guessing this from the GNU/Linux code.
-  
+
 */
 track_format_t
-get_track_format_freebsd_ioctl(const _img_private_t *p_env, track_t i_track) 
+get_track_format_freebsd_ioctl(const _img_private_t *p_env, track_t i_track)
 {
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
@@ -246,11 +245,11 @@ get_track_format_freebsd_ioctl(const _img_private_t *p_env, track_t i_track)
     perror("CDIOCREADSUBCHANNEL");
     return 1;
   }
-  
+
   if (subchannel_info.what.position.control == 0x04) {
     if (subchannel_info.what.position.data_format == 0x10)
       return TRACK_FORMAT_CDI;
-    else if (subchannel_info.what.position.data_format == 0x20) 
+    else if (subchannel_info.what.position.data_format == 0x20)
       return TRACK_FORMAT_XA;
     else
       return TRACK_FORMAT_DATA;
@@ -267,7 +266,7 @@ get_track_format_freebsd_ioctl(const _img_private_t *p_env, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 bool
-get_track_green_freebsd_ioctl(const _img_private_t *p_env, track_t i_track) 
+get_track_green_freebsd_ioctl(const _img_private_t *p_env, track_t i_track)
 {
   struct ioc_read_subchannel subchannel;
   struct cd_sub_channel_info subchannel_info;
@@ -282,8 +281,8 @@ get_track_green_freebsd_ioctl(const _img_private_t *p_env, track_t i_track)
     perror("CDIOCREADSUBCHANNEL");
     return 1;
   }
-  
-  /* FIXME: Dunno if this is the right way, but it's what 
+
+  /* FIXME: Dunno if this is the right way, but it's what
      I was using in cdinfo for a while.
    */
   return (subchannel_info.what.position.control & 2) != 0;

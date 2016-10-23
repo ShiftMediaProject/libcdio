@@ -730,12 +730,13 @@ eject_media_linux (void *p_user_data) {
   bool was_open = false;
   char mount_target[PATH_MAX];
 
-  if ( p_env->gen.fd <= -1 ) {
-    p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
-  }
-  else {
+  /* Make sure the device is opened in read/write mode. */
+  if ( p_env->gen.fd >= 0 ) {
+    close(p_env->gen.fd);
     was_open = true;
   }
+
+  p_env->gen.fd = open (p_env->gen.source_name, O_RDWR|O_NONBLOCK);
 
   if ( p_env->gen.fd <= -1 ) return DRIVER_OP_ERROR;
 
@@ -762,7 +763,7 @@ eject_media_linux (void *p_user_data) {
            it got umounted (at least the commandline eject program
            opens the device just after umounting it) */
         close(p_env->gen.fd);
-        p_env->gen.fd = open (p_env->gen.source_name, O_RDONLY|O_NONBLOCK);
+        p_env->gen.fd = open (p_env->gen.source_name, O_RDWR|O_NONBLOCK);
       }
 
       if((ret = ioctl(p_env->gen.fd, CDROMEJECT)) != 0) {

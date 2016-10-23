@@ -969,7 +969,7 @@ MSF rather than a LBA or LSN described below, since subtraction of two
 MSF's has the awkwardness akin to subtraction using Roman Numerals.
 
 A simpler way to address a block is to use a ``Logical Sector Number''
-(@term{LSN}) or a ``Logical Sector Number'' (@term{LBA}). In the MMC-5
+(@term{LSN}) or a ``Logical Block Address (@term{LBA}). In the MMC-5
 glossary these are synonymous terms. However historically it has been
 used differently. In libcdio, to convert a LBA into an LSN you just
 subtract 150. Both LBA's and LSN's can be negative.

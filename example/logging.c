@@ -114,7 +114,7 @@ parse_loglevel_arg(const char *ps_loglevel) {
 }
 
 static void
-print_drives()
+print_drives(void)
 {
     char **ppsz_cd_drives=NULL, **c;
     /* Print out a list of CD-drives with the above set log level. */

@@ -3,7 +3,7 @@
   Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
-  Copyright (C) 1997, 1998 
+  Copyright (C) 1997, 1998
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -56,13 +56,13 @@
 
 #ifdef HAVE_CURSES_H
 # include <curses.h>
-#else 
+#else
 # ifdef HAVE_NCURSES_H
 #include <ncurses.h>
 # else
 #   ifdef HAVE_NCURSES_NCURSES_H
 #     include <ncurses/ncurses.h>
-#   else 
+#   else
 #     error "You need <curses.h> or <ncurses.h to build cdda-player"
 #   endif
 # endif
@@ -78,7 +78,7 @@
 #include "getopt.h"
 
 static void action(const char *psz_action);
-static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, 
+static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks,
                            track_t i_first_track);
 static void display_tracks(void);
 static void get_cddb_track_info(track_t i_track);
@@ -105,7 +105,7 @@ static int                stop_track = 0;
 static int                one_track = 0;
 static int                i_vol_port   = 5; /* If 5, retrieve volume port.
                                          Otherwise the port number 0..3
-                                         of a working volume port and 
+                                         of a working volume port and
                                          4 for no working port.
                                        */
 
@@ -115,7 +115,7 @@ static bool               auto_mode       = false;
 static bool               b_verbose       = false;
 static bool               debug           = false;
 static bool               b_interactive   = true;
-static bool               b_prefer_cdtext = true; 
+static bool               b_prefer_cdtext = true;
 #ifdef CDDB_ADDED
 static bool               b_cddb          = false; /* CDDB database present */
 #endif
@@ -131,7 +131,7 @@ static char *psz_program;
 
 /* Info about songs and titles. The 0 entry will contain the disc info.
  */
-typedef struct 
+typedef struct
 {
   char title[80];
   char artist[80];
@@ -211,7 +211,7 @@ static unsigned int  LINE_ACTION = 25;
 static unsigned int  COLS_LAST;
 static char psz_action_line[300] = "";
 
-static int rounded_div(unsigned int i_a, unsigned int i_b) 
+static int rounded_div(unsigned int i_a, unsigned int i_b)
 {
   const unsigned int i_b_half=i_b/2;
   return ((i_a)+i_b_half)/i_b;
@@ -219,10 +219,10 @@ static int rounded_div(unsigned int i_a, unsigned int i_b)
 
 /** Curses window initialization. */
 static void
-tty_raw()
+tty_raw(void)
 {
   if (!b_interactive) return;
-  
+
   initscr();
   cbreak();
   clear();
@@ -237,16 +237,18 @@ tty_raw()
 
 /** Curses window finalization. */
 static void
-tty_restore()
+tty_restore(void)
 {
   if (!b_interactive) return;
   endwin();
 }
 
+#define UNUSED(x) (void)(x)
 /* Called when window is resized. */
-static void 
-sigwinch()
+static void
+sigwinch(int dummy)
 {
+  UNUSED(dummy);
   tty_restore();
   tty_raw();
   action(NULL);
@@ -265,7 +267,7 @@ select_wait(int sec)
 {
   struct timeval  tv;
   fd_set          se;
-  
+
   FD_ZERO(&se);
   FD_SET(0,&se);
   tv.tv_sec = sec;
@@ -276,7 +278,7 @@ select_wait(int sec)
 /* ---------------------------------------------------------------------- */
 
 /* Display the action line. */
-static void 
+static void
 action(const char *psz_action)
 {
   if (!b_interactive) {
@@ -284,11 +286,11 @@ action(const char *psz_action)
       fprintf(stderr,"action: %s\n", psz_action);
     return;
   }
-  
-  if (!psz_action) 
+
+  if (!psz_action)
     psz_action = psz_action_line;
   else if (psz_action && strlen(psz_action))
-    snprintf(psz_action_line, sizeof(psz_action_line), "action : %s", 
+    snprintf(psz_action_line, sizeof(psz_action_line), "action : %s",
              psz_action);
   else
     snprintf(psz_action_line, sizeof(psz_action_line), "%s", "" );
@@ -299,11 +301,11 @@ action(const char *psz_action)
 
 
 /* Display an error message.. */
-static void 
+static void
 xperror(const char *psz_msg)
 {
   char line[80];
-  
+
   if (!b_interactive) {
     if (b_verbose) {
       fprintf(stderr, "error: ");
@@ -311,7 +313,7 @@ xperror(const char *psz_msg)
     }
     return;
   }
-  
+
   if (b_verbose) {
     snprintf(line, sizeof(line), "%s: %s", psz_msg, strerror(errno));
     attron(A_STANDOUT);
@@ -324,7 +326,7 @@ xperror(const char *psz_msg)
   }
 }
 
-static void 
+static void
 finish(const char *psz_msg, int rc)
 {
   if (b_interactive) {
@@ -351,7 +353,7 @@ finish(const char *psz_msg, int rc)
    0..100.
 */
 static bool
-set_volume_level(CdIo_t *p_cdio, uint8_t i_level) 
+set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
 {
   const unsigned int i_new_level= rounded_div(i_level*256, 100);
   unsigned int i;
@@ -359,11 +361,11 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
   for (i=0; i<=3; i++) {
     audio_volume.level[i] = i_new_level;
   }
-  
+
   rc = cdio_audio_set_volume(p_cdio, &audio_volume);
   if ( DRIVER_OP_SUCCESS != rc ) {
     /* If we can't do a get volume, audio_volume.level is used as
-       a second-best guess. But if this set failed restore it to 
+       a second-best guess. But if this set failed restore it to
        an invalid value so we don't get confused and think that this
        was set. */
     for (i=0; i<=3; i++) {
@@ -374,7 +376,7 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
     i_vol_port=0;
   }
   return rc;
-  
+
 }
 
 /* Subtract one from the volume level. If we are at the minimum value,
@@ -388,7 +390,7 @@ set_volume_level(CdIo_t *p_cdio, uint8_t i_level)
    See issue #33333
 
    If the volume level is undefined, then this means we could not get
-   the current value and we'll' set it to 50 the midway point.  
+   the current value and we'll' set it to 50 the midway point.
 
    Return the status of setting the volume level.  */
 static bool
@@ -410,7 +412,7 @@ decrease_volume_level(CdIo_t *p_cdio)
    See issue #33333
 
    If volume level is undefined, then this means we could not get the
-   current value and we'll' set it to 50 the midway point.  
+   current value and we'll' set it to 50 the midway point.
 
    Return the status of setting the volume level.  */
 static bool
@@ -501,10 +503,10 @@ read_subchannel(CdIo_t *p_cdio)
 }
 
 #ifdef HAVE_CDDB
-/** This routine is called by vcd routines on error. 
+/** This routine is called by vcd routines on error.
    Setup is done by init_input_plugin.
 */
-static void 
+static void
 cddb_log_handler (cddb_log_level_t level, const char message[])
 {
   switch (level) {
@@ -520,16 +522,16 @@ cddb_log_handler (cddb_log_level_t level, const char message[])
     xperror(message);
     break;
   }
-  
+
   /* gl_default_cdio_log_handler (level, message); */
 }
 #endif /* HAVE_CDDB  */
 
-static void 
-get_cddb_disc_info(CdIo_t *p_cdio) 
+static void
+get_cddb_disc_info(CdIo_t *p_cdio)
 {
 #ifdef HAVE_CDDB
-  b_db = init_cddb(p_cdio, &p_conn, &p_cddb_disc, xperror, i_first_track, 
+  b_db = init_cddb(p_cdio, &p_conn, &p_cddb_disc, xperror, i_first_track,
                    i_tracks, &i_cddb_matches);
   if (b_db) {
     int i_year;
@@ -550,8 +552,8 @@ get_cddb_disc_info(CdIo_t *p_cdio)
     b_cdtext_ ## info_field = true;                             \
   }
 
-static void 
-get_cdtext_disc_info(CdIo_t *p_cdio) 
+static void
+get_cdtext_disc_info(CdIo_t *p_cdio)
 {
   cdtext_t *p_cdtext = cdio_get_cdtext(p_cdio);
 
@@ -562,8 +564,8 @@ get_cdtext_disc_info(CdIo_t *p_cdio)
   }
 }
 
-static void 
-get_disc_info(CdIo_t *p_cdio) 
+static void
+get_disc_info(CdIo_t *p_cdio)
 {
   b_db = false;
   if (b_prefer_cdtext) {
@@ -597,7 +599,7 @@ read_toc(CdIo_t *p_cdio)
   for (i_vol_port=0; i_vol_port<4; i_vol_port++) {
     if (audio_volume.level[i_vol_port] > 0) break;
   }
-  
+
   if ( CDIO_INVALID_TRACK == i_first_track ||
        CDIO_INVALID_TRACK == i_last_track ) {
     xperror("read toc header");
@@ -617,12 +619,12 @@ read_toc(CdIo_t *p_cdio)
         return;
       }
       if ( TRACK_FORMAT_AUDIO == cdio_get_track_format(p_cdio, i) ) {
-        
-        if (i != i_first_track) 
+
+        if (i != i_first_track)
           {
-            s = cdio_audio_get_msf_seconds(&toc[i]) 
+            s = cdio_audio_get_msf_seconds(&toc[i])
               - cdio_audio_get_msf_seconds(&toc[i-1]);
-            snprintf(cd_info[i-1].length, sizeof(cd_info[0].length), 
+            snprintf(cd_info[i-1].length, sizeof(cd_info[0].length),
                      "%02d:%02d",
                      s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN);
           }
@@ -655,15 +657,15 @@ play_track(track_t i_start_track, track_t i_end_track)
 {
   bool b_ok = true;
   char line[80];
-  
+
   if (!b_cd) {
     read_toc(p_cdio);
   }
-  
+
   read_subchannel(p_cdio);
   if (!b_cd || i_first_track == CDIO_CDROM_LEADOUT_TRACK)
     return false;
-  
+
   if (debug)
     fprintf(stderr,"play tracks: %d-%d => ", i_start_track, i_end_track-1);
   if (i_start_track < i_first_track)       i_start_track = i_first_track;
@@ -673,12 +675,12 @@ play_track(track_t i_start_track, track_t i_end_track)
   i_end_track++;
   if (debug)
     fprintf(stderr,"%d-%d\n",i_start_track, i_end_track-1);
-  
+
   cd_pause(p_cdio);
-  snprintf(line, sizeof(line), "play track %d to track %d.", 
+  snprintf(line, sizeof(line), "play track %d to track %d.",
 	   i_start_track, i_end_track-1);
   action(line);
-  b_ok = (DRIVER_OP_SUCCESS == cdio_audio_play_msf(p_cdio, 
+  b_ok = (DRIVER_OP_SUCCESS == cdio_audio_play_msf(p_cdio,
                                                    &(toc[i_start_track]),
                                                    &(toc[i_end_track])) );
   if (!b_ok) xperror("play");
@@ -690,31 +692,31 @@ skip(int diff)
 {
   msf_t start_msf;
   int   sec;
-  
+
   read_subchannel(p_cdio);
   if (!b_cd ||  i_first_track == CDIO_CDROM_LEADOUT_TRACK)
     return;
-  
+
   sec  = cdio_audio_get_msf_seconds(&sub.abs_addr);
   sec += diff;
   if (sec < 0) sec = 0;
-  
+
   start_msf.m = cdio_to_bcd8(sec / CDIO_CD_SECS_PER_MIN);
   start_msf.s = cdio_to_bcd8(sec % CDIO_CD_SECS_PER_MIN);
   start_msf.f = 0;
-  
+
   cd_pause(p_cdio);
-  if ( DRIVER_OP_SUCCESS != cdio_audio_play_msf(p_cdio, &start_msf, 
+  if ( DRIVER_OP_SUCCESS != cdio_audio_play_msf(p_cdio, &start_msf,
                                                 &(toc[i_last_audio_track])) )
     xperror("play");
 }
 
 static bool
-toggle_pause()
+toggle_pause(void)
 {
   bool b_ok = true;
   if (!b_cd) return false;
-  
+
   if (CDIO_MMC_READ_SUB_ST_PAUSED == sub.audio_status) {
     b_ok = DRIVER_OP_SUCCESS != cdio_audio_resume(p_cdio);
     if (!b_ok)
@@ -727,7 +729,7 @@ toggle_pause()
   return b_ok;
 }
 
-/** Update windows with status and possibly track info. This used in 
+/** Update windows with status and possibly track info. This used in
   interactive playing not batch mode.
  */
 static void
@@ -742,7 +744,7 @@ display_status(bool b_status_only)
 
   } else if (i_first_track == CDIO_CDROM_LEADOUT_TRACK) {
     snprintf(line, sizeof(line), "CD has only data tracks");
-    
+
   } else if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
              sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
     cdio_audio_get_volume(p_cdio, &audio_volume);
@@ -750,42 +752,42 @@ display_status(bool b_status_only)
         i_volume_level = rounded_div(audio_volume.level[i_vol_port]*100, 256);
         snprintf(line, sizeof(line),
                 "track %2d - %02x:%02x of %s (%02x:%02x abs) %s volume: %d",
-                sub.track, sub.rel_addr.m, sub.rel_addr.s, 
+                sub.track, sub.rel_addr.m, sub.rel_addr.s,
                 cd_info[sub.track].length,
                 sub.abs_addr.m, sub.abs_addr.s,
                 mmc_audio_state2str(sub.audio_status),
                 i_volume_level);
-      } else 
-        snprintf(line, sizeof(line), 
+      } else
+        snprintf(line, sizeof(line),
 		 "track %2d - %02x:%02x of %s (%02x:%02x abs) %s",
 		 sub.track, sub.rel_addr.m, sub.rel_addr.s,
 		 cd_info[sub.track].length, sub.abs_addr.m, sub.abs_addr.s,
 		 mmc_audio_state2str(sub.audio_status));
   } else {
     snprintf(line, sizeof(line), "%s", mmc_audio_state2str(sub.audio_status));
-    
+
   }
 
   action(NULL);
   mvprintw(LINE_STATUS, 0, (char *) "status%s: %s",
            auto_mode ? "*" : " ", line);
   clrtoeol();
-  
-  if ( !b_status_only && b_db && i_last_display_track != sub.track && 
+
+  if ( !b_status_only && b_db && i_last_display_track != sub.track &&
        (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
         sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)  &&
         b_cd) {
 
-    if (b_all_tracks) 
+    if (b_all_tracks)
       display_tracks();
     else {
       const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track];
       i_last_display_track = sub.track;
-      if (i_first_audio_track != sub.track && 
+      if (i_first_audio_track != sub.track &&
           strlen(cd_info[sub.track-1].title)) {
         const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track-1];
         mvprintw(LINE_TRACK_PREV, 0, (char *) " track %2d title : %s [%s]",
-                 sub.track-1, p_cd_info->title, 
+                 sub.track-1, p_cd_info->title,
                  p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
         clrtoeol();
       } else {
@@ -793,8 +795,8 @@ display_status(bool b_status_only)
         clrtoeol();
       }
       if (strlen(p_cd_info->title)) {
-        mvprintw(LINE_TRACK_TITLE,  0, (char *) ">track %2d title : %s [%s]", 
-                 sub.track, p_cd_info->title, 
+        mvprintw(LINE_TRACK_TITLE,  0, (char *) ">track %2d title : %s [%s]",
+                 sub.track, p_cd_info->title,
                  (char *) (p_cd_info->b_cdtext ? "CD-Text" : "CDDB"));
         clrtoeol();
       }
@@ -804,10 +806,10 @@ display_status(bool b_status_only)
                  p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
         clrtoeol();
       }
-      if (i_last_audio_track != sub.track && 
+      if (i_last_audio_track != sub.track &&
           strlen(cd_info[sub.track+1].title)) {
         const cd_track_info_rec_t *p_cd_info = &cd_info[sub.track+1];
-        mvprintw(LINE_TRACK_NEXT, 0, (char *) " track %2d title : %s [%s]", 
+        mvprintw(LINE_TRACK_NEXT, 0, (char *) " track %2d title : %s [%s]",
                  sub.track+1, p_cd_info->title,
                  p_cd_info->b_cdtext ? "CD-Text" : "CDDB");
         clrtoeol();
@@ -827,16 +829,16 @@ static void
 get_cddb_track_info(track_t i_track)
 {
 #ifdef HAVE_CDDB
-  cddb_track_t *t = cddb_disc_get_track(p_cddb_disc, 
+  cddb_track_t *t = cddb_disc_get_track(p_cddb_disc,
                                         i_track - i_first_track);
   if (t) {
     cddb_track_set_title(t, title);
     cddb_track_set_artist(t, artist);
   }
-  
+
 #else
     ;
-#endif      
+#endif
 }
 
 #define add_cdtext_track_info(format_str, info_field, FIELD) \
@@ -880,13 +882,13 @@ get_track_info(track_t i_track)
              b_cdtext_ ## field ? "CD-Text": "CDDB");      \
     clrtoeol();                                            \
   }
-    
+
 static void
 display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
 {
   int len;
   char line[80];
-  
+
   if (!b_interactive) return;
 
   if (!b_cd) snprintf(line, sizeof(line), "-");
@@ -895,21 +897,21 @@ display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
                   (unsigned int) i_last_track,
                   toc[i_last_track+1].m, toc[i_last_track+1].s);
     if (i_data && i_first_track != CDIO_CDROM_LEADOUT_TRACK)
-      snprintf(line+len, sizeof(line)-len, ", audio=%u-%u", 
+      snprintf(line+len, sizeof(line)-len, ", audio=%u-%u",
 	      (unsigned int) i_first_audio_track,
               (unsigned int) i_last_audio_track);
-    
+
     display_line(LINE_ARTIST, 0, "CD Artist       : %s", artist);
     display_line(LINE_CDNAME, 0, "CD Title        : %s", title);
     display_line(LINE_GENRE,  0, "CD Genre        : %s", genre);
     display_line(LINE_YEAR,   0, "CD Year         : %s", year);
   }
-  
+
   mvprintw(LINE_CDINFO, 0, (char *) "CD info: %0s", line);
   clrtoeol();
   action(NULL);
 }
-    
+
 /* ---------------------------------------------------------------------- */
 
 static void
@@ -954,14 +956,14 @@ usage(char *prog)
 }
 
 static void
-print_keys()
+print_keys(void)
 {
   unsigned int i;
   for (i=0; i < i_key_bindings; i++)
     fprintf(stderr, "%s\n", key_bindings[i]);
 }
 
-static void 
+static void
 keypress_wait(CdIo_t *p_cdio)
   {
     action("press any key to continue");
@@ -978,7 +980,7 @@ keypress_wait(CdIo_t *p_cdio)
   }
 
 static void
-list_keys()
+list_keys(void)
 {
   unsigned int i;
   for (i=0; i < i_key_bindings; i++) {
@@ -999,10 +1001,10 @@ display_tracks(void)
     i_line=LINE_TRACK_PREV - 1;
     for (i = i_first_track; i <= i_last_track; i++) {
       char line[200]="";
-      s = cdio_audio_get_msf_seconds(&toc[i+1]) 
+      s = cdio_audio_get_msf_seconds(&toc[i+1])
         - cdio_audio_get_msf_seconds(&toc[i]);
       read_subchannel(p_cdio);
-      snprintf(line, sizeof(line), "%2d  %02d:%02d  %s ", i, 
+      snprintf(line, sizeof(line), "%2d  %02d:%02d  %s ", i,
               s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN,
               ( ( sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY ||
                   sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ) &&
@@ -1020,7 +1022,7 @@ display_tracks(void)
         attron(A_STANDOUT);
         mvprintw(i_line++, 0, line);
         attroff(A_STANDOUT);
-      } else 
+      } else
         mvprintw(i_line++, 0, line);
       clrtoeol();
     }
@@ -1286,16 +1288,16 @@ static void
 ps_list_tracks(void)
 {
   int i,s,y,sy;
-  
+
   if (!b_record) return;
 
   printf("%%!PS-Adobe-2.0\n");
-  
+
   /* encoding tricks */
   puts(ENCODING_TRICKS);
   printf("/Times /TimesLatin1 charvec ReEncodeSmall\n");
   printf("/Helvetica /HelveticaLatin1 charvec ReEncodeSmall\n");
-  
+
   /* Spaces */
   printf("0 setlinewidth\n");
   printf(" 100 100 moveto\n");
@@ -1303,29 +1305,29 @@ ps_list_tracks(void)
   printf("   0 330 rlineto\n");
   printf("-390   0 rlineto\n");
   printf("closepath stroke\n");
-  
+
   printf(" 100 100 moveto\n");
   printf("-16    0 rlineto\n");
   printf("  0  330 rlineto\n");
   printf("422    0 rlineto\n");
   printf("  0 -330 rlineto\n");
   printf("closepath stroke\n");
-  
+
   /* Title */
   printf("/TimesLatin1 findfont 24 scalefont setfont\n");
   printf("120 400 moveto (%s) show\n", title);
   printf("/TimesLatin1 findfont 18 scalefont setfont\n");
   printf("120 375 moveto (%s) show\n", artist);
-  
+
   /* List */
   sy = 250 / i_last_track;
   if (sy > 14) sy = 14;
   printf("/labelfont /TimesLatin1 findfont %d scalefont def\n",sy-2);
   printf("/timefont /Courier findfont %d scalefont def\n",sy-2);
   for (i = i_first_track, y = 350; i <= i_last_track; i++, y -= sy) {
-    s = cdio_audio_get_msf_seconds(&toc[i+1]) 
+    s = cdio_audio_get_msf_seconds(&toc[i+1])
       - cdio_audio_get_msf_seconds(&toc[i]);
-    
+
     printf("labelfont setfont\n");
     printf("120 %d moveto (%d) show\n", y, i);
     {
@@ -1340,10 +1342,10 @@ ps_list_tracks(void)
       printf("150 %d moveto (%s) show\n", y, line);
     }
     printf("timefont setfont\n");
-    printf("420 %d moveto (%2d:%02d) show\n", y, 
+    printf("420 %d moveto (%2d:%02d) show\n", y,
            s / CDIO_CD_SECS_PER_MIN, s % CDIO_CD_SECS_PER_MIN);
   }
-  
+
   /* Seitenbanner */
   printf("/HelveticaLatin1 findfont 12 scalefont setfont\n");
   printf(" 97 105 moveto (%s: %s) 90 rotate show -90 rotate\n",
@@ -1362,9 +1364,9 @@ list_tracks(void)
 
   printf("Title : %s\n", title);
   printf("Artist: %s\n", artist);
-  
+
   for (i = i_first_track; i <= i_last_track; i++) {
-    s = cdio_audio_get_msf_seconds(&toc[i+1]) 
+    s = cdio_audio_get_msf_seconds(&toc[i+1])
       - cdio_audio_get_msf_seconds(&toc[i]);
     printf("%2d: %s [%d seconds]\n", i, cd_info[i].title, s);
   }
@@ -1388,18 +1390,18 @@ typedef enum {
 
 int
 main(int argc, char *argv[])
-{    
+{
   int  c, nostop=0;
   char *h;
   int  i_rc = 0;
   cd_operation_t cd_op = NO_OP; /* operation to do in non-interactive mode */
-  
-  
+
+
   psz_program = strrchr(argv[0],'/');
   psz_program = psz_program ? psz_program+1 : argv[0];
 
   memset(&cddb_opts, 0, sizeof(cddb_opts));
-  
+
   cdio_loglevel_default = CDIO_LOG_WARN;
   /* parse options */
   while ( 1 ) {
@@ -1408,12 +1410,12 @@ main(int argc, char *argv[])
     switch (c) {
     case 'v':
       b_verbose = true;
-      if (cdio_loglevel_default > CDIO_LOG_INFO) 
+      if (cdio_loglevel_default > CDIO_LOG_INFO)
         cdio_loglevel_default = CDIO_LOG_INFO;
       break;
     case 'd':
       debug = 1;
-      if (cdio_loglevel_default > CDIO_LOG_DEBUG) 
+      if (cdio_loglevel_default > CDIO_LOG_DEBUG)
       cdio_loglevel_default = CDIO_LOG_DEBUG;
       break;
     case 'a':
@@ -1480,7 +1482,7 @@ main(int argc, char *argv[])
       exit(1);
     }
   }
-  
+
   if (argc > optind) {
     psz_device = strdup(argv[optind]);
   } else {
@@ -1491,7 +1493,7 @@ main(int argc, char *argv[])
       fprintf(stderr, "Can't find a CD-ROM drive\n");
       exit(2);
     }
-    ppsz_cdda_drives = cdio_get_devices_with_cap(ppsz_all_cd_drives, 
+    ppsz_cdda_drives = cdio_get_devices_with_cap(ppsz_all_cd_drives,
                                                  CDIO_FS_AUDIO, false);
     if (!ppsz_cdda_drives || !ppsz_cdda_drives[0]) {
       fprintf(stderr, "Can't find a CD-ROM drive with a CD-DA in it\n");
@@ -1501,7 +1503,7 @@ main(int argc, char *argv[])
     cdio_free_device_list(ppsz_all_cd_drives);
     cdio_free_device_list(ppsz_cdda_drives);
   }
-  
+
   if (!b_interactive) {
     b_sig = true;
     nostop=1;
@@ -1523,11 +1525,11 @@ main(int argc, char *argv[])
       cd_close(psz_device);
       p_cdio = cdio_open (psz_device, driver_id);
     }
-    
+
     if (p_cdio && b_verbose)
       fprintf(stderr,"ok\n");
   }
-  
+
   if (b_interactive) {
 #ifdef HAVE_CDDB
     cddb_log_set_handler (cddb_log_handler);
@@ -1585,7 +1587,7 @@ main(int argc, char *argv[])
           i_rc = set_volume_level(p_cdio, i_volume_level);
           break;
 
-        case LIST_SUBCHANNEL: 
+        case LIST_SUBCHANNEL:
           if (read_subchannel(p_cdio)) {
             if (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
                 sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY) {
@@ -1595,7 +1597,7 @@ main(int argc, char *argv[])
                        sub.abs_addr.m, sub.abs_addr.s);
               }
             }
-            printf("drive state: %s\n", 
+            printf("drive state: %s\n",
                    mmc_audio_state2str(sub.audio_status));
           } else {
             i_rc = 1;
@@ -1630,7 +1632,7 @@ main(int argc, char *argv[])
     if (!b_cd) read_toc(p_cdio);
     read_subchannel(p_cdio);
     display_status(false);
-    
+
     if (1 == select_wait(b_cd ? 1 : 5)) {
       switch (key = getch()) {
       case '-':
@@ -1671,7 +1673,7 @@ main(int argc, char *argv[])
           i_last_display_track = CDIO_INVALID_TRACK;
           display_cdinfo(p_cdio, i_tracks, i_first_track);
         }
-        
+
         break;
       case 'K':
       case 'k':
@@ -1688,7 +1690,7 @@ main(int argc, char *argv[])
       case KEY_RIGHT:
         if (b_cd &&
             (sub.audio_status == CDIO_MMC_READ_SUB_ST_PAUSED ||
-             sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY)) 
+             sub.audio_status == CDIO_MMC_READ_SUB_ST_PLAY))
           play_track(sub.track+1, CDIO_CDROM_LEADOUT_TRACK);
         else
           play_track(1,CDIO_CDROM_LEADOUT_TRACK);
@@ -1749,6 +1751,6 @@ main(int argc, char *argv[])
   if (!nostop) cd_stop(p_cdio);
   tty_restore();
   finish("bye", i_rc);
-  
+
   return 0; /* keep compiler happy */
 }

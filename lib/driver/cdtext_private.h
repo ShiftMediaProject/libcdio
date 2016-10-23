@@ -116,6 +116,8 @@ struct cdtext_block_s {
   cdtext_genre_t genre_code;                          /**< genre code of the disc */
   cdtext_lang_t  language_code;                       /**< language of this block */
   bool           copyright;                           /**< CD-TEXT copyright      */
+  track_t        first_track;                         /**< first track number     */
+  track_t        last_track;                          /**< last track number      */
 };
 
 /*! Structure for CD-TEXT of a disc.

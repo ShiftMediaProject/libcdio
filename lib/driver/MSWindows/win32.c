@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011, 2012
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011, 2012, 2014
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -16,8 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* This file contains Win32-specific code and implements low-level 
-   control of the CD drive. Inspired by vlc's cdrom.h code 
+/* This file contains Win32-specific code and implements low-level
+   control of the CD drive. Inspired by vlc's cdrom.h code
 */
 
 #ifdef HAVE_CONFIG_H
@@ -26,7 +26,7 @@
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
-#endif 
+#endif
 
 #include <cdio/cdio.h>
 #include <cdio/sector.h>
@@ -93,12 +93,12 @@
 
 /*!
   Set the volume of an audio CD.
-  
+
   @param p_cdio the CD object to be acted upon.
-  
+
 */
 static driver_return_code_t
-audio_get_volume_win32 ( void *p_user_data, 
+audio_get_volume_win32 ( void *p_user_data,
 			 /*out*/ cdio_audio_volume_t *p_volume)
 {
   if ( WIN_NT ) {
@@ -110,10 +110,10 @@ audio_get_volume_win32 ( void *p_user_data,
 
 /*!
   Pause playing CD through analog output
-  
+
   @param p_cdio the CD object to be acted upon.
 */
-static driver_return_code_t 
+static driver_return_code_t
 audio_pause_win32 (void *p_user_data)
 {
   if ( WIN_NT ) {
@@ -125,10 +125,10 @@ audio_pause_win32 (void *p_user_data)
 
 /*!
   Playing CD through analog output at the given MSF.
-  
+
   @param p_cdio the CD object to be acted upon.
 */
-static driver_return_code_t 
+static driver_return_code_t
 audio_play_msf_win32 (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
 {
   if ( WIN_NT ) {
@@ -140,12 +140,12 @@ audio_play_msf_win32 (void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
 
 /*!
   Read Audio Subchannel information
-  
+
   @param p_cdio the CD object to be acted upon.
-  
+
 */
 static driver_return_code_t
-audio_read_subchannel_win32 (void *p_user_data, 
+audio_read_subchannel_win32 (void *p_user_data,
 			     cdio_subchannel_t *p_subchannel)
 {
   if ( WIN_NT ) {
@@ -157,11 +157,11 @@ audio_read_subchannel_win32 (void *p_user_data,
 
   /*!
     Resume playing an audio CD.
-    
+
     @param p_cdio the CD object to be acted upon.
 
   */
-static driver_return_code_t 
+static driver_return_code_t
 audio_resume_win32 (void *p_user_data)
 {
   if ( WIN_NT ) {
@@ -173,9 +173,9 @@ audio_resume_win32 (void *p_user_data)
 
 /*!
   Set the volume of an audio CD.
-  
+
   @param p_cdio the CD object to be acted upon.
-  
+
 */
 static driver_return_code_t
 audio_set_volume_win32 ( void *p_user_data, cdio_audio_volume_t *p_volume)
@@ -198,18 +198,18 @@ audio_stop_win32 ( void *p_user_data)
 }
 
 /* General ioctl() CD-ROM command function */
-static bool 
+static bool
 _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 {
 #ifdef _XBOX
   return false;
 #else
   MCIERROR mci_error;
-  
+
   mci_error = mciSendCommand(id, msg, flags, (DWORD_PTR)arg);
   if ( mci_error ) {
     char error[256];
-    
+
     mciGetErrorString(mci_error, error, 256);
     cdio_warn("mciSendCommand() error: %s", error);
   }
@@ -217,37 +217,37 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
 #endif
 }
 
-static access_mode_t 
-str_to_access_mode_win32(const char *psz_access_mode) 
+static access_mode_t
+str_to_access_mode_win32(const char *psz_access_mode)
 {
-  const access_mode_t default_access_mode = 
+  const access_mode_t default_access_mode =
     WIN_NT ? _AM_IOCTL : _AM_ASPI;
 
   if (NULL==psz_access_mode) return default_access_mode;
-  
+
   if (!strcmp(psz_access_mode, "ioctl"))
     return _AM_IOCTL;
   else if (!strcmp(psz_access_mode, "ASPI")) {
 #ifdef _XBOX
-    cdio_warn ("XBOX doesn't support access type: %s. Default used instead.", 
+    cdio_warn ("XBOX doesn't support access type: %s. Default used instead.",
 	       psz_access_mode);
     return default_access_mode;
-#else 
+#else
     return _AM_ASPI;
-#endif    
+#endif
   } else if (!strcmp(psz_access_mode, "MMC_RDWR")) {
     return _AM_MMC_RDWR;
   } else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL")) {
     return _AM_MMC_RDWR_EXCL;
   } else {
-    cdio_warn ("unknown access type: %s. Default used instead.", 
+    cdio_warn ("unknown access type: %s. Default used instead.",
 	       psz_access_mode);
     return default_access_mode;
   }
 }
 
 static discmode_t
-get_discmode_win32(void *p_user_data) 
+get_discmode_win32(void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
 
@@ -255,6 +255,16 @@ get_discmode_win32(void *p_user_data)
     return get_discmode_aspi (p_env);
   } else {
     return get_discmode_win32ioctl (p_env);
+  }
+}
+
+static driver_return_code_t
+get_last_session_win32(void *p_user_data,
+                       /*out*/ lsn_t *i_last_session) {
+  if ( WIN_NT ) {
+    return get_last_session_win32ioctl(p_user_data, i_last_session);
+  } else {
+    return DRIVER_OP_UNSUPPORTED;
   }
 }
 
@@ -268,33 +278,33 @@ is_cdrom_win32(const char drive_letter) {
 }
 
 /*!
-  Run a SCSI MMC command. 
- 
-  env	        private CD structure 
+  Run a SCSI MMC command.
+
+  env	        private CD structure
   i_timeout_ms  time in milliseconds we will wait for the command
-                to complete. If this value is -1, use the default 
+                to complete. If this value is -1, use the default
 		time-out value.
   p_buf	        Buffer for data, both sending and receiving
   i_buf	        Size of buffer
   e_direction	direction the transfer is to go.
-  cdb	        CDB bytes. All values that are needed should be set on 
+  cdb	        CDB bytes. All values that are needed should be set on
                 input. We'll figure out what the right CDB length should be.
 
   Return 0 if command completed successfully.
  */
 static int
 run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
-		   unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-		   cdio_mmc_direction_t e_direction, 
+		   unsigned int i_cdb, const mmc_cdb_t *p_cdb,
+		   cdio_mmc_direction_t e_direction,
 		   unsigned int i_buf, /*in/out*/ void *p_buf )
 {
   _img_private_t *p_env = p_user_data;
 
   if (p_env->hASPI) {
-    return run_mmc_cmd_aspi( p_env, i_timeout_ms, i_cdb, p_cdb,  
+    return run_mmc_cmd_aspi( p_env, i_timeout_ms, i_cdb, p_cdb,
 			     e_direction, i_buf, p_buf );
   } else {
-    return run_mmc_cmd_win32ioctl( p_env, i_timeout_ms, i_cdb, p_cdb,  
+    return run_mmc_cmd_win32ioctl( p_env, i_timeout_ms, i_cdb, p_cdb,
 				   e_direction, i_buf, p_buf );
   }
 }
@@ -311,7 +321,7 @@ init_win32 (void *p_user_data)
     cdio_error ("init called more than once");
     return false;
   }
-  
+
   p_env->gen.init           = true;
   p_env->gen.toc_init       = false;
   p_env->gen.b_cdtext_error = false;
@@ -340,7 +350,7 @@ init_win32 (void *p_user_data)
   }
 
   /* It looks like get_media_changed_mmc will always
-     return 1 (media changed) on the first call. So 
+     return 1 (media changed) on the first call. So
      we call it here to clear that flag. We may have
      to rethink this if there's a problem doing this
      extra work down the line. */
@@ -349,7 +359,7 @@ init_win32 (void *p_user_data)
 }
 
 /*!
-  Release and free resources associated with cd. 
+  Release and free resources associated with cd.
  */
 static void
 free_win32 (void *p_user_data)
@@ -371,11 +381,11 @@ free_win32 (void *p_user_data)
 
 /*!
    Reads an audio device into data starting from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static int
-read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn, 
-		    unsigned int i_blocks) 
+read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
+		    unsigned int i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   if ( p_env->hASPI ) {
@@ -392,19 +402,19 @@ read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
 
 /*!
    Reads an audio device into data starting from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static driver_return_code_t
-read_data_sectors_win32 (void *p_user_data, void *p_buf, lsn_t i_lsn, 
-			 uint16_t i_blocksize, uint32_t i_blocks) 
+read_data_sectors_win32 (void *p_user_data, void *p_buf, lsn_t i_lsn,
+			 uint16_t i_blocksize, uint32_t i_blocks)
 {
   driver_return_code_t rc =
     read_data_sectors_mmc(p_user_data, p_buf, i_lsn, i_blocksize, i_blocks);
   if ( DRIVER_OP_SUCCESS != rc  ) {
     /* Try using generic "cooked" mode. */
-    return read_data_sectors_generic( p_user_data, p_buf, i_lsn, 
+    return read_data_sectors_generic( p_user_data, p_buf, i_lsn,
 				      i_blocksize, i_blocks );
-  } 
+  }
   return DRIVER_OP_SUCCESS;
 }
 
@@ -413,7 +423,7 @@ read_data_sectors_win32 (void *p_user_data, void *p_buf, lsn_t i_lsn,
    lsn. Returns 0 if no error.
  */
 static int
-read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn, 
+read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 			 bool b_form2)
 {
   _img_private_t *p_env = p_user_data;
@@ -423,13 +433,13 @@ read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 
   if (p_env->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
-  
-  if (p_env->gen.ioctls_debugged < 75 
-      || (p_env->gen.ioctls_debugged < (30 * 75)  
+
+  if (p_env->gen.ioctls_debugged < 75
+      || (p_env->gen.ioctls_debugged < (30 * 75)
 	  && p_env->gen.ioctls_debugged % 75 == 0)
       || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %lu", (unsigned long int) lsn);
-  
+
   p_env->gen.ioctls_debugged++;
 
   if ( p_env->hASPI ) {
@@ -442,10 +452,10 @@ read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 /*!
    Reads nblocks of mode1 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static int
-read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn, 
+read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 			  bool b_form2, unsigned int nblocks)
 {
   _img_private_t *p_env = p_user_data;
@@ -454,7 +464,7 @@ read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 
   for (i = 0; i < nblocks; i++) {
     if (b_form2) {
-      retval = read_mode1_sector_win32 (p_env, ((char *)p_buf) + 
+      retval = read_mode1_sector_win32 (p_env, ((char *)p_buf) +
 					(M2RAW_SECTOR_SIZE * i),
 					lsn + i, true);
       if ( retval ) return retval;
@@ -462,8 +472,8 @@ read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
       char buf[M2RAW_SECTOR_SIZE] = { 0, };
       if ( (retval = read_mode1_sector_win32 (p_env, buf, lsn + i, false)) )
 	return retval;
-      
-      memcpy (((char *)p_buf) + (CDIO_CD_FRAMESIZE * i), 
+
+      memcpy (((char *)p_buf) + (CDIO_CD_FRAMESIZE * i),
 	      buf, CDIO_CD_FRAMESIZE);
     }
   }
@@ -472,10 +482,10 @@ read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 
 /*!
    Reads a single mode2 sector from cd device into data starting
-   from lsn. Returns 0 if no error. 
+   from lsn. Returns 0 if no error.
  */
 static int
-read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn, 
+read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
 			 bool b_form2)
 {
   char buf[CDIO_CD_FRAMESIZE_RAW] = { 0, };
@@ -486,13 +496,13 @@ read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
 
   if (p_env->gen.ioctls_debugged == 30 * 75)
     cdio_debug ("only displaying every 30*75th ioctl from now on");
-  
-  if (p_env->gen.ioctls_debugged < 75 
-      || (p_env->gen.ioctls_debugged < (30 * 75)  
+
+  if (p_env->gen.ioctls_debugged < 75
+      || (p_env->gen.ioctls_debugged < (30 * 75)
 	  && p_env->gen.ioctls_debugged % 75 == 0)
       || p_env->gen.ioctls_debugged % (30 * 75) == 0)
     cdio_debug ("reading %lu", (unsigned long int) lsn);
-  
+
   p_env->gen.ioctls_debugged++;
 
   if ( p_env->hASPI ) {
@@ -512,10 +522,10 @@ read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
 /*!
    Reads nblocks of mode2 sectors from cd device into data starting
    from lsn.
-   Returns 0 if no error. 
+   Returns 0 if no error.
  */
 static int
-read_mode2_sectors_win32 (void *p_user_data, void *data, lsn_t lsn, 
+read_mode2_sectors_win32 (void *p_user_data, void *data, lsn_t lsn,
 			  bool b_form2, unsigned int i_blocks)
 {
   int i;
@@ -523,7 +533,7 @@ read_mode2_sectors_win32 (void *p_user_data, void *data, lsn_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < i_blocks; i++) {
-    if ( (retval = read_mode2_sector_win32 (p_user_data, 
+    if ( (retval = read_mode2_sector_win32 (p_user_data,
 					    ((char *)data) + (blocksize * i),
 					    lsn + i, b_form2)) )
       return retval;
@@ -556,32 +566,32 @@ set_arg_win32 (void *p_user_data, const char key[], const char value[])
 	return -2;
 
       free (p_env->gen.source_name);
-      
+
       p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
       p_env->access_mode = str_to_access_mode_win32(value);
-      if (p_env->access_mode == _AM_ASPI && !p_env->b_aspi_init) 
+      if (p_env->access_mode == _AM_ASPI && !p_env->b_aspi_init)
 	return init_aspi(p_env) ? 1 : -3;
-      else if (p_env->access_mode == _AM_IOCTL && !p_env->b_ioctl_init) 
+      else if (p_env->access_mode == _AM_IOCTL && !p_env->b_ioctl_init)
 	return init_win32ioctl(p_env) ? 1 : -3;
       else
 	return -4;
       return 0;
     }
-  else 
+  else
     return -1;
 
   return 0;
 }
 
-/*! 
+/*!
   Read and cache the CD's Track Table of Contents and track info.
   Return true if successful or false if an error.
 */
 static bool
-read_toc_win32 (void *p_user_data) 
+read_toc_win32 (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
   bool ret;
@@ -598,7 +608,7 @@ read_toc_win32 (void *p_user_data)
   Close media tray.
  */
 static driver_return_code_t
-open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags) 
+open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
 {
 #ifdef _XBOX
   return DRIVER_OP_UNSUPPORTED;
@@ -606,23 +616,23 @@ open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
   MCI_OPEN_PARMS op;
   DWORD i_flags;
   int ret;
-    
+
   memset( &op, 0, sizeof(MCI_OPEN_PARMS) );
   op.lpstrDeviceType = (LPCSTR)MCI_DEVTYPE_CD_AUDIO;
   op.lpstrElementName = psz_win32_drive;
-  
+
   /* Set the flags for the device type */
   i_flags = MCI_OPEN_TYPE | MCI_OPEN_TYPE_ID |
     MCI_OPEN_ELEMENT | MCI_OPEN_SHAREABLE;
-  
+
   if( _cdio_mciSendCommand( 0, MCI_OPEN, i_flags, &op ) ) {
     /* Eject disc */
     ret = _cdio_mciSendCommand( op.wDeviceID, MCI_SET, command_flags, 0 ) == 0;
     /* Release access to the device */
     _cdio_mciSendCommand( op.wDeviceID, MCI_CLOSE, MCI_WAIT, 0 );
-  } else 
+  } else
     ret = DRIVER_OP_ERROR;
-  
+
   return ret;
 #endif
 }
@@ -631,23 +641,23 @@ open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
   Eject media.
  */
 static driver_return_code_t
-eject_media_win32 (void *p_user_data) 
+eject_media_win32 (void *p_user_data)
 {
   const _img_private_t *p_env = p_user_data;
   char psz_drive[4];
   unsigned int i_device = strlen(p_env->gen.source_name);
-    
+
   strcpy( psz_drive, "X:" );
   if (6 == i_device) {
     psz_drive[0] = p_env->gen.source_name[4];
   } else if (2 == i_device) {
     psz_drive[0] = p_env->gen.source_name[0];
   } else {
-    cdio_info ("Can't pick out drive letter from device %s", 
+    cdio_info ("Can't pick out drive letter from device %s",
 	       p_env->gen.source_name);
     return DRIVER_OP_ERROR;
   }
-  
+
   return open_close_media_win32(psz_drive, MCI_SET_DOOR_OPEN);
 }
 
@@ -735,17 +745,17 @@ _cdio_get_track_isrc (const void *p_user_data, track_t i_track) {
   }
 }
 
-/*!  
-  Get format of track. 
+/*!
+  Get format of track.
 */
 static track_format_t
-_cdio_get_track_format(void *p_obj, track_t i_track) 
+_cdio_get_track_format(void *p_obj, track_t i_track)
 {
   _img_private_t *p_env = p_obj;
-  
+
   if ( !p_env ) return TRACK_FORMAT_ERROR;
-  
-  if (!p_env->gen.toc_init) 
+
+  if (!p_env->gen.toc_init)
     if (!read_toc_win32 (p_env)) return TRACK_FORMAT_ERROR;
 
   if ( i_track < p_env->gen.i_first_track
@@ -768,10 +778,10 @@ _cdio_get_track_format(void *p_obj, track_t i_track)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-_cdio_get_track_green(void *p_obj, track_t i_track) 
+_cdio_get_track_green(void *p_obj, track_t i_track)
 {
   _img_private_t *p_env = p_obj;
-  
+
   switch (_cdio_get_track_format(p_env, i_track)) {
   case TRACK_FORMAT_XA:
     return true;
@@ -780,19 +790,19 @@ _cdio_get_track_green(void *p_obj, track_t i_track)
   case TRACK_FORMAT_AUDIO:
     return false;
   case TRACK_FORMAT_DATA:
-    if (_AM_ASPI == p_env->access_mode ) 
+    if (_AM_ASPI == p_env->access_mode )
       return ((p_env->tocent[i_track-p_env->gen.i_first_track].Control & 8) != 0);
   default:
     break;
   }
 
-  /* FIXME: Dunno if this is the right way, but it's what 
+  /* FIXME: Dunno if this is the right way, but it's what
      I was using in cd-info for a while.
    */
   return ((p_env->tocent[i_track-p_env->gen.i_first_track].Control & 2) != 0);
 }
 
-/*!  
+/*!
   Return the starting MSF (minutes/secs/frames) for track number
   i_tracks in obj.  Track numbers start at 1.
   The "leadout" track is specified either by
@@ -806,7 +816,7 @@ _cdio_get_track_msf(void *p_user_data, track_t i_tracks, msf_t *p_msf)
 
   if (!p_msf) return false;
 
-  if (!p_env->gen.toc_init) 
+  if (!p_env->gen.toc_init)
     if (!read_toc_win32 (p_env)) return false;
 
   if (i_tracks == CDIO_CDROM_LEADOUT_TRACK) i_tracks = p_env->gen.i_tracks+1;
@@ -833,7 +843,7 @@ cdio_get_devices_win32 (void)
   char **drives = NULL;
   unsigned int num_drives=0;
   char drive_letter;
-  
+
   /* Scan the system for CD-ROM drives.
   */
 
@@ -842,7 +852,7 @@ cdio_get_devices_win32 (void)
   if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab"))) {
     cdio_add_device_list(&drives, drive, &num_drives);
   }
-  
+
   /* Finally check possible mountable drives in /etc/fstab */
   if (NULL != (ret_drive = cdio_check_mounts("/etc/fstab"))) {
     cdio_add_device_list(&drives, drive, &num_drives);
@@ -865,9 +875,9 @@ cdio_get_devices_win32 (void)
 
 /*!
   Return a string containing the default CD device if none is specified.
-  if CdIo is NULL (we haven't initialized a specific device driver), 
+  if CdIo is NULL (we haven't initialized a specific device driver),
   then find a suitable one and return the default device for that.
-  
+
   NULL is returned if we couldn't get a default device.
 */
 char *
@@ -887,7 +897,7 @@ cdio_get_default_device_win32(void)
   return NULL;
 }
 
-/*!  
+/*!
   Return true if source_name could be a device containing a CD-ROM and
   we are on a MS Windows platform.
 */
@@ -900,19 +910,19 @@ cdio_is_device_win32(const char *source_name)
   if (NULL == source_name) return false;
   len = strlen(source_name);
 
-  if ((len == 2) && isalpha((unsigned char) source_name[0]) 
+  if ((len == 2) && isalpha((unsigned char) source_name[0])
 	    && (source_name[len-1] == ':'))
     return true;
 
   if ( ! WIN_NT ) return false;
 
   /* Test to see if of form: \\.\x: */
-  return ( (len == 6) 
+  return ( (len == 6)
 	   && source_name[0] == '\\' && source_name[1] == '\\'
 	   && source_name[2] == '.'  && source_name[3] == '\\'
 	   && isalpha((unsigned char) source_name[len-2])
 	   && (source_name[len-1] == ':') );
-#else 
+#else
   return false;
 #endif
 }
@@ -923,7 +933,7 @@ close_tray_win32 (const char *psz_win32_drive)
 #ifdef HAVE_WIN32_CDROM
 #if 1
   return open_close_media_win32(psz_win32_drive, MCI_SET_DOOR_CLOSED|MCI_WAIT);
-#else 
+#else
   if ( WIN_NT ) {
     return close_tray_win32ioctl (psz_win32_drive);
   } else {
@@ -949,7 +959,7 @@ cdio_open_win32 (const char *psz_source_name)
   } else {
     return cdio_open_am_win32(psz_source_name, "ASPI");
   }
-#else 
+#else
   return NULL;
 #endif /* HAVE_WIN32_CDROM */
 }
@@ -994,6 +1004,7 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.get_drive_cap          = get_drive_cap_mmc;
   _funcs.get_first_track_num    = get_first_track_num_generic;
   _funcs.get_hwinfo             = NULL;
+  _funcs.get_last_session       = get_last_session_win32;
   _funcs.get_media_changed      = get_media_changed_mmc;
   _funcs.get_mcn                = _cdio_get_mcn;
   _funcs.get_num_tracks         = get_num_tracks_generic;
@@ -1050,8 +1061,8 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
     free_win32 (_data);
     return NULL;
   }
-  
-#else 
+
+#else
   return NULL;
 #endif /* HAVE_WIN32_CDROM */
 
@@ -1062,7 +1073,7 @@ cdio_have_win32 (void)
 {
 #ifdef HAVE_WIN32_CDROM
   return true;
-#else 
+#else
   return false;
 #endif /* HAVE_WIN32_CDROM */
 }

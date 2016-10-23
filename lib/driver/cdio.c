@@ -38,9 +38,6 @@
 #include <cdio/util.h>
 #include "cdio_private.h"
 
-static const char _rcsid[] = "$Id: cdio.c,v 1.14 2008/04/22 15:29:11 karl Exp $";
-
-
 /*!
   Return the value associatied with key. NULL is returned if obj is NULL
   or "key" does not exist.
@@ -49,7 +46,7 @@ const char *
 cdio_get_arg (const CdIo *obj, const char key[])
 {
   if (obj == NULL) return NULL;
-  
+
   if (obj->op.get_arg) {
     return obj->op.get_arg (obj->env, key);
   } else {
@@ -63,12 +60,12 @@ cdio_new (generic_img_private_t *p_env, cdio_funcs_t *p_funcs)
   CdIo_t *p_new_cdio = calloc(1, sizeof (CdIo_t));
 
   if (NULL == p_new_cdio) return NULL;
-  
+
   p_new_cdio->env = p_env;      /* This is the private "environment" that
                                    driver-dependent routines use. */
   p_new_cdio->op  = *p_funcs;
-  p_env->cdio     = p_new_cdio; /* A way for the driver-dependent routines 
-                                   to access the higher-level general cdio 
+  p_env->cdio     = p_new_cdio; /* A way for the driver-dependent routines
+                                   to access the higher-level general cdio
                                    object. */
   return p_new_cdio;
 }
@@ -88,7 +85,7 @@ cdio_set_arg (CdIo_t *p_cdio, const char key[], const char value[])
 
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8

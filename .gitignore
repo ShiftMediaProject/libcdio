@@ -1,8 +1,12 @@
 *.exe
 *.log
+*.o
+*.lo
 *.stackdump
 *.trs
 *~
+.deps
+.dirstamp
 /ChangeLog
 /Makefile
 /Makefile.in

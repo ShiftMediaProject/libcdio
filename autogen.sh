@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Run this to generate all the initial makefiles, etc.
 # Additional options go to configure.
 
@@ -10,3 +10,5 @@ if [ $? -ne 0 ]; then
 fi
 
 ./configure --enable-maintainer-mode "$@"
+
+(cd doc && make stamp-vti)

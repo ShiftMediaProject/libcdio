@@ -502,150 +502,70 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
 }
 
 /**
-  Return the media catalog number MCN.
+  Get the media catalog number (MCN) or the ISRC
 
   Note: string is malloc'd so caller should free() then returned
   string when done with it.
 
-*/
+  @param p_cdio
+  @param i_track track number
+  @param sub_chan_param 2 for MCN, 3 for ISRC
+
+  @return malloc'd string holding the MCN or ISRC on success 
+          or NULL on failure
+ */
 char *
-mmc_get_mcn_private ( void *p_env,
-                      const mmc_run_cmd_fn_t run_mmc_cmd
-                      )
+mmc_get_mcn_isrc_private ( const CdIo_t *p_cdio,
+                            track_t i_track,
+                            unsigned char sub_chan_param
+                  )
 {
-  mmc_cdb_t cdb = {{0, }};
-  char buf[28] = { 0, };
-  int i_status;
+  char buf[24]; /* 4 header + 20 data (MMC-4 tables 424, 431, 432) */
+  unsigned int num_data;
+  size_t length;
+  driver_return_code_t i_rc;
 
-  if ( ! p_env || ! run_mmc_cmd )
-    return NULL;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
-
-  cdb.field[1] = 0x0;
-  cdb.field[2] = 0x40;
-  cdb.field[3] = CDIO_SUBCHANNEL_MEDIA_CATALOG;
-
-  i_status = run_mmc_cmd(p_env, mmc_timeout_ms,
-			      mmc_get_cmd_len(cdb.field[0]),
-			      &cdb, SCSI_MMC_DATA_READ,
-			      sizeof(buf), buf);
-  if(i_status == 0) {
-    return strdup(&buf[9]);
-  }
-  return NULL;
-}
-
-/**
-  Return the international standard recording code.
-
-  Note: string is malloc'd so caller should free() then returned
-  string when done with it.
-
-*/
-char *
-mmc_get_track_isrc_private ( void *p_env,
-                             const mmc_run_cmd_fn_t run_mmc_cmd,
-                             track_t i_track
-                             )
-{
-  mmc_cdb_t cdb = {{0, }};
-  char buf[28] = { 0, };
-  int i_status;
-
-  if ( ! p_env || ! run_mmc_cmd )
-    return NULL;
-
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_SUBCHANNEL);
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, sizeof(buf));
-
-  cdb.field[1] = 0x0;
-  cdb.field[2] = 0x40;
-  cdb.field[3] = CDIO_SUBCHANNEL_TRACK_ISRC;
-  cdb.field[6] = i_track;
-
-  i_status = run_mmc_cmd(p_env, mmc_timeout_ms,
-			      mmc_get_cmd_len(cdb.field[0]),
-			      &cdb, SCSI_MMC_DATA_READ,
-			      sizeof(buf), buf);
-  if(i_status == 0) {
-    return strdup(&buf[9]);
-  }
-  return NULL;
-}
-
-/**
-  Read cdtext information for a CdIo_t object .
-
-  return true on success, false on error or CD-Text information does
-  not exist.
-*/
-uint8_t *
-mmc_read_cdtext_private ( void *p_user_data,
-                          const mmc_run_cmd_fn_t run_mmc_cmd
-                          )
-{
-
-  generic_img_private_t *p_env = p_user_data;
-  mmc_cdb_t  cdb = {{0, }};
-  unsigned char * wdata;
-  int             i_status;
-
-  if ( ! p_env || ! run_mmc_cmd || p_env->b_cdtext_error )
-    return false;
-
-  /* Operation code */
-  CDIO_MMC_SET_COMMAND(cdb.field, CDIO_MMC_GPCMD_READ_TOC);
-
-  /* Setup to read header, to get length of data */
-  CDIO_MMC_SET_READ_LENGTH8(cdb.field, 4);
-
-  cdb.field[1] = CDIO_CDROM_MSF;
-  /* Format */
-  cdb.field[2] = CDIO_MMC_READTOC_FMT_CDTEXT;
-
-  errno = 0;
-
-  wdata = calloc(CDTEXT_LEN_BINARY_MAX, sizeof(unsigned char));
-
-  /* We may need to give CD-Text a little more time to complete. */
-  /* First off, just try and read the size */
-  i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
-                          mmc_get_cmd_len(cdb.field[0]),
-                          &cdb, SCSI_MMC_DATA_READ,
-                          4, wdata);
-
-  if (i_status != 0) {
-    cdio_info ("CD-Text read failed for header: %s\n", strerror(errno));
-    p_env->b_cdtext_error = true;
-    free(wdata);
-    return NULL;
-  } else {
-    /* Now read the CD-Text data */
-    int	i_cdtext = CDIO_MMC_GET_LEN16(wdata);
-
-    if (i_cdtext+2 > CDTEXT_LEN_BINARY_MAX)
-      i_cdtext = CDTEXT_LEN_BINARY_MAX-2;
-    else
-      wdata = realloc(wdata,i_cdtext+2);
-    /* the 2 bytes holding the size are not included in i_cdtext */
-
-
-    CDIO_MMC_SET_READ_LENGTH16(cdb.field, i_cdtext);
-    i_status = run_mmc_cmd (p_env, mmc_read_timeout_ms,
-                            mmc_get_cmd_len(cdb.field[0]),
-                            &cdb, SCSI_MMC_DATA_READ,
-                            i_cdtext, wdata);
-    if (i_status != 0) {
-      cdio_info ("CD-Text read for text failed: %s\n", strerror(errno));
-      p_env->b_cdtext_error = true;
-      free(wdata);
+  switch(sub_chan_param) {
+    case CDIO_SUBCHANNEL_MEDIA_CATALOG: /* MCN */
+      length = CDIO_MCN_SIZE;
+      break;
+    case CDIO_SUBCHANNEL_TRACK_ISRC: /* ISRC */
+      length = CDIO_ISRC_SIZE;
+      break;
+    default:
       return NULL;
-    }
-    return wdata;
   }
+
+  /* inquire number of available reply bytes
+     workaround for bad device drivers
+   */
+  num_data = 4; /* header only */
+  i_rc = mmc_read_subchannel (p_cdio, i_track,
+                                   sub_chan_param, &num_data, buf, 0);
+
+  if (i_rc != DRIVER_OP_SUCCESS)
+    return NULL;
+
+  if (num_data > sizeof(buf))
+    num_data = sizeof(buf);
+
+  if (num_data < 9 + length)
+    return NULL;              /* Not enough data available */
+
+  i_rc = mmc_read_subchannel (p_cdio, i_track,
+                                   sub_chan_param, &num_data, buf, 0);
+  if (i_rc != DRIVER_OP_SUCCESS)
+    return NULL;
+
+  if (num_data < 9 + length)
+    return NULL;              /* Not enough data returned */
+  
+  if ( ! (buf[8] & 0x80) )    /* MCVAL / TCVAL bit indicates a valid response */
+    return NULL;              /* MCN/ISRC not valid */
+  return strndup(&buf[9], length);
 }
+
+
 
 driver_return_code_t
 mmc_set_blocksize_private ( void *p_env,
@@ -691,6 +611,8 @@ mmc_set_blocksize_private ( void *p_env,
 			      mmc_get_cmd_len(cdb.field[0]), &cdb,
 			      SCSI_MMC_DATA_WRITE, sizeof(mh), &mh);
 }
+
+
 
 /***********************************************************
   User-accessible Operations.
@@ -741,6 +663,8 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
 }
 
 /**
+  Deprecated! Use mmc_get_track_isrc instead.
+
   Read ISRC Subchannel information. Contributed by
   Scot C. Bontrager (scot@indievisible.org)
   May 15, 2011 -
@@ -757,7 +681,7 @@ mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
 
   if (!p_cdio) return DRIVER_OP_UNINIT;
 
-  p_isrc_int = mmc_get_track_isrc_private(p_cdio->env, p_cdio->op.run_mmc_cmd, track);
+  p_isrc_int = mmc_get_mcn_isrc_private (p_cdio, track, CDIO_SUBCHANNEL_TRACK_ISRC );
 
   if (p_isrc_int) {
     strncpy(p_isrc, p_isrc_int, CDIO_ISRC_SIZE+1);
@@ -1106,7 +1030,7 @@ char *
 mmc_get_mcn ( const CdIo_t *p_cdio )
 {
   if ( ! p_cdio )  return NULL;
-  return mmc_get_mcn_private (p_cdio->env, p_cdio->op.run_mmc_cmd );
+  return mmc_get_mcn_isrc_private (p_cdio, 0, CDIO_SUBCHANNEL_MEDIA_CATALOG );
 }
 
 /**
@@ -1124,7 +1048,55 @@ char *
 mmc_get_track_isrc ( const CdIo_t *p_cdio, track_t i_track )
 {
   if ( ! p_cdio )  return NULL;
-  return mmc_get_track_isrc_private (p_cdio->env, p_cdio->op.run_mmc_cmd, i_track );
+  return mmc_get_mcn_isrc_private (p_cdio, i_track, CDIO_SUBCHANNEL_TRACK_ISRC );
+}
+
+/**
+  Read cdtext information for a CdIo_t object .
+
+  @return pointer to data on success, NULL on error or CD-Text information does
+  not exist.
+
+  Note: the caller must free the returned memory
+
+*/
+uint8_t *
+mmc_read_cdtext (const CdIo_t *p_cdio)
+{
+
+  unsigned char buf[4];
+  unsigned char * wdata;
+  int           i_status;
+  unsigned int  i_cdtext;
+
+  if ( ! p_cdio )
+    return NULL;
+
+  /* We may need to give CD-Text a little more time to complete. */
+  /* First off, just try and read the size */
+  i_cdtext = 4;
+  i_status = mmc_read_toc_cdtext(p_cdio, &i_cdtext, buf, 0);
+
+  if (i_status != DRIVER_OP_SUCCESS) {
+    return NULL;
+  }
+
+  if (i_cdtext > CDTEXT_LEN_BINARY_MAX + 2)
+      i_cdtext = CDTEXT_LEN_BINARY_MAX + 4;
+  else
+      i_cdtext += 2; /* data length does not include the data length field */
+
+  wdata = malloc(i_cdtext); /* is zeroed in mmc_toc_read_cdtext */
+
+  /* Read all of it */
+  i_status = mmc_read_toc_cdtext(p_cdio, &i_cdtext, wdata, 0);
+
+  if (i_status != DRIVER_OP_SUCCESS) {
+      free(wdata);
+      return NULL;
+  }
+
+  return wdata;
 }
 
 /**

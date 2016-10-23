@@ -59,8 +59,6 @@ int CdIo_last_driver = CDIO_DRIVER_UNINIT;
 
 #ifdef HAVE_AIX_CDROM
 const driver_id_t cdio_os_driver = DRIVER_AIX;
-#elif HAVE_BSDI_CDROM
-const driver_id_t cdio_os_driver = DRIVER_BSDI;
 #elif  HAVE_FREEBSD_CDROM
 const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
 #elif  HAVE_LINUX_CDROM

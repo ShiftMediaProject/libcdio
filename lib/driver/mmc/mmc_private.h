@@ -126,20 +126,6 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
 				      mmc_run_cmd_fn_t run_mmc_cmd, 
 				      cdio_dvd_struct_t *s );
 
-
-char *mmc_get_mcn_private ( void *p_env,
-			    mmc_run_cmd_fn_t run_mmc_cmd
-			    );
-
-char *mmc_get_track_isrc_private ( void *p_env,
-				   mmc_run_cmd_fn_t run_mmc_cmd,
-				   track_t i_track
-				   );
-
-uint8_t * mmc_read_cdtext_private ( void *p_user_data, 
-			       mmc_run_cmd_fn_t run_mmc_cmd
-			       );
-
 /*!
   On input a MODE_SENSE command was issued and we have the results
   in p. We interpret this and return a bit mask set according to the 
@@ -154,3 +140,15 @@ driver_return_code_t
 mmc_set_blocksize_private ( void *p_env, 
 			    const mmc_run_cmd_fn_t run_mmc_cmd, 
 			    uint16_t i_blocksize);
+
+/**
+  Get the media catalog number (MCN) or the ISRC
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+ */
+char *
+mmc_get_mcn_isrc_private ( const CdIo_t *p_cdio,
+                            track_t i_track,
+                            unsigned char sub_chan_param
+                  );

@@ -59,6 +59,14 @@ if test -n "@HAVE_JOLIET@" ; then
   check_result $RC 'iso-info --no-joliet test' "$cmdline"
 fi
 
+for fname in malformed malformed2; do
+    opts="--quiet ${srcdir}/data/${fname}.iso -f "
+    test_iso_info  "$opts" ${fname}.dump ${srcdir}/${fname}.right
+    RC=$?
+    check_result $RC "iso-info $fname test" "$cmdline"
+done
+
+
 exit $RC
 
 #;;; Local Variables: ***

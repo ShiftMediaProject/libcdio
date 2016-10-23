@@ -39,23 +39,6 @@ else
   echo "-- Don't see BIN file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
 fi
 
-
-fname=cdtext
-testnum="CD-Text binary parser"
-if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
-  if test -f ${abs_top_srcdir}/test/data/${fname}.cdt ; then
-    opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --no-cddb"
-    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
-    RC=$?
-    check_result $RC "cd-info CD-Text CUE test $testnum" "${CD_INFO} $opts"
-  else
-    echo "-- Don't see CD-Text file ${abs_top_srcdir}/test/data/${fname}.cdt. Test $testnum skipped."
-  fi
-else
-  echo "-- Don't see BIN file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
-fi
-
-
 fname=isofs-m1
 if test -f  ${abs_top_srcdir}/test/data/${fname}.bin ; then
   testnum='ISO 9660 mode1 CUE'

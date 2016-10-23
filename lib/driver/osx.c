@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011, 2012, 2014
+  Copyright (C) 2003-2006, 2008, 2010-2012, 2014-2015
    Rocky Bernstein <rocky@gnu.org> 
   from vcdimager code: 
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -1542,16 +1542,16 @@ _eject_media_osx (void *user_data) {
 
           if (CFDictionaryGetValueIfPresent(description, kDADiskDescriptionVolumePathKey, NULL))
             {
-              DADiskUnmount(disk, kDADiskUnmountOptionDefault, media_unmount_callback, &dacontext);
+              DADiskUnmount(disk, kDADiskUnmountOptionWhole, media_unmount_callback, &dacontext);
             }
           else
             {
               DADiskEject(disk, kDADiskEjectOptionDefault, media_eject_callback, &dacontext);
               dacontext.result = dacontext.result == DRIVER_OP_UNINIT ? DRIVER_OP_SUCCESS : dacontext.result;
             }
-          if (!dacontext.completed)
+          while (!dacontext.completed)
             {
-              CFRunLoopRunInMode(kCFRunLoopDefaultMode, 30.0, TRUE);  /* timeout after 30 seconds */
+              if (CFRunLoopRunInMode(kCFRunLoopDefaultMode, 30.0, TRUE) == kCFRunLoopRunTimedOut) break;  /* timeout after 30 seconds */
             }
           CFRunLoopRemoveSource(dacontext.runloop, dacontext.cancel, kCFRunLoopDefaultMode);
           DASessionUnscheduleFromRunLoop(dacontext.session, dacontext.runloop, kCFRunLoopDefaultMode);
