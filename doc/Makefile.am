@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2008, 2012, 2016 Rocky Bernstein <rocky@gnu.org>
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
 #   the Free Software Foundation, either version 3 of the License, or
@@ -43,7 +43,7 @@ html: libcdio.html cd-text-format.html
 .texi.txt:
 	makeinfo --no-headers $< > $@
 
-# Create documentation in all formats, e.g. PDF, DVI, plain text and HTML
+#: Create documentation in all formats, e.g. PDF, DVI, plain text and HTML
 all-formats: pdf txt ps html
 
 MOSTLYCLEANFILES = \

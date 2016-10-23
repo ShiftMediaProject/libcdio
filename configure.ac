@@ -15,7 +15,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 define(RELEASE_NUM, 94)
-define(CDIO_VERSION_STR, 0.$1rc1)
+define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.61)
 
