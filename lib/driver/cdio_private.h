@@ -36,6 +36,7 @@ extern "C" {
 #endif /* __cplusplus */
 
 #ifndef HAVE_STRNDUP
+#include <string.h>
 static inline char *strndup(const char *s, size_t n)
 {
     char *result;
