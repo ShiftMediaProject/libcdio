@@ -74,9 +74,8 @@
 
 #if defined (_MSC_VER) || defined (_XBOX)
 #undef IN
-#else
-#include "aspi32.h"
 #endif
+#include "aspi32.h"
 
 #ifdef _XBOX
 #include "stdint.h"
