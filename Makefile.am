@@ -127,10 +127,10 @@ MAINTAINERCLEANFILES = ChangeLog *.rej *.orig
 if MAINTAINER_MODE
 
 .PHONY: ChangeLog
-#: Create ChangeLog from version control
 
 GIT2CL ?= git2cl
 
+#: Create ChangeLog from version control
 ChangeLog:
 	git log --pretty --numstat --summary | $(GIT2CL) >$@
 

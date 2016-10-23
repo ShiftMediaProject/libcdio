@@ -13,20 +13,26 @@
 
 - Remove "git" from configure.ac's release name. E.g.
     define(RELEASE_NUM, 23)
-    define(LIBVCD_VERSION_STR, 0.7.$1git)
+    define(LIBCDIO_VERSION_STR, 0.9$1git)
                                      ^^^
     ...
 
 - make doxygen documentation
-  cd doc/doxygen; ./run_doxygen
+  (cd doc/doxygen; ./run_doxygen)
      remove any errors.
 
 - Make sure sources are current and checked in:
     git pull
 
-- autogen.sh && make && make check
+- ./autogen.sh && make && make check
+
+  export LIBCDIO_VERSION=0.94 # adjust
+- git commit -m'Get ready for release ${LIBCDIO_VERSION}" .
+
+- make ChangeLog
 
 - Tag release in git:
+  git push
   git tag release-${LIBCDIO_VERSION}
   git push --tags
 
