@@ -860,7 +860,7 @@ based on sample CD images. So support for this is incomplete and using
 this format is not recommended.
 
 Unlike @command{cdrdao}'s TOC file the BIN/CUE format everything is
-contained in one file. that one can edit Meta information such as the
+contained in one file that one can edit. Meta information such as the
 number of tracks and track format is contained at the end of the
 file. This information is not intended to be edited through a text
 editor.
@@ -2102,10 +2102,6 @@ A program showing fuzzy ISO-9660 detection/reading.
 
 A program to show using @code{libiso9660} to list files in a
 	directory of an ISO-9660 image.
-
-@item @code{C++/isolist.cpp}
-
-The same program as @code{isolist.c} written in C++.
 
 @item @code{C++/isolist.cpp}
 
