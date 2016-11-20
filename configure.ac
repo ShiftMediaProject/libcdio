@@ -463,7 +463,9 @@ int has_timeout=sizeof(test.timeout);],
           ])
         # regression tests need native-style absolute paths.
         # $native_srcdir is used here.
-	native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+	if test "$cross_compiling" != yes; then
+	  native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+	fi
 
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1],
