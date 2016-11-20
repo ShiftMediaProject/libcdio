@@ -1363,7 +1363,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     _dirbuf = calloc(1, dirbuf_len);
     if (!_dirbuf)
       {
-        cdio_warn("Couldn't calloc(1, %lu)", dirbuf_len);
+        cdio_warn("Couldn't calloc(1, %lu)", (unsigned long)dirbuf_len);
 	free(p_stat->rr.psz_symlink);
 	free(p_stat);
 	_cdio_list_free (retval, true);
