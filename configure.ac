@@ -380,7 +380,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin[[6-9]].*|darwin1[[0-6]].*)
+     darwin[[6-9]].*|darwin[[1-9]][[0-9]].*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h,
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then
@@ -494,7 +494,7 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	enable_cdda_player="no"
 	;;
-     freebsd[[4-9]].*|freebsd10.*|dragonfly*|kfreebsd*)
+     freebsd[[4-9]].*|freebsd[[1-9]][[0-9]].*|dragonfly*|kfreebsd*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1],
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
