@@ -292,18 +292,18 @@ cdio_guess_cd_type(const CdIo_t *p_cdio, int start_session, track_t i_track,
 	if ( _cdio_read_block(p_cdio, 35, start_session, 5, i_track) < 0)
 	  return ret;
 
-	  iso_analysis->UDFVerMinor=(unsigned int)buffer[5][240];
-	  iso_analysis->UDFVerMajor=(unsigned int)buffer[5][241];
+	iso_analysis->UDFVerMinor=(unsigned int)buffer[5][240];
+	iso_analysis->UDFVerMajor=(unsigned int)buffer[5][241];
 #if 0
-	  /*  We are using ISO/UDF cd's as iso,
-	      no need to get UDF disc label */
-	  if (_cdio_read_block(p_cdio, 32, start_session, 5, i_track) < 0)
-	    return ret;
-	  stnrcpy(iso_analysis->iso_label, buffer[5]+25, 33);
-	  iso_analysis->iso_label[32] = '\0';
+	/*  We are using ISO/UDF cd's as iso,
+	    no need to get UDF disc label */
+	if (_cdio_read_block(p_cdio, 32, start_session, 5, i_track) < 0)
+	  return ret;
+	stnrcpy(iso_analysis->iso_label, buffer[5]+25, 33);
+	iso_analysis->iso_label[32] = '\0';
 #endif
-	  ret=CDIO_FS_ISO_UDF;
-	}
+	ret=CDIO_FS_ISO_UDF;
+      }
 
 #if 0
       if (_cdio_is_rockridge())

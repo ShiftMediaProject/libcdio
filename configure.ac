@@ -15,7 +15,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 define(RELEASE_NUM, 94)
-define(CDIO_VERSION_STR, 0.$1git)
+define(CDIO_VERSION_STR, 0.$1)
 
 AC_PREREQ(2.61)
 
@@ -114,7 +114,7 @@ else
 	-Wcast-align
 	-Wchar-subscripts
 	-Wdisabled-optimization
-	-Wend-labels
+	-Wendif-labels
 	-Winline
 	-Wmissing-declarations
 	-Wmissing-prototypes
@@ -380,7 +380,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin[[6-9]].*|darwin1[[0-4]].*)
+     darwin[[6-9]].*|darwin[[1-9]][[0-9]].*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h,
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then
@@ -463,7 +463,9 @@ int has_timeout=sizeof(test.timeout);],
           ])
         # regression tests need native-style absolute paths.
         # $native_srcdir is used here.
-	native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+	if test "$cross_compiling" != yes; then
+	  native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+	fi
 
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1],
@@ -492,7 +494,7 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	enable_cdda_player="no"
 	;;
-     freebsd[[4-9]].*|freebsd10.*|dragonfly*|kfreebsd*)
+     freebsd[[4-9]].*|freebsd[[1-9]][[0-9]].*|dragonfly*|kfreebsd*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1],
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
@@ -731,16 +733,6 @@ AC_CONFIG_FILES([
        test/check_common_fn \
        test/data/Makefile \
        test/driver/Makefile \
-       test/driver/bincue.c \
-       test/driver/cdrdao.c \
-       test/driver/nrg.c \
-       test/driver/track.c \
-       test/testgetdevices.c \
-       test/testisocd_joliet.c \
-       test/testisorr.c \
-       test/testisocd2.c \
-       test/testpregap.c \
-       test/testudf.c \
        test/Makefile \
        ])
 
@@ -759,8 +751,7 @@ AC_CONFIG_FILES([test/check_cue.sh], [chmod +x test/check_cue.sh])
 AC_CONFIG_FILES([test/check_iso.sh], [chmod +x test/check_iso.sh])
 AC_CONFIG_FILES([test/check_nrg.sh], [chmod +x test/check_nrg.sh])
 AC_CONFIG_FILES([test/check_udf.sh], [chmod +x test/check_udf.sh])
-AC_CONFIG_FILES([test/check_iso_read.sh],
-		[chmod +x test/check_iso_read.sh])
+AC_CONFIG_FILES([test/check_iso_read.sh], [chmod +x test/check_iso_read.sh])
 AC_OUTPUT
 
 AC_MSG_NOTICE([

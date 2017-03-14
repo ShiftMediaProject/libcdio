@@ -189,7 +189,10 @@ cdtext_get
 cdtext_get_const
 cdtext_get_genre
 cdtext_get_language
+cdtext_get_first_track
+cdtext_get_last_track
 cdtext_init
+cdtext_data_init
 cdtext_list_languages
 cdtext_set
 cdtext_select_language
@@ -222,6 +225,7 @@ mmc_get_last_lsn
 mmc_get_mcn
 mmc_get_media_changed
 mmc_get_track_isrc
+mmc_read_cdtext
 mmc_get_tray_status
 mmc_have_interface
 mmc_is_disctype_bd

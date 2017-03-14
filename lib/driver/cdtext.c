@@ -317,6 +317,32 @@ cdtext_get_language(const cdtext_t *p_cdtext)
   return p_cdtext->block[p_cdtext->block_i].language_code;
 }
 
+/*!
+  Returns the first track number.
+
+  @param p_cdtext the CD-TEXT object
+*/
+track_t
+cdtext_get_first_track(const cdtext_t *p_cdtext)
+{
+  if (NULL == p_cdtext)
+    return 0;
+  return p_cdtext->block[p_cdtext->block_i].first_track;
+}
+
+/*!
+  Returns the last track number.
+
+  @param p_cdtext the CD-TEXT object
+*/
+track_t
+cdtext_get_last_track(const cdtext_t *p_cdtext)
+{
+  if (NULL == p_cdtext)
+    return 0;
+  return p_cdtext->block[p_cdtext->block_i].last_track;
+}
+
 /*
   Returns a list of available languages or NULL.
 
@@ -481,6 +507,8 @@ cdtext_set(cdtext_t *p_cdtext, cdtext_field_t key, const uint8_t *value,
     p_cdtext->block[p_cdtext->block_i].track[track].field[key] = strdup((const char *)value);
 }
 
+#define CDTEXT_COMPARE_CHAR(buf, c, db) ((buf)[0] == c && (! db || (buf)[1] == c) )
+
 /*!
   Read a binary CD-TEXT and fill a cdtext struct.
 
@@ -496,6 +524,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
   uint8_t       *p_data;
   int           j;
   uint8_t       buffer[256];
+  uint8_t       tab_buffer[256];
   int           i_buf = 0;
   int           i_block;
   int           i_seq = 0;
@@ -505,6 +534,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
   uint8_t       cur_track;
 
   memset( buffer, 0, sizeof(buffer) );
+  memset( tab_buffer, 0, sizeof(buffer) );
 
   p_data = wdata;
   if (i_data < CDTEXT_LEN_PACK || 0 != i_data % CDTEXT_LEN_PACK) {
@@ -609,6 +639,11 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
             charset = (char *) "SHIFT_JIS";
             break;
         }
+
+        /* set track numbers */
+        p_cdtext->block[i_block].first_track = blocksize.i_first_track;
+        p_cdtext->block[i_block].last_track = blocksize.i_last_track;
+
       } else {
         cdio_warn("CD-TEXT: No blocksize information available for block %d.\n", i_block);
         return -1;
@@ -649,14 +684,36 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
       case CDTEXT_PACK_UPC:
         while (j < CDTEXT_LEN_TEXTDATA) {
           /* not terminated */
-          if (pack.text[j] != 0 || (pack.db_chars && pack.text[j+1] != 0)) {
+
+          if ( i_buf+2 >= sizeof(buffer)) {
+            cdio_warn("CD-TEXT: Field too long.");
+            return -1;
+          }
+
+          /* if the first character is a TAB, copy the buffer */
+          if ( i_buf == 0 && CDTEXT_COMPARE_CHAR(&pack.text[j], '\t', pack.db_chars)) {
+            memcpy(tab_buffer, buffer, sizeof(tab_buffer));
+          }
+
+          if ( ! CDTEXT_COMPARE_CHAR(&pack.text[j], '\0', pack.db_chars)) {
             buffer[i_buf++] = pack.text[j];
             if(pack.db_chars)
               buffer[i_buf++] = pack.text[j+1];
-          } else if(i_buf > 1) {
-            buffer[i_buf++] = 0;
-            if(pack.db_chars)
+          } else if(i_buf > 0) {
+            /* if end of string */
+
+            /* check if the buffer contains only the Tab Indicator */
+            if ( CDTEXT_COMPARE_CHAR(buffer, '\t', pack.db_chars) ) {
+              if ( cur_track <= blocksize.i_first_track ) {
+                cdio_warn("CD-TEXT: Invalid use of Tab Indicator.");
+                return -1;
+              }
+              memcpy(buffer, tab_buffer, sizeof(buffer));
+            } else {
               buffer[i_buf++] = 0;
+              if(pack.db_chars)
+                buffer[i_buf++] = 0;
+            }
 
             switch (pack.type) {
               case CDTEXT_PACK_TITLE:

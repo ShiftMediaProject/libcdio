@@ -647,7 +647,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     int i_sense_size = p_sptwb->Spt.SenseInfoLength;
     if (i_sense_size > sizeof(p_sptwb->ucSenseBuf)) {
       cdio_warn("sense size returned %d is greater buffer size %d\n",
-		i_sense_size, sizeof(p_sptwb->ucSenseBuf));
+		i_sense_size, (int)sizeof(p_sptwb->ucSenseBuf));
       i_sense_size = sizeof(p_sptwb->ucSenseBuf);
     }
     memcpy((void *) p_env->gen.scsi_mmc_sense, &(p_sptwb->ucSenseBuf),

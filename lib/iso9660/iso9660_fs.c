@@ -270,7 +270,7 @@ check_pvd (const iso9660_pvd_t *p_pvd, cdio_log_level_t log_level)
   if (strncmp (p_pvd->id, ISO_STANDARD_ID, strlen (ISO_STANDARD_ID)))
     {
       cdio_log (log_level, "unexpected ID encountered (expected `"
-		ISO_STANDARD_ID "', got `%.5s'", p_pvd->id);
+		ISO_STANDARD_ID "', got `%.5s')", p_pvd->id);
       return false;
     }
   return true;
@@ -958,8 +958,10 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
     {
       unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
       p_stat = calloc(1, len);
+      cdio_assert (p_stat != NULL);
       memcpy(p_stat, _root, len);
       p_stat->rr.psz_symlink = calloc(1, p_stat->rr.i_symlink_max);
+      cdio_assert (p_stat->rr.psz_symlink != NULL);
       memcpy(p_stat->rr.psz_symlink, _root->rr.psz_symlink,
 	     p_stat->rr.i_symlink_max);
       return p_stat;
@@ -1053,13 +1055,10 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       iso9660_stat_t *p_stat;
       unsigned int len=sizeof(iso9660_stat_t) + strlen(_root->filename)+1;
       p_stat = calloc(1, len);
-      if (!p_stat)
-        {
-        cdio_warn("Couldn't calloc(1, %d)", len);
-        return NULL;
-        }
+      cdio_assert (p_stat != NULL);
       memcpy(p_stat, _root, len);
       p_stat->rr.psz_symlink = calloc(1, p_stat->rr.i_symlink_max);
+      cdio_assert (p_stat->rr.psz_symlink != NULL);
       memcpy(p_stat->rr.psz_symlink, _root->rr.psz_symlink,
 	     p_stat->rr.i_symlink_max);
       return p_stat;
@@ -1363,7 +1362,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     _dirbuf = calloc(1, dirbuf_len);
     if (!_dirbuf)
       {
-        cdio_warn("Couldn't calloc(1, %lu)", dirbuf_len);
+        cdio_warn("Couldn't calloc(1, %lu)", (unsigned long)dirbuf_len);
 	free(p_stat->rr.psz_symlink);
 	free(p_stat);
 	_cdio_list_free (retval, true);

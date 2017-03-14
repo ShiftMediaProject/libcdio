@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
-                  Rocky Bernstein <rocky@gnu.org>
+                  2016 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -571,15 +571,6 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
     mmc_audio_read_subchannel (CdIo_t *p_cdio,
                            /*out*/ cdio_subchannel_t *p_subchannel);
 
-  /**
-     Read ISRC Subchannel information. Contributed by
-     Scot C. Bontrager (scot@indievisible.org)
-     May 15, 2011 -
-
-     @param p_cdio the CD object to be acted upon.
-     @param track the track you to get ISRC info
-     @param p_isrc place to put ISRC info
-  */
     LIBCDIO_DEPRECATED(driver_return_code_t
                        mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,
                                     /*in*/ const track_t track,
@@ -707,6 +698,17 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
 
   */
   char * mmc_get_track_isrc(const CdIo_t *p_cdio, track_t i_track);
+
+  /**
+    Read cdtext information for a CdIo_t object .
+
+    @return pointer to data on success, NULL on error or CD-Text information does
+    not exist.
+
+    Note: the caller must free the returned memory
+
+  */
+  uint8_t * mmc_read_cdtext (const CdIo_t *p_cdio);
 
   /**
     Report if CD-ROM has a particular kind of interface (ATAPI, SCSCI, ...)

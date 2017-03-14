@@ -277,6 +277,20 @@ cdtext_genre_t cdtext_get_genre (const cdtext_t *p_cdtext);
 cdtext_lang_t cdtext_get_language (const cdtext_t *p_cdtext);
 
 /*!
+  Returns the first track number.
+
+  @param p_cdtext the CD-TEXT object
+*/
+track_t cdtext_get_first_track(const cdtext_t *p_cdtext);
+
+/*!
+  Returns the last track number.
+
+  @param p_cdtext the CD-TEXT object
+*/
+track_t cdtext_get_last_track(const cdtext_t *p_cdtext);
+
+/*!
   Try to select the given language.
 
   @param p_cdtext the CD-TEXT object
