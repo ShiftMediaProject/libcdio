@@ -706,6 +706,50 @@ iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start,
 
 
 
+/*!
+  Check for end of directory record list in a single directory block.
+  If so, set offset to start of next block and return "true". The caller should
+  then skip the next actions in the loop and rather hop to the loop start
+  by "continue".
+  If "false" is returned, then processing of the caller's loop shall go on 
+  normally.
+*/
+static long int
+iso9660_check_dir_block_end(iso9660_dir_t *p_iso9660_dir, unsigned *offset)
+{
+  if (!iso9660_get_dir_len(p_iso9660_dir))
+    {
+      /*
+	 Length 0 indicates that no more directory records are in this
+	 block. So move on to the next one, which may end the loop.
+	 Doing this joins the habits of Linux and libisofs.
+
+	 The formula does not exactly round up, as it enlarges offset
+	 even if it encounters (offset % ISO_BLOCKSIZE) == 0 .
+	 Then the block would be completely 0. Unplausible. But to go
+	 on, it has to be skipped.
+      */
+      *offset += ISO_BLOCKSIZE - (*offset % ISO_BLOCKSIZE);
+      return true;
+    }
+
+  if ((*offset + iso9660_get_dir_len(p_iso9660_dir) - 1) / ISO_BLOCKSIZE
+      != *offset / ISO_BLOCKSIZE)
+    {
+      /*
+	 Alleged directory record spans over block limit.
+	 Hop to next block where a new record is supposed to begin,
+	 if it is not after the end of the directory data.
+       */
+      *offset += ISO_BLOCKSIZE - (*offset % ISO_BLOCKSIZE);
+      return true;
+    }
+
+  return false;
+}
+
+
+
 static iso9660_stat_t *
 _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 			 uint8_t u_joliet_level)
@@ -989,24 +1033,8 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       iso9660_stat_t *p_iso9660_stat;
       int cmp;
 
-      if (!iso9660_get_dir_len(p_iso9660_dir))
-	{
-           /*
-
-	     libisofs of the libburnia project uses a directory
-	     record length of 0 as an indicator to advance to the next block
-	     start;  in this situtation the data size field of the directory
-	     indicates its end.
-
-             The formula does not exactly round up, as it increases "offset"
-             even if it encounters: (offset % ISO_BLOCKSIZE) == 0 .
-             In that case the block would be completely 0. Unplausible. But to go
-             on, it has to be skipped.
-           */
-	  offset += ISO_BLOCKSIZE - (offset % ISO_BLOCKSIZE);
-	  offset++;
-	  continue;
-	}
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
 
       p_iso9660_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, dunno,
 					p_env->u_joliet_level);
@@ -1098,11 +1126,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       iso9660_stat_t *p_stat;
       int cmp;
 
-      if (!iso9660_get_dir_len(p_iso9660_dir))
-	{
-	  offset++;
-	  continue;
-	}
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
 
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
 					p_iso->u_joliet_level);
@@ -1313,11 +1338,8 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 	iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
 	iso9660_stat_t *p_iso9660_stat;
 
-	if (!iso9660_get_dir_len(p_iso9660_dir))
-	  {
-	    offset++;
-	    continue;
-	  }
+	if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+  	  continue;
 
 	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, dunno,
 						 p_env->u_joliet_level);
@@ -1396,11 +1418,8 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 	iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
 	iso9660_stat_t *p_iso9660_stat;
 
-	if (!iso9660_get_dir_len(p_iso9660_dir))
-	  {
-	    offset++;
-	    continue;
-	  }
+	if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	  continue;
 
 	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, p_iso->b_xa,
 						 p_iso->u_joliet_level);
@@ -1608,11 +1627,8 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
       iso9660_stat_t *p_stat;
 
-      if (!iso9660_get_dir_len(p_iso9660_dir))
-	{
-	  offset++;
-	  continue;
-	}
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
 
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
 					p_iso->u_joliet_level);
