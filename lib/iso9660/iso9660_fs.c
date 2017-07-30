@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2008, 2011-2015 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2008, 2011-2015, 2017 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -991,6 +991,19 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
 
       if (!iso9660_get_dir_len(p_iso9660_dir))
 	{
+           /*
+
+	     libisofs of the libburnia project uses a directory
+	     record length of 0 as an indicator to advance to the next block
+	     start;  in this situtation the data size field of the directory
+	     indicates its end.
+
+             The formula does not exactly round up, as it increases "offset"
+             even if it encounters: (offset % ISO_BLOCKSIZE) == 0 .
+             In that case the block would be completely 0. Unplausible. But to go
+             on, it has to be skipped.
+           */
+	  offset += ISO_BLOCKSIZE - (offset % ISO_BLOCKSIZE);
 	  offset++;
 	  continue;
 	}
