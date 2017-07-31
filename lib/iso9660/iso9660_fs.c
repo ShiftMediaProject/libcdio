@@ -708,26 +708,22 @@ iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start,
 
 /*!
   Check for end of directory record list in a single directory block.
-  If so, set offset to start of next block and return "true". The caller should
-  then skip the next actions in the loop and rather hop to the loop start
-  by "continue".
-  If "false" is returned, then processing of the caller's loop shall go on 
-  normally.
+  If at the end, set offset to start of next block and return
+  "true". The caller often skips actions only when at the end of a
+  record list.
 */
-static long int
+static bool
 iso9660_check_dir_block_end(iso9660_dir_t *p_iso9660_dir, unsigned *offset)
 {
   if (!iso9660_get_dir_len(p_iso9660_dir))
     {
       /*
 	 Length 0 indicates that no more directory records are in this
-	 block. So move on to the next one, which may end the loop.
-	 Doing this joins the habits of Linux and libisofs.
+	 block. This matches how Linux and libburn's libisofs work.
 
-	 The formula does not exactly round up, as it enlarges offset
-	 even if it encounters (offset % ISO_BLOCKSIZE) == 0 .
-	 Then the block would be completely 0. Unplausible. But to go
-	 on, it has to be skipped.
+	 Note that assignment below does not exactly round up.
+	 If (offset % ISO_BLOCKSIZE) == 0  then offset is incremented
+	 by ISO_BLOCKSIZE, i.e. the block is skipped.
       */
       *offset += ISO_BLOCKSIZE - (*offset % ISO_BLOCKSIZE);
       return true;
@@ -737,7 +733,7 @@ iso9660_check_dir_block_end(iso9660_dir_t *p_iso9660_dir, unsigned *offset)
       != *offset / ISO_BLOCKSIZE)
     {
       /*
-	 Alleged directory record spans over block limit.
+	 Directory record spans over block limit.
 	 Hop to next block where a new record is supposed to begin,
 	 if it is not after the end of the directory data.
        */
