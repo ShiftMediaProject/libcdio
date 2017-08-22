@@ -55,7 +55,7 @@
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
-#if defined(__NetBSD__) && defined(__i386__)
+#if defined(__NetBSD__) && (defined(__i386__) || defined(__amd64__))
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0d"
 #else
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0c"
@@ -268,6 +268,9 @@ _cdio_read_toc(_img_private_t *_obj)
         }
 
         _obj->toc_valid = 1;
+        _obj->gen.i_first_track = FIRST_TRACK_NUM;
+        _obj->gen.i_tracks = TOTAL_TRACKS;
+        _obj->gen.toc_init = true;
         return true;
 }
 
