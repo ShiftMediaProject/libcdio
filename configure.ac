@@ -594,16 +594,19 @@ if test "x$ac_cv_member_struct_tm_tm_gmtoff" = "xyes"; then
    AC_MSG_RESULT($has_tzname)
 fi
 
+AM_ICONV
+if test "x$am_cv_func_iconv" = "xno"; then
+   AC_MSG_ERROR([iconv is needed])
+fi
+
 AC_ARG_ENABLE(joliet,
 	AS_HELP_STRING([--disable-joliet], [don't include Joliet extension support (default enabled)]),
 	[enable_joliet=$enableval],
 	[enable_joliet=yes])
+
+AM_LANGINFO_CODESET
 if test "x${enable_joliet}" != "xno"; then
-  AM_ICONV
-  AM_LANGINFO_CODESET
-  if test "x$am_cv_func_iconv" = "xyes"; then
-     joliet_supported="yes"
-  fi
+  joliet_supported="yes"
   if test "x$joliet_supported" = "xyes"; then
      AC_DEFINE(HAVE_JOLIET, [1],
      [Define 1 if you want ISO-9660 Joliet extension support.
