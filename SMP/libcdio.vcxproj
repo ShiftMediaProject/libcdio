@@ -424,12 +424,12 @@
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -443,8 +443,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -454,8 +454,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -486,12 +486,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -505,8 +505,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -516,8 +516,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -551,12 +551,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>5.1</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -570,8 +570,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -581,8 +581,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -616,12 +616,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>5.1</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -635,8 +635,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -646,8 +646,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -679,12 +679,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>6.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -698,8 +698,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -709,8 +709,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -742,12 +742,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>6.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -761,8 +761,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -772,8 +772,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -813,12 +813,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -832,8 +832,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -843,8 +843,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -884,12 +884,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -903,8 +903,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -914,8 +914,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -955,12 +955,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -974,8 +974,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -985,8 +985,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -1026,12 +1026,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -1045,8 +1045,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -1056,8 +1056,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -1098,12 +1098,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>5.1</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -1117,8 +1117,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -1128,8 +1128,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -1170,12 +1170,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>5.1</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -1189,8 +1189,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -1200,8 +1200,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -1241,12 +1241,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>6.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -1260,8 +1260,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -1271,8 +1271,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
@@ -1312,12 +1312,12 @@ del /f /q $(OutDir)\licenses\libcdio.txt
       <MinimumRequiredVersion>6.0</MinimumRequiredVersion>
     </Link>
     <PostBuildEvent>
-      <Command>mkdir $(OutDir)\include
-mkdir $(OutDir)\include\cdio
-copy ..\include\cdio\*.h $(OutDir)\include\cdio
-copy config.h $(OutDir)\include\cdio\cdio_config.h
-copy cdio_version.h $(OutDir)\include\cdio\
-copy cdio\version.h $(OutDir)\include\cdio\
+      <Command>mkdir "$(OutDir)"\include
+mkdir "$(OutDir)"\include\cdio
+copy ..\include\cdio\*.h "$(OutDir)"\include\cdio
+copy config.h "$(OutDir)"\include\cdio\cdio_config.h
+copy cdio_version.h "$(OutDir)"\include\cdio\
+copy cdio\version.h "$(OutDir)"\include\cdio\
 mkdir $(OutDir)\licenses
 copy ..\COPYING $(OutDir)\licenses\libcdio.txt</Command>
     </PostBuildEvent>
@@ -1331,8 +1331,8 @@ del ..\include\cdio\cdio_config.h
 if exist ..\include\cdio\version.h (
 del ..\include\cdio\version.h
 )
-if exist $(OutDir)\include\cdio (
-rd /s /q $(OutDir)\include\cdio
+if exist "$(OutDir)"\include\cdio (
+rd /s /q "$(OutDir)"\include\cdio
 cd ../
 cd $(ProjectDir)
 )</Command>
@@ -1342,8 +1342,8 @@ cd $(ProjectDir)
     </CustomBuildStep>
     <CustomBuildStep>
       <Outputs>force_clean</Outputs>
-      <Command>if exist $(OutDir)\include\cdio (
-rmdir /s /q $(OutDir)\include\cdio
+      <Command>if exist "$(OutDir)"\include\cdio (
+rmdir /s /q "$(OutDir)"\include\cdio
 )
 if exist $(OutDir)\licenses\libcdio.txt (
 del /f /q $(OutDir)\licenses\libcdio.txt
