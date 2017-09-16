@@ -24,7 +24,7 @@ versions of GNU tar can do this in one step like this:
 
 5. Install. If the preceding steps were successful:
 
-  make install  # you may have to do this as root 
+  make install  # you may have to do this as root
                 # or "sudo make install"
 
 
@@ -47,7 +47,7 @@ while the vcdimager dependency right now is mandatory. libvcdinfo is
 used only by the utility program cd-info. If you want cd-info to use
 the VCD reporting portion and you don't already have vcdimager
 installed, build and install libcdio, then vcdimager, then configure
-libcdio again and it should find libvcdinfo. 
+libcdio again and it should find libvcdinfo.
 
 People who make packages might consider making two packages, a libcdio
 package with just the libraries (and no dependency on libvcdinfo) and
@@ -95,7 +95,7 @@ Solaris
 -------
 
 You may need to use --without-versioned-libs if you get a problem
-building libcdio or libiso9660. 
+building libcdio or libiso9660.
 
 If you get a message like:
    libcdio.so: attempted multiple inclusion of file
@@ -119,29 +119,31 @@ a world of its own so support for that (e.g. issuing MMC commands)
 seems to lag behind.
 
 Of late FreeBSD folks have been pretty good about testing new releases
-and reporting problems. 
+and reporting problems.
 
 Specific libcdio configure options and environment variables
 ---------------
-
-  --disable-cxx           Disable C++ bindings (default enabled)
-  --enable-cpp-progs      make C++ example programs (default enabled)
-  --disable-example-progs Don't build libcdio sample programs
+n
+  --disable-cxx            Disable C++ bindings (default enabled)
+  --enable-cpp-progs       make C++ example programs (default enabled)
+  --disable-example-progs  Don't build libcdio sample programs
   --disable-dependency-tracking  speeds up one-time build
   --enable-dependency-tracking   do not reject slow dependency extractors
-  --disable-largefile     omit support for large files
-  --enable-shared[=PKGS]  build shared libraries [default=yes]
-  --enable-static[=PKGS]  build static libraries [default=yes]
+  --disable-largefile      omit support for large files
+  --enable-shared[=PKGS]   build shared libraries [default=yes]
+  --enable-static[=PKGS]   build static libraries [default=yes]
   --enable-fast-install[=PKGS]
-                          optimize for fast installation [default=yes]
-  --disable-libtool-lock  avoid locking (might break parallel builds)
-  --disable-joliet        don't include Joliet extension support (default
-                          enabled)
-  --disable-rpath         do not hardcode runtime library paths
-  --enable-rock           include Rock-Ridge extension support (default
-                          enabled)
-  --enable-cddb           include CDDB lookups in cd_info (default enabled)
-  --enable-vcd-info       include Video CD Info from libvcd
+                           optimize for fast installation [default=yes]
+  --disable-libtool-lock   avoid locking (might break parallel builds)
+  --disable-joliet         don't include Joliet extension support (default
+                           enabled)
+  --disable-rpath          do not hardcode runtime library paths
+  --enable-rock            include Rock-Ridge extension support (default
+                           enabled)
+  --enable-cddb            include CDDB lookups in cd_info (default enabled)
+  --enable-vcd-info        include Video CD Info from libvcd
+  --enable-maintainer-mode create documentation and manual packages.
+                           For this you need texinfo and help2man installed
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -185,4 +187,3 @@ Some influential environment variables:
               C compiler flags for VCDINFO, overriding pkg-config
   VCDINFO_LIBS
               linker flags for VCDINFO, overriding pkg-config
-
