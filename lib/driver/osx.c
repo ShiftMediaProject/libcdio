@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2006, 2008, 2010-2012, 2014-2015
+  Copyright (C) 2003-2006, 2008, 2010-2012, 2014-2015, 2017
    Rocky Bernstein <rocky@gnu.org>
   from vcdimager code:
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
