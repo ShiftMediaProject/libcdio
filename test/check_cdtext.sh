@@ -17,7 +17,7 @@
 #
 
 if test "X$srcdir" = "X" ; then
-  return $SKIP_TEST_EXITCODE
+  exit $SKIP_TEST_EXITCODE
 fi
 
 . $srcdir/check_common_fn
@@ -25,16 +25,16 @@ fi
 CDTEXT_RAW=$srcdir/../example/cdtext-raw
 
 if test ! -x $CDTEXT_RAW ; then
-  return $SKIP_TEST_EXITCODE
+  exit $SKIP_TEST_EXITCODE
 fi
 
 if test "X$DIFF" = "X" ; then
-  return $SKIP_TEST_EXITCODE
+  exit $SKIP_TEST_EXITCODE
 fi
 
 if test "$DIFF" = "no"; then
   echo "$0: No diff(1) or cmp(1) found - cannot test ${cmdname}"
-  return $SKIP_TEST_EXITCODE
+  exit $SKIP_TEST_EXITCODE
 fi
 
 
@@ -43,7 +43,7 @@ test_cdtext_raw() {
   outfile="$2"
   rightfile="$3"
 
-  if "${CDTEXT_RAW}" ${opts} >"${outfile}" 2>&1 ; then 
+  if "${CDTEXT_RAW}" ${opts} >"${outfile}" 2>&1 ; then
     if $DIFF $DIFF_OPTS "${outfile}" "${rightfile}" ; then
       $RM "${outfile}"
       return 0
