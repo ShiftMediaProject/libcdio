@@ -47,7 +47,8 @@ test_lib_driver_util_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 testpregap_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 check_SCRIPTS = check_nrg.sh  check_cue.sh  check_cd_read.sh check_udf.sh \
-                check_iso.sh  check_fuzzyiso.sh check_opts.sh \
+                check_iso.sh  check_bad_iso.sh \
+	        check_fuzzyiso.sh check_opts.sh \
                 check_iso_read.sh check_cdtext.sh
 
 check_udf.sh: @abs_top_builddir@/example/extract$(EXEEXT)

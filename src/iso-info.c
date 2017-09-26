@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2014 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2014, 2017 Rocky Bernstein
+  <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -212,7 +213,7 @@ _log_handler (cdio_log_level_t level, const char message[])
   gl_default_cdio_log_handler (level, message);
 }
 
-static void
+static int
 print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
 {
   CdioList_t *entlist;
@@ -222,6 +223,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
   char *translated_name = (char *) malloc(4096);
   size_t translated_name_size = 4096;
   entlist = iso9660_ifs_readdir (p_iso, psz_path);
+  int rc = 0;
 
   if (opts.print_iso9660) {
     printf ("%s:\n", psz_path);
@@ -231,7 +233,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
     free(translated_name);
     free(dirlist);
     report( stderr, "Error getting above directory information\n" );
-    return;
+    return 1;
   }
 
   /* Iterate over files in this directory */
@@ -241,13 +243,16 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
       char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
-       if (strlen(psz_iso_name) >= translated_name_size) {
+      if (strlen(psz_iso_name) == 0)
+	continue;
+
+      if (strlen(psz_iso_name) >= translated_name_size) {
          translated_name_size = strlen(psz_iso_name)+1;
          free(translated_name);
          translated_name = (char *) malloc(translated_name_size);
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
-           return;
+           return 2;
          }
        }
 
@@ -297,16 +302,17 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      print_iso9660_recurse (p_iso, _fullname);
+      rc += print_iso9660_recurse (p_iso, _fullname);
     }
 
   _cdio_list_free (dirlist, true);
+  return rc;
 }
 
-static void
+static int
 print_iso9660_fs (iso9660_t *iso)
 {
-  print_iso9660_recurse (iso, "/");
+  return print_iso9660_recurse (iso, "/");
 }
 
 static void
@@ -429,6 +435,7 @@ main(int argc, char *argv[])
 
   iso9660_t           *p_iso=NULL;
   iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
+  int rc = EXIT_SUCCESS;
 
   init();
 
@@ -498,7 +505,7 @@ main(int argc, char *argv[])
           printf("Note: both -f and -l options given -- "
                  "-l (long listing) takes precidence\n");
       }
-      print_iso9660_fs(p_iso);
+      rc = print_iso9660_fs(p_iso);
   } else if (opts.print_udf) {
       print_udf_fs();
   }
@@ -508,5 +515,5 @@ main(int argc, char *argv[])
   iso9660_close(p_iso);
   /* Not reached:*/
   free(program_name);
-  return(EXIT_SUCCESS);
+  return(rc);
 }

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2008, 2011-2015 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2008, 2011-2015, 2017 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -1394,6 +1394,10 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 
 	if (p_iso9660_stat)
 	  _cdio_list_append (retval, p_iso9660_stat);
+	else {
+	  cdio_warn("Invalid directory stat at offset %lu", (unsigned long)offset);
+	  break;
+	}
 
 	offset += iso9660_get_dir_len(p_iso9660_dir);
       }
