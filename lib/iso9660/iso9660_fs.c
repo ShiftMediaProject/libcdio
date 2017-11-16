@@ -706,6 +706,46 @@ iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start,
 
 
 
+/*!
+  Check for end of directory record list in a single directory block.
+  If at the end, set offset to start of next block and return
+  "true". The caller often skips actions only when at the end of a
+  record list.
+*/
+static bool
+iso9660_check_dir_block_end(iso9660_dir_t *p_iso9660_dir, unsigned *offset)
+{
+  if (!iso9660_get_dir_len(p_iso9660_dir))
+    {
+      /*
+	 Length 0 indicates that no more directory records are in this
+	 block. This matches how Linux and libburn's libisofs work.
+
+	 Note that assignment below does not exactly round up.
+	 If (offset % ISO_BLOCKSIZE) == 0  then offset is incremented
+	 by ISO_BLOCKSIZE, i.e. the block is skipped.
+      */
+      *offset += ISO_BLOCKSIZE - (*offset % ISO_BLOCKSIZE);
+      return true;
+    }
+
+  if ((*offset + iso9660_get_dir_len(p_iso9660_dir) - 1) / ISO_BLOCKSIZE
+      != *offset / ISO_BLOCKSIZE)
+    {
+      /*
+	 Directory record spans over block limit.
+	 Hop to next block where a new record is supposed to begin,
+	 if it is not after the end of the directory data.
+       */
+      *offset += ISO_BLOCKSIZE - (*offset % ISO_BLOCKSIZE);
+      return true;
+    }
+
+  return false;
+}
+
+
+
 static iso9660_stat_t *
 _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 			 uint8_t u_joliet_level)
@@ -989,11 +1029,8 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       iso9660_stat_t *p_iso9660_stat;
       int cmp;
 
-      if (!iso9660_get_dir_len(p_iso9660_dir))
-	{
-	  offset++;
-	  continue;
-	}
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
 
       p_iso9660_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, dunno,
 					p_env->u_joliet_level);
@@ -1085,11 +1122,8 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       iso9660_stat_t *p_stat;
       int cmp;
 
-      if (!iso9660_get_dir_len(p_iso9660_dir))
-	{
-	  offset++;
-	  continue;
-	}
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
 
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
 					p_iso->u_joliet_level);
@@ -1300,11 +1334,8 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 	iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
 	iso9660_stat_t *p_iso9660_stat;
 
-	if (!iso9660_get_dir_len(p_iso9660_dir))
-	  {
-	    offset++;
-	    continue;
-	  }
+	if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+  	  continue;
 
 	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, dunno,
 						 p_env->u_joliet_level);
@@ -1383,11 +1414,8 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 	iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
 	iso9660_stat_t *p_iso9660_stat;
 
-	if (!iso9660_get_dir_len(p_iso9660_dir))
-	  {
-	    offset++;
-	    continue;
-	  }
+	if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	  continue;
 
 	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir, p_iso->b_xa,
 						 p_iso->u_joliet_level);
@@ -1599,11 +1627,8 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
       iso9660_stat_t *p_stat;
 
-      if (!iso9660_get_dir_len(p_iso9660_dir))
-	{
-	  offset++;
-	  continue;
-	}
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
 
       p_stat = _iso9660_dir_to_statbuf (p_iso9660_dir, p_iso->b_xa,
 					p_iso->u_joliet_level);
