@@ -707,10 +707,10 @@ iso9660_iso_seek_read (const iso9660_t *p_iso, void *ptr, lsn_t start,
 
 
 /*!
-  Check for end of directory record list in a single directory block.
-  If at the end, set offset to start of next block and return
-  "true". The caller often skips actions only when at the end of a
-  record list.
+  Check for the end of a directory record list in a single directory
+  block.  If at the end, set the offset to start of the next block and
+  return "true". The caller often skips actions only when at the end
+  of a record list.
 */
 static bool
 iso9660_check_dir_block_end(iso9660_dir_t *p_iso9660_dir, unsigned *offset)

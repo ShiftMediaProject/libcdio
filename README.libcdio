@@ -123,7 +123,6 @@ and reporting problems.
 
 Specific libcdio configure options and environment variables
 ---------------
-n
   --disable-cxx            Disable C++ bindings (default enabled)
   --enable-cpp-progs       make C++ example programs (default enabled)
   --disable-example-progs  Don't build libcdio sample programs

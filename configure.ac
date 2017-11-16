@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003-2008, 2010, 2011-2014
+dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2017
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
@@ -14,8 +14,8 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-define(RELEASE_NUM, 94)
-define(CDIO_VERSION_STR, 0.$1)
+define(RELEASE_NUM, 1.0.0rc1)
+define(CDIO_VERSION_STR, $1)
 
 AC_PREREQ(2.61)
 
