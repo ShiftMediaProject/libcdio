@@ -1,4 +1,4 @@
-#   Copyright (C) 2003-2010, 2012-2013
+#   Copyright (C) 2003-2010, 2012-2013, 2017
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -95,7 +95,6 @@ libcdio_sources = \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
 	netbsd.c \
-	os2.c \
 	osx.c \
 	read.c \
         realpath.c \

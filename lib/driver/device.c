@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008, 2011-2013
+  Copyright (C) 2005, 2006, 2008, 2011-2013, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -65,8 +65,6 @@ const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
 const driver_id_t cdio_os_driver = DRIVER_LINUX;
 #elif  HAVE_DARWIN_CDROM
 const driver_id_t cdio_os_driver = DRIVER_OSX;
-#elif  HAVE_OS2_CDROM
-const driver_id_t cdio_os_driver = DRIVER_OS2;
 #elif  HAVE_SOLARIS_CDROM
 const driver_id_t cdio_os_driver = DRIVER_SOLARIS;
 #elif  HAVE_WIN32_CDROM
@@ -187,23 +185,10 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_solaris
   },
 
-  {DRIVER_OS2,
-   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
-   "OS2",
-   "IBM OS/2 driver",
-   &cdio_have_os2,
-   &cdio_open_os2,
-   &cdio_open_am_os2,
-   &cdio_get_default_device_os2,
-   &cdio_is_device_os2,
-   &cdio_get_devices_os2,
-   &close_tray_os2
-  },
-
   {DRIVER_OSX,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
-   "OS X",
-   "Apple Darwin OS X driver",
+   "macOS",
+   "Apple macOS driver",
    &cdio_have_osx,
    &cdio_open_osx,
    &cdio_open_am_osx,
@@ -280,7 +265,6 @@ const driver_id_t cdio_drivers[] = {
   DRIVER_NETBSD,
   DRIVER_LINUX,
   DRIVER_SOLARIS,
-  DRIVER_OS2,
   DRIVER_OSX,
   DRIVER_WIN32,
   DRIVER_CDRDAO,
@@ -296,7 +280,6 @@ const driver_id_t cdio_device_drivers[] = {
   DRIVER_NETBSD,
   DRIVER_LINUX,
   DRIVER_SOLARIS,
-  DRIVER_OS2,
   DRIVER_OSX,
   DRIVER_WIN32,
   DRIVER_UNKNOWN
@@ -1002,7 +985,6 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
   case DRIVER_SOLARIS:
   case DRIVER_WIN32:
   case DRIVER_OSX:
-  case DRIVER_OS2:
   case DRIVER_NRG:
   case DRIVER_BINCUE:
   case DRIVER_CDRDAO:
