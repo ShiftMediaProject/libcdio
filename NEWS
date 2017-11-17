@@ -1,3 +1,25 @@
+version 1.0.0
+2017-11-xx
+
+- Remove deprecated items:
+   * OS/2 driver (never really was supported)
+   * mmc_isrc_track_read_subchannel
+   * CDIO_MIN_DRIVER, CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DRIVER, CDIO_MAX_DEVICE_DRIVER
+- Apple Darwin OS X -> macOS
+- Subdir objects breaks symbol versioning. See https://savannah.gnu.org/bugs/?49907
+- Handle bad iso 9660 better. Fixes Savannah bug https://savannah.gnu.org/bugs/?52091
+- Apple (High) Sierra compatiablity
+- NetBSD patches
+- Fixes for Rock Ridge SUSP (Thomas Schmitt)
+- Reduce MinGW compilation warnings
+- Add asserts to test memory allocations and misc bug fixes (Pete Batard)
+- Enable CD drivers on current and future versions of FreeBSD and macOS,
+  so we do not have to add every new OS version explicitly. (Robert Kausch)
+- Cross-compiling friendliness (Ozkan Sezer)
+- Small texinfo doc fixes (Wieland Hoffmann)
+- Simplify making doc from autogen.sh
+- Bug fix for https://savannah.gnu.org/bugs/?45015 (Thomas Schmitt)
+
 version 0.94
 2016-10-27
 
@@ -14,7 +36,7 @@ version 0.94
 - Eject fixes:
   * Fix disc eject for Cocoa apps and support ejecting CD-Extra discs
     on OS X.
-  * Make sure device is opend in read/write ode when trying to eject.
+  * Make sure device is opend in read/write mode when trying to eject.
 
 Bugs
   * Add error eporting from_733_with_err. Bug #45014
