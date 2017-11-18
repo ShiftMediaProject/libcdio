@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if test -z $srcdir ; then
   srcdir=$(pwd)
@@ -19,10 +19,10 @@ fname=bad-dir
 
 RC=0
 
-opts="--quiet ${srcdir}/test/data/${fname}.iso"
+opts="--quiet ${srcdir}/../test/data/${fname}.iso"
 cmdname=iso-info
 cmd=../src/iso-info
-if ! "${cmd}" --no-header ${opts} 2>&1 ; then
+if ! "${cmd}" --quiet --no-header ${opts} 2>&1 ; then
     echo "$0: unexpected failure"
     RC=1
 fi

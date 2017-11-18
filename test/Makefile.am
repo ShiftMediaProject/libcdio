@@ -76,6 +76,7 @@ EXTRA_DIST = $(check_SCRIPTS) $(check_DATA) \
 	check_common_fn check_cue.sh.in check_nrg.sh.in \
 	check_legal.regex \
 	check_iso.sh.in \
+	check_bad_iso.sh.in \
 	check_iso_read.sh.in
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)

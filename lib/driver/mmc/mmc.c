@@ -332,13 +332,6 @@ get_mcn_mmc (const void *p_user_data)
   return mmc_get_mcn( p_env->cdio );
 }
 
-char *
-get_track_isrc_mmc (const void *p_user_data, track_t i_track)
-{
-  const generic_img_private_t *p_env = p_user_data;
-  return mmc_get_track_isrc( p_env->cdio, i_track );
-}
-
 driver_return_code_t
 get_tray_status (const void *p_user_data)
 {
@@ -511,7 +504,7 @@ mmc_get_dvd_struct_physical_private ( void *p_env,
   @param i_track track number
   @param sub_chan_param 2 for MCN, 3 for ISRC
 
-  @return malloc'd string holding the MCN or ISRC on success 
+  @return malloc'd string holding the MCN or ISRC on success
           or NULL on failure
  */
 char *
@@ -559,7 +552,7 @@ mmc_get_mcn_isrc_private ( const CdIo_t *p_cdio,
 
   if (num_data < 9 + length)
     return NULL;              /* Not enough data returned */
-  
+
   if ( ! (buf[8] & 0x80) )    /* MCVAL / TCVAL bit indicates a valid response */
     return NULL;              /* MCN/ISRC not valid */
   return strndup(&buf[9], length);
@@ -660,37 +653,6 @@ mmc_audio_read_subchannel (CdIo_t *p_cdio,  cdio_subchannel_t *p_subchannel)
     p_subchannel->rel_addr.f   = cdio_to_bcd8(mmc_subchannel.rel_addr[3]);
   }
   return i_rc;
-}
-
-/**
-  Deprecated! Use mmc_get_track_isrc instead.
-
-  Read ISRC Subchannel information. Contributed by
-  Scot C. Bontrager (scot@indievisible.org)
-  May 15, 2011 -
-
-  @param p_cdio the CD object to be acted upon.
-  @param track the track you to get ISRC info
-  @param buf place to put ISRC info
-*/
-driver_return_code_t
-mmc_isrc_track_read_subchannel (CdIo_t *p_cdio,  /*in*/ const track_t track,
-                                /*out*/ char *p_isrc)
-{
-  char *p_isrc_int = NULL;
-
-  if (!p_cdio) return DRIVER_OP_UNINIT;
-
-  p_isrc_int = mmc_get_mcn_isrc_private (p_cdio, track, CDIO_SUBCHANNEL_TRACK_ISRC );
-
-  if (p_isrc_int) {
-    strncpy(p_isrc, p_isrc_int, CDIO_ISRC_SIZE+1);
-    free(p_isrc_int);
-
-    return DRIVER_OP_SUCCESS;
-  }
-
-  return DRIVER_OP_ERROR;
 }
 
 /**
