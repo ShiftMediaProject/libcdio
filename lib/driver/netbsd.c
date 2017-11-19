@@ -441,7 +441,7 @@ get_track_format_netbsd(void *user_data, track_t track_num)
         if (!_obj->toc_valid) {
                 res = _cdio_read_toc(_obj);
                 if (!res)
-                        return CDIO_INVALID_TRACK;
+                        return TRACK_FORMAT_ERROR;
         }
 
         if (track_num > TOTAL_TRACKS || track_num == 0)
@@ -451,7 +451,7 @@ get_track_format_netbsd(void *user_data, track_t track_num)
                 if (!_obj->sessionformat_valid) {
                         res = _cdio_read_discinfo(_obj);
                         if (res)
-                                return CDIO_INVALID_TRACK;
+                                return TRACK_FORMAT_ERROR;
                 }
 
                 if (_obj->sessionformat[track_num - 1] == 0x10)
