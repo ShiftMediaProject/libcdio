@@ -907,7 +907,7 @@ display_cdinfo(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track)
     display_line(LINE_YEAR,   0, "CD Year         : %s", year);
   }
 
-  mvprintw(LINE_CDINFO, 0, (char *) "CD info: %0s", line);
+  mvprintw(LINE_CDINFO, 0, (char *) "CD info: %s", line);
   clrtoeol();
   action(NULL);
 }
