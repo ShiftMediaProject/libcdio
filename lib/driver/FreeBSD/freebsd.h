@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2008, 2010, 2012
+  Copyright (C) 2003, 2004, 2008, 2010, 2012, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
-#endif 
+#endif
 
 #include <cdio/sector.h>
 #include "cdio_assert.h"
@@ -36,7 +36,7 @@
 /*!
   For ioctl access /dev/acd0c is preferred over /dev/cd0c.
   For cam access /dev/cd0c is preferred. DEFAULT_CDIO_DEVICE and
-  DEFAULT_FREEBSD_AM should be consistent. 
+  DEFAULT_FREEBSD_AM should be consistent.
  */
 
 #ifndef DEFAULT_CDIO_DEVICE
@@ -124,9 +124,9 @@ typedef  enum {
 } access_mode_t;
 
 typedef struct {
-  /* Things common to all drivers like this. 
+  /* Things common to all drivers like this.
      This must be first. */
-  generic_img_private_t gen; 
+  generic_img_private_t gen;
 
 #ifdef HAVE_FREEBSD_CAM
   char *device;
@@ -138,7 +138,7 @@ typedef struct {
 
   bool b_ioctl_init;
   bool b_cam_init;
-  
+
   /* Track information */
   struct ioc_toc_header  tochdr;
 
@@ -149,9 +149,9 @@ typedef struct {
 
 bool cdio_is_cdrom_freebsd_ioctl(char *drive, char *mnttype);
 
-track_format_t get_track_format_freebsd_ioctl(const _img_private_t *env, 
+track_format_t get_track_format_freebsd_ioctl(const _img_private_t *env,
 					      track_t i_track);
-bool get_track_green_freebsd_ioctl(const _img_private_t *env, 
+bool get_track_green_freebsd_ioctl(const _img_private_t *env,
 				   track_t i_track);
 
 driver_return_code_t eject_media_freebsd_ioctl (_img_private_t *p_env);
@@ -172,25 +172,25 @@ void free_freebsd_cam (void *obj);
    Using the ioctl method, r nblocks of audio sectors from cd device
    into data starting from lsn.  Returns 0 if no error.
  */
-int  read_audio_sectors_freebsd_ioctl (_img_private_t *env, void *data, 
+int  read_audio_sectors_freebsd_ioctl (_img_private_t *env, void *data,
 				       lsn_t lsn, unsigned int nblocks);
-/*! 
+/*!
    Using the CAM method, reads nblocks of mode2 sectors from
    cd device using into data starting from lsn.  Returns 0 if no
    error.
 */
-int  read_mode2_sector_freebsd_cam (_img_private_t *env, void *data, 
+int  read_mode2_sector_freebsd_cam (_img_private_t *env, void *data,
 				    lsn_t lsn, bool b_form2);
 
-/*! 
+/*!
    Using the ioctl method, reads nblocks of mode2 sectors from
    cd device using into data starting from lsn.  Returns 0 if no
    error.
 */
-int  read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data, 
+int  read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data,
 				      lsn_t lsn, bool b_form2);
 
-/*! 
+/*!
    Using the CAM method, reads nblocks of mode2 form2 sectors from
    cd device using into data starting from lsn.  Returns 0 if no
    error.
@@ -198,32 +198,32 @@ int  read_mode2_sector_freebsd_ioctl (_img_private_t *env, void *data,
    Note: if you want form1 sectors, the caller has to pick out the
    appropriate piece.
 */
-int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf, 
+int  read_mode2_sectors_freebsd_cam (_img_private_t *env, void *buf,
 				     lsn_t lsn, unsigned int nblocks);
 
 bool read_toc_freebsd_ioctl (_img_private_t *env);
 
 /*!
-  Run a SCSI MMC command. 
- 
+  Run a SCSI MMC command.
+
   p_user_data   internal CD structure.
   i_timeout     time in milliseconds we will wait for the command
-                to complete. If this value is -1, use the default 
+                to complete. If this value is -1, use the default
 		time-out value.
   i_cdb	        Size of p_cdb
-  p_cdb	        CDB bytes. 
+  p_cdb	        CDB bytes.
   e_direction	direction the transfer is to go.
   i_buf	        Size of buffer
   p_buf	        Buffer for data, both sending and receiving
 
   Return 0 if no error.
  */
-int run_mmc_cmd_freebsd_cam( void *p_user_data, 
+int run_mmc_cmd_freebsd_cam( void *p_user_data,
 			     unsigned int i_timeout_ms,
-			     unsigned int i_cdb, 
-			     const mmc_cdb_t *p_cdb, 
-			     cdio_mmc_direction_t e_direction, 
-			     unsigned int i_buf, 
+			     unsigned int i_cdb,
+			     const mmc_cdb_t *p_cdb,
+			     cdio_mmc_direction_t e_direction,
+			     unsigned int i_buf,
 			     /*in/out*/ void *p_buf );
 
 /*!
@@ -237,7 +237,7 @@ void free_freebsd_cam (void *user_data);
 /** Try to obtain SCSI address tuple of path.
     @return  1 is success , 0 is failure
 */
-int obtain_scsi_adr_freebsd_cam(char *path, 
+int obtain_scsi_adr_freebsd_cam(char *path,
                                 int *bus_no, int *host_no, int *channel_no,
                                 int *target_no, int *lun_no);
 

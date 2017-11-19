@@ -1719,7 +1719,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_devices           = cdio_get_devices_linux,
     .get_disc_last_lsn     = get_disc_last_lsn_linux,
     .get_discmode          = get_discmode_linux,
-#if USE_LINUX_CAP
+#if defined(USE_LINUX_CAP)
     .get_drive_cap         = get_drive_cap_linux,
 #else
     .get_drive_cap         = get_drive_cap_mmc,

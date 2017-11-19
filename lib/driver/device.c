@@ -59,15 +59,15 @@ int CdIo_last_driver = CDIO_DRIVER_UNINIT;
 
 #ifdef HAVE_AIX_CDROM
 const driver_id_t cdio_os_driver = DRIVER_AIX;
-#elif  HAVE_FREEBSD_CDROM
+#elif  defined(HAVE_FREEBSD_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
-#elif  HAVE_LINUX_CDROM
+#elif  defined(HAVE_LINUX_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_LINUX;
-#elif  HAVE_DARWIN_CDROM
+#elif  defined(HAVE_DARWIN_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_OSX;
-#elif  HAVE_SOLARIS_CDROM
+#elif  defined(HAVE_SOLARIS_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_SOLARIS;
-#elif  HAVE_WIN32_CDROM
+#elif  defined(HAVE_WIN32_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_WIN32;
 #else
 const driver_id_t cdio_os_driver = DRIVER_UNKNOWN;
@@ -118,19 +118,6 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &cdio_is_device_generic,
    &cdio_get_devices_aix,
    NULL
-  },
-
-  {DRIVER_BSDI,
-   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
-   "BSDI",
-   "BSDI ATAPI and SCSI driver",
-   &cdio_have_bsdi,
-   &cdio_open_bsdi,
-   &cdio_open_am_bsdi,
-   &cdio_get_default_device_bsdi,
-   &cdio_is_device_generic,
-   &cdio_get_devices_bsdi,
-   &close_tray_bsdi
   },
 
   {DRIVER_FREEBSD,
@@ -260,7 +247,6 @@ CdIo_driver_t CdIo_driver[sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0])-1
 
 const driver_id_t cdio_drivers[] = {
   DRIVER_AIX,
-  DRIVER_BSDI,
   DRIVER_FREEBSD,
   DRIVER_NETBSD,
   DRIVER_LINUX,
@@ -275,7 +261,6 @@ const driver_id_t cdio_drivers[] = {
 
 const driver_id_t cdio_device_drivers[] = {
   DRIVER_AIX,
-  DRIVER_BSDI,
   DRIVER_FREEBSD,
   DRIVER_NETBSD,
   DRIVER_LINUX,
@@ -978,7 +963,6 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
     }
     break;
   case DRIVER_AIX:
-  case DRIVER_BSDI:
   case DRIVER_FREEBSD:
   case DRIVER_LINUX:
   case DRIVER_NETBSD:

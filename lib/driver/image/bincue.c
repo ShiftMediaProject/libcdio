@@ -744,7 +744,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
               goto err_exit;
             }
             if (cd) {
-#if FIXED_ME
+#if FIXME
               cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
 #else
               track_info_t  *this_track=

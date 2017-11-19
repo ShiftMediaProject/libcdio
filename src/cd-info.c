@@ -71,6 +71,7 @@
 #define STRONG "__________________________________\n"
 #define NORMAL ""
 
+#define CDIO_IOCTL_FINISHED 0
 #if CDIO_IOCTL_FINISHED
 static struct cdrom_multisession  ms;
 static struct cdrom_subchnl       sub;

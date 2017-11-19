@@ -107,8 +107,6 @@ if test "x$GCC" != "xyes"; then
   *** This package has not been tested very well with non GNU compilers
   *** you should try to use 'gcc' for compiling this package.])
 else
-  # FIXME: add in:
-  #   -W -Wshadow -Wundef
   CHECK_CFLAGS="
 	-Wall
 	-Wcast-align
@@ -123,6 +121,7 @@ else
 	-Wpointer-arith
 	-Wshadow
 	-Wstrict-prototypes
+	-Wundef
 	-Wunused
 	-Wwrite-strings
 "

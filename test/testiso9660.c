@@ -34,8 +34,8 @@
 
 #include <cdio/iso9660.h>
 
-static bool 
-time_compare(struct tm *p_tm1, struct tm *p_tm2) 
+static bool
+time_compare(struct tm *p_tm1, struct tm *p_tm2)
 {
   bool okay = true;
   if (!p_tm1) {
@@ -47,62 +47,62 @@ time_compare(struct tm *p_tm1, struct tm *p_tm2)
     return false;
   }
   if (p_tm1->tm_year != p_tm2->tm_year) {
-    printf("Years aren't equal. get: %d, set %d\n", 
+    printf("Years aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_year, p_tm2->tm_year);
     okay=false;
   }
   if (p_tm1->tm_mon != p_tm2->tm_mon) {
-    printf("Months aren't equal. get: %d, set %d\n", 
+    printf("Months aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_mon, p_tm2->tm_mon);
     okay=false;
   }
   if (p_tm1->tm_mday != p_tm2->tm_mday) {
-    printf("Month days aren't equal. get: %d, set %d\n", 
+    printf("Month days aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_mday, p_tm2->tm_mday);
     okay=false;
   }
   if (p_tm1->tm_min != p_tm2->tm_min) {
-    printf("minutes aren't equal. get: %d, set %d\n", 
+    printf("minutes aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_min, p_tm2->tm_min);
     okay=false;
   }
   if (p_tm1->tm_hour != p_tm2->tm_hour) {
-    printf("hours aren't equal. get: %d, set %d\n", 
+    printf("hours aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_hour, p_tm2->tm_hour);
     okay=false;
   }
   if (p_tm1->tm_sec != p_tm2->tm_sec) {
-    printf("seconds aren't equal. get: %d, set %d\n", 
+    printf("seconds aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_sec, p_tm2->tm_sec);
     okay=false;
   }
   if (p_tm1->tm_wday != p_tm2->tm_wday) {
-    printf("Week days aren't equal. get: %d, set %d\n", 
+    printf("Week days aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_wday, p_tm2->tm_wday);
     okay=false;
   }
   if (p_tm1->tm_yday != p_tm2->tm_yday) {
-    printf("Year days aren't equal. get: %d, set %d\n", 
+    printf("Year days aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_yday, p_tm2->tm_yday);
     okay=false;
   }
-#if FIXED
+#ifdef FIXED
   if (p_tm1->tm_isdst != p_tm2->tm_isdst) {
-    printf("Is daylight savings times aren't equal. get: %d, set %d\n", 
+    printf("Is daylight savings times aren't equal. get: %d, set %d\n",
 	   p_tm1->tm_isdst, p_tm2->tm_isdst);
     okay=false;
   }
 #endif
 #ifdef HAVE_TM_GMTOFF
   if (p_tm1->tm_gmtoff != p_tm2->tm_gmtoff) {
-    printf("GMT offsets aren't equal. get: %ld, set %ld\n", 
+    printf("GMT offsets aren't equal. get: %ld, set %ld\n",
 	   p_tm1->tm_gmtoff, p_tm2->tm_gmtoff);
     okay=false;
   }
   if (p_tm1 != p_tm2 && p_tm1 && p_tm2) {
-#ifdef FIXED    
+#ifdef FIXED
     if (strcmp(p_tm1->tm_zone, p_tm2->tm_zone) != 0) {
-      printf("Time Zone values. get: %s, set %s\n", 
+      printf("Time Zone values. get: %s, set %s\n",
 	     p_tm1->tm_zone, p_tm2->tm_zone);
       /* Argh... sometimes GMT is converted to UTC. So
 	 Let's not call this a failure if everything else was okay.
@@ -141,7 +141,7 @@ main (int argc, const char *argv[])
   }
 
   if (i_bad) return i_bad;
-  
+
   for (c='0'; c<='9'; c++ ) {
     if (!iso9660_is_dchar(c)) {
       printf("Failed iso9660_is_dchar test on %c\n", c);
@@ -185,7 +185,7 @@ main (int argc, const char *argv[])
   }
 
   /*********************************************
-   * Test iso9660_dirname_valid_p 
+   * Test iso9660_dirname_valid_p
    *********************************************/
 
   if ( iso9660_dirname_valid_p("/NOGOOD") ) {
@@ -206,7 +206,7 @@ main (int argc, const char *argv[])
   }
 
   /*********************************************
-   * Test iso9660_pathname_valid_p 
+   * Test iso9660_pathname_valid_p
    *********************************************/
 
   if ( !iso9660_pathname_valid_p("OKAY/FILE.EXT") ) {
@@ -231,7 +231,7 @@ main (int argc, const char *argv[])
   free(dst_p);
 
   /*********************************************
-   * Test get/set date 
+   * Test get/set date
    *********************************************/
 
   {
@@ -257,7 +257,7 @@ main (int argc, const char *argv[])
       return 42;
     }
 
-#ifdef HAVE_TM_GMTOFF    
+#ifdef HAVE_TM_GMTOFF
     if ( !time_compare(p_tm, &tm) ) {
       return 43;
     }
@@ -273,17 +273,17 @@ main (int argc, const char *argv[])
       printf("set with iso9660_set_dtime().\n");
       return 45;
     }
-    
+
     {
       iso9660_ltime_t ltime;
       p_tm = localtime(&now);
       iso9660_set_ltime(p_tm, &ltime);
-      
+
       if (!iso9660_get_ltime(&ltime, &tm)) {
 	printf("Problem running iso9660_get_ltime\n");
 	return 46;
       }
-      
+
       if ( ! time_compare(p_tm, &tm) ) {
 	printf("local time retrieved with iso9660_get_ltime() not\n");
 	printf("same as that set with iso9660_set_ltime().\n");

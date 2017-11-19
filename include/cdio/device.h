@@ -152,7 +152,6 @@ extern "C" {
     DRIVER_UNKNOWN, /**< Used as input when we don't care what kind
                          of driver to use. */
     DRIVER_AIX,     /**< AIX driver */
-    DRIVER_BSDI,    /**< BSDI driver */
     DRIVER_FREEBSD, /**< FreeBSD driver - includes CAM and ioctl access */
     DRIVER_NETBSD,  /**< NetBSD Driver. */
     DRIVER_LINUX,   /**< GNU/Linux Driver */
