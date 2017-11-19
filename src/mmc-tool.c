@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2006, 2008, 2010-2011, 2014 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2010-2011, 2014, 2017
+  Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -443,9 +444,9 @@ main(int argc, char *argv[])
       break;
     case OP_BLOCKSIZE:
       if (p_op->arg.i_num) {
-	driver_return_code_t rc = mmc_set_blocksize(p_cdio, p_op->arg.i_num);
+	driver_return_code_t blocksize_rc = mmc_set_blocksize(p_cdio, p_op->arg.i_num);
 	report(stdout, "%s (mmc_set_blocksize): %s\n", program_name,
-	       cdio_driver_errmsg(rc));
+	       cdio_driver_errmsg(blocksize_rc));
       } else {
 	int i_blocksize = mmc_get_blocksize(p_cdio);
 	if (i_blocksize > 0) {

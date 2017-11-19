@@ -121,6 +121,7 @@ else
 	-Wnested-externs
 	-Wno-sign-compare
 	-Wpointer-arith
+	-Wshadow
 	-Wstrict-prototypes
 	-Wunused
 	-Wwrite-strings

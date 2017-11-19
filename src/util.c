@@ -49,7 +49,7 @@ myexit(CdIo_t *cdio, int rc)
 }
 
 void
-print_version (char *program_name, const char *version,
+print_version (char *prog_name, const char *version,
 	       int no_header, bool version_only)
 {
 
@@ -58,7 +58,7 @@ print_version (char *program_name, const char *version,
 	    "%s version %s\n"
 	    "Copyright (c) 2003-2005, 2007-2008, 2011-2015, 2017 "
 	    "R. Bernstein\n",
-	    program_name, version);
+	    prog_name, version);
     report( stdout,
             _("This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
@@ -79,7 +79,7 @@ PARTICULAR PURPOSE.\n\
       report( stdout, "Default CD-ROM device: %s\n", default_device);
     else
       report( stdout, "No CD-ROM device found.\n");
-    free(program_name);
+    free(prog_name);
     exit(EXIT_INFO);
   }
 
@@ -216,25 +216,27 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 
       i_feature = CDIO_MMC_GET_LEN16(p);
       {
-	uint8_t *q;
 	const char *feature_str = mmc_feature2str(i_feature);
 	report( stdout, "%s Feature\n", feature_str);
 	switch( i_feature )
 	  {
 	  case CDIO_MMC_FEATURE_PROFILE_LIST:
-	    for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
-	      int i_profile=CDIO_MMC_GET_LEN16(q);
-	      const char *feature_profile_str =
-		mmc_feature_profile2str(i_profile);
-	      report( stdout, "\t%s", feature_profile_str );
-	      if (q[2] & 1) {
-		report( stdout, " - on");
+	    {
+	      uint8_t *q;
+	      for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
+		int i_profile=CDIO_MMC_GET_LEN16(q);
+		const char *feature_profile_str =
+		  mmc_feature_profile2str(i_profile);
+		report( stdout, "\t%s", feature_profile_str );
+		if (q[2] & 1) {
+		  report( stdout, " - on");
+		}
+		report( stdout, "\n");
 	      }
 	      report( stdout, "\n");
-	    }
-	    report( stdout, "\n");
 
-	    break;
+	      break;
+	    }
 	  case CDIO_MMC_FEATURE_CORE:
 	    {
 	      uint8_t *q = p+4;
