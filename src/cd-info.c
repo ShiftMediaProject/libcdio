@@ -1200,7 +1200,7 @@ main(int argc, char *argv[])
 
           if (DRIVER_OP_SUCCESS == cdio_audio_get_volume (p_cdio, &volume)) {
             uint8_t j=0;
-            for (j=0; j<4; i++) {
+            for (j=0; j<4; j++) {
               uint8_t i_level     = volume.level[j];
               report( stdout,
                       "volume level port %d: %3d (0..255) %3d (0..100)\n",

@@ -3,6 +3,7 @@ version 1.0.0
 
 - Remove deprecated items:
    * OS/2 driver (never really was supported)
+   * BSDI driver remnants
    * mmc_isrc_track_read_subchannel
    * CDIO_MIN_DRIVER, CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DRIVER, CDIO_MAX_DEVICE_DRIVER
 - Apple Darwin OS X -> macOS
@@ -19,6 +20,7 @@ version 1.0.0
 - Small texinfo doc fixes (Wieland Hoffmann)
 - Simplify making doc from autogen.sh
 - Bug fix for https://savannah.gnu.org/bugs/?45015 (Thomas Schmitt)
+- more compiler warning flags, i.e. -Wshadow, -Wundef
 
 version 0.94
 2016-10-27
