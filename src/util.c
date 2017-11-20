@@ -391,7 +391,7 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 
     report( stdout, _("Can set drive speed                       : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_SPEED ? "Yes" : "No" );
-#if FIXME
+#ifdef FIXME
     report( stdout, _("Can detect if CD changed                  : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED ? "Yes" : "No" );
 #endif

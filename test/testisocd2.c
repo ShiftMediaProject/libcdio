@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2008, 2012-2013 Rocky Bernstein
+  Copyright (C) 2003-2008, 2012-2013, 2017 Rocky Bernstein
   <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -89,12 +89,13 @@ main(int argc, const char *argv[])
        find "." and in that Rock-Ridge information might be found which fills
        in more stat information that iso9660_fs_find_lsn also will find.
        . Ideally iso9660_fs_stat should be fixed. */
-       iso9660_stat_t *p_statbuf = iso9660_ifs_stat (p_iso, "/.");
+    iso9660_stat_t *p_statbuf = iso9660_ifs_stat (p_iso, "/.");
 
     if (NULL == p_statbuf) {
       fprintf(stderr,
 	      "Could not get ISO-9660 file information for file /.\n");
       iso9660_close(p_iso);
+      iso9660_stat_free(p_statbuf);
       exit(2);
     } else {
       /* Now try getting the statbuf another way */
@@ -112,12 +113,14 @@ main(int argc, const char *argv[])
 
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "iso9660_ifs_find_lsn isn't the same\n");
+	  iso9660_stat_free(p_statbuf);
 	  exit(3);
       }
 
       if (p_statbuf3->lsn != p_statbuf2->lsn ||
 	  p_statbuf3->size != p_statbuf2->size ||
 	  p_statbuf3->type != p_statbuf2->type) {
+          iso9660_stat_free(p_statbuf);
 	  exit(4);
       }
 
@@ -125,11 +128,13 @@ main(int argc, const char *argv[])
 	if (0 != strncmp("/./", psz_path, strlen("/./"))) {
 	  fprintf(stderr, "Path returned for ifs_find_lsn_with_path "
 		  "is not correct should be /./, is %s\n", psz_path);
+          iso9660_stat_free(p_statbuf);
 	  exit(5);
 	}
 	free(psz_path);
       } else {
 	fprintf(stderr, "Path returned for fs_find_lsn_with_path is NULL\n");
+	iso9660_stat_free(p_statbuf);
 	exit(6);
       }
 
@@ -139,8 +144,10 @@ main(int argc, const char *argv[])
 	{
 	  fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		  (long unsigned int) p_statbuf->lsn);
+	  iso9660_stat_free(p_statbuf);
 	  exit(7);
 	}
+      iso9660_stat_free(p_statbuf);
       exit(0);
     }
   }

@@ -841,8 +841,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   iso9660_get_dtime(&(p_iso9660_dir->recording_time), true, &(p_stat->tm));
 
   if (dir_len < sizeof (iso9660_dir_t)) {
-    free(p_stat->rr.psz_symlink);
-    free(p_stat);
+    iso9660_stat_free(p_stat);
     return NULL;
   }
 
@@ -1060,14 +1059,12 @@ _fs_stat_traverse (const CdIo_t *p_cdio, const iso9660_stat_t *_root,
       if (!cmp) {
 	iso9660_stat_t *ret_stat
 	  = _fs_stat_traverse (p_cdio, p_iso9660_stat, &splitpath[1]);
-	free(p_iso9660_stat->rr.psz_symlink);
-	free(p_iso9660_stat);
+	iso9660_stat_free(p_iso9660_stat);
 	free (_dirbuf);
 	return ret_stat;
       }
 
-      free(p_iso9660_stat->rr.psz_symlink);
-      free(p_iso9660_stat);
+      iso9660_stat_free(p_iso9660_stat);
 
       offset += iso9660_get_dir_len(p_iso9660_dir);
     }
@@ -1159,14 +1156,11 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
       if (!cmp) {
 	iso9660_stat_t *ret_stat
 	  = _fs_iso_stat_traverse (p_iso, p_stat, &splitpath[1]);
-	free(p_stat->rr.psz_symlink);
-	free(p_stat);
+	iso9660_stat_free(p_stat);
 	free (_dirbuf);
 	return ret_stat;
       }
-
-      free(p_stat->rr.psz_symlink);
-      free(p_stat);
+      iso9660_stat_free(p_stat);
 
       offset += iso9660_get_dir_len(p_iso9660_dir);
     }
@@ -1305,8 +1299,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
   if (!p_stat) return NULL;
 
   if (p_stat->type != _STAT_DIR) {
-    free(p_stat->rr.psz_symlink);
-    free(p_stat);
+    iso9660_stat_free(p_stat);
     return NULL;
   }
 
@@ -1368,8 +1361,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
   if (!p_stat)   return NULL;
 
   if (p_stat->type != _STAT_DIR) {
-    free(p_stat->rr.psz_symlink);
-    free(p_stat);
+    iso9660_stat_free(p_stat);
     return NULL;
   }
 
@@ -1384,8 +1376,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     if (!dirbuf_len)
       {
         cdio_warn("Invalid directory buffer sector size %u", p_stat->secsize);
-	free(p_stat->rr.psz_symlink);
-	free(p_stat);
+	iso9660_stat_free(p_stat);
 	_cdio_list_free (retval, true);
         return NULL;
       }
@@ -1394,8 +1385,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     if (!_dirbuf)
       {
         cdio_warn("Couldn't calloc(1, %lu)", (unsigned long)dirbuf_len);
-	free(p_stat->rr.psz_symlink);
-	free(p_stat);
+	iso9660_stat_free(p_stat);
 	_cdio_list_free (retval, true);
         return NULL;
       }
@@ -1403,8 +1393,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, p_stat->secsize);
     if (ret != dirbuf_len) 	  {
       _cdio_list_free (retval, true);
-      free(p_stat->rr.psz_symlink);
-      free(p_stat);
+      iso9660_stat_free(p_stat);
       free (_dirbuf);
       return NULL;
     }
@@ -1431,8 +1420,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       }
 
     free (_dirbuf);
-    free(p_stat->rr.psz_symlink);
-    free (p_stat);
+    iso9660_stat_free(p_stat);
 
     if (offset != dirbuf_len) {
       _cdio_list_free (retval, true);
@@ -1582,8 +1570,11 @@ iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, lsn_t i_lsn,
 void
 iso9660_stat_free(iso9660_stat_t *p_stat)
 {
-  if (p_stat != NULL)
+  if (p_stat != NULL) {
+    if (p_stat->rr.psz_symlink)
+      CDIO_FREE_IF_NOT_NULL(p_stat->rr.psz_symlink);
     free(p_stat);
+  }
 }
 
 /*!

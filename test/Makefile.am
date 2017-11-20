@@ -1,4 +1,4 @@
-#   Copyright (C) 2003-2006, 2008-2013 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003-2006, 2008-2013, 2017 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
 ####################################################
 #
 #
+.PHONY: test check-short check-iso_read_large check-iso-read-terse \
+        make-executable clean-local-check check-leaks
+
 SUBDIRS = data driver
 
 hack = check_sizeof testassert testgetdevices testischar \
@@ -132,6 +135,11 @@ make-executable: check_nrg.sh check_cue.sh
 	fi
 
 clean-local: clean-local-check
-.PHONY: clean-local-check
 clean-local-check:
 	-rm -rf exampleIso*.iso.prep *.log *.trs *.orig *.rej
+
+#: run regression tests. "test" is the same thing as "check"
+check-leaks: $(check_PROGRAMS)
+	for p in $(check_PROGRAMS); do \
+	   valgrind ./$$p; \
+        done
