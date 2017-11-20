@@ -111,6 +111,7 @@ else
 	-Wall
 	-Wcast-align
 	-Wchar-subscripts
+	-Wdeclaration-after-statement
 	-Wdisabled-optimization
 	-Wendif-labels
 	-Winline

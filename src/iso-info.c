@@ -222,8 +222,9 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
   char *translated_name = (char *) malloc(4096);
   size_t translated_name_size = 4096;
-  entlist = iso9660_ifs_readdir (p_iso, psz_path);
   int rc = 0;
+
+  entlist = iso9660_ifs_readdir (p_iso, psz_path);
 
   if (opts.print_iso9660) {
     printf ("%s:\n", psz_path);

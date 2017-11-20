@@ -93,13 +93,15 @@ cdio_dirname(const char *fname)
 char *
 cdio_abspath(const char *cwd, const char *fname)
 {
-    if (isdirsep(*fname)) return strdup(fname);
-
-    size_t len   = strlen(cwd) + strlen(fname) + 2;
-    char* result = calloc(sizeof(char), len);
-    snprintf(result, len, "%s%c%s",
-	     cwd, CDIO_FILE_SEPARATOR, fname);
-    return result;
+    if (isdirsep(*fname))
+      return strdup(fname);
+    else {
+      size_t len   = strlen(cwd) + strlen(fname) + 2;
+      char* result = calloc(sizeof(char), len);
+      snprintf(result, len, "%s%c%s",
+	       cwd, CDIO_FILE_SEPARATOR, fname);
+      return result;
+    }
 }
 
 #ifdef STANDALONE
