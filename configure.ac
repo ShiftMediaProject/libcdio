@@ -109,6 +109,7 @@ if test "x$GCC" != "xyes"; then
 else
   CHECK_CFLAGS="
 	-Wall
+	-Wbad-function-cast
 	-Wcast-align
 	-Wchar-subscripts
 	-Wdeclaration-after-statement
