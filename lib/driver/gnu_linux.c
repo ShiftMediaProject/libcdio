@@ -1701,7 +1701,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_pause           = audio_pause_linux,
     .audio_play_msf        = audio_play_msf_linux,
     .audio_play_track_index= audio_play_track_index_linux,
-#if USE_MMC_SUBCHANNEL
+#ifdef USE_MMC_SUBCHANNEL
     .audio_read_subchannel = audio_read_subchannel_mmc,
 #else
     .audio_read_subchannel = audio_read_subchannel_linux,
