@@ -1682,7 +1682,8 @@ iso9660_have_rr(iso9660_t *p_iso, uint64_t u_file_limit)
 
   is_rr = iso_have_rr_traverse (p_iso, p_root, p_psz_splitpath, &u_file_limit);
   free(p_root);
-  // _cdio_strfreev (p_psz_splitpath);
+  free(p_psz_splitpath[0]);
+  free(p_psz_splitpath[1]);
 
   return is_rr;
 }
