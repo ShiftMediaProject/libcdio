@@ -63,9 +63,11 @@ Microsoft Windows
 -------
 
 Building under Microsoft Windows is supported for cygwin
-(http://www.cygwin.com). MinGW (http://www.mingw.org/) may also work,
-but it is possible you may encounter problems there. For MinGW use gcc
-4.0 or greater.
+(http://www.cygwin.com). You need to have the cygwin libiconv-devel
+package installed.
+
+For MinGW (http://www.mingw.org/) also works provided you have
+libiconv installed.
 
 Support for Microsoft compilers (e.g. Visual C) is not officially
 supported.  You need to make your own "project" files.  Don't
@@ -111,15 +113,6 @@ and willingness of others to help out. I use GNU/Linux so that
 probably works best. Before a release I'll test on servers I have
 available. I also announce a pending release on libcdio-devel@gnu.org
 and ask others to test out.
-
-Steve Schultz has done a great job making BSDI CD support look like
-GNU/Linux and usually he let's me know where I've blown things on BSDI
-and Darwin. Usage on Darwin has been picking up although Darwin is in
-a world of its own so support for that (e.g. issuing MMC commands)
-seems to lag behind.
-
-Of late FreeBSD folks have been pretty good about testing new releases
-and reporting problems.
 
 Specific libcdio configure options and environment variables
 ---------------

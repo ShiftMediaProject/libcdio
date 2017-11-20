@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2005, 2008, 2010-2014
+  Copyright (C) 2004-2005, 2008, 2010-2014, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -77,16 +77,16 @@
 #define windows_error(loglevel,i_err) {                                 \
   char error_msg[80];                                                   \
   long int count;                                                       \
-  count = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                     \
-                        NULL, i_err, MAKELANGID(LANG_NEUTRAL,           \
-                                                SUBLANG_DEFAULT),       \
-                        error_msg, sizeof(error_msg), NULL);            \
-  (count != 0) ?                                                        \
-    cdio_log(loglevel, "Error: file %s: line %d (%s)\n\t%s\n",          \
-             __FILE__, __LINE__, __PRETTY_FUNCTION__, error_msg)        \
-    :                                                                   \
-    cdio_log(loglevel, "Error: file %s: line %d (%s) %ld\n",            \
-             __FILE__, __LINE__, __PRETTY_FUNCTION__, i_err);           \
+  count = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                      \
+                        NULL, i_err, MAKELANGID(LANG_NEUTRAL,            \
+                                                SUBLANG_DEFAULT),        \
+                        error_msg, sizeof(error_msg), NULL);             \
+  (count != 0) ?                                                         \
+    cdio_log(loglevel, "Error: file %s: line %d (%s)\n\t%s\n",           \
+             __FILE__, __LINE__, __PRETTY_FUNCTION__, error_msg)         \
+    :                                                                    \
+    cdio_log(loglevel, "Error: file %s: line %d (%s) %ld\n",             \
+             __FILE__, __LINE__, __PRETTY_FUNCTION__, (long int) i_err); \
 }
 #endif
 
@@ -468,7 +468,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
 
   Return DRIVER_OP_SUCCESS if command completed successfully.
  */
-#if USE_PASSTHROUGH_DIRECT
+#ifdef USE_PASSTHROUGH_DIRECT
 int
 run_mmc_cmd_win32ioctl( void *p_user_data,
                         unsigned int u_timeout_ms,
