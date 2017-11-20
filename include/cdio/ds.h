@@ -18,11 +18,11 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/** \file ds.h 
+/** \file ds.h
  *  \brief  The top-level header for list-related data structures.
 
-    Note: this header will is slated to get removed and libcdio will use 
-    glib.h routines instead. 
+    Note: this header will is slated to get removed and libcdio will use
+    glib.h routines instead.
 */
 
 
@@ -37,13 +37,6 @@ typedef struct _CdioListNode CdioListNode_t;
 
 typedef int (*_cdio_list_cmp_func_t) (void *p_data1, void *p_data2);
 typedef int (*_cdio_list_iterfunc_t) (void *p_data, void *p_user_data);
-
-/** The below are given compatibility with old code. Please use
-    the above type names, not these. */
-#define CdioList CdioList_t
-#define CdioListNode CdioListNode_t
-#define _cdio_list_cmp_func _cdio_list_cmp_func_t
-#define _cdio_list_iterfunc _cdio_list_iterfunc_t
 
 #ifdef __cplusplus
 extern "C" {
@@ -60,11 +53,11 @@ void _cdio_list_prepend (CdioList_t *p_list, void *p_data);
 
 void _cdio_list_append (CdioList_t *p_list, void *p_data);
 
-void _cdio_list_foreach (CdioList_t *p_list, _cdio_list_iterfunc_t func, 
+void _cdio_list_foreach (CdioList_t *p_list, _cdio_list_iterfunc_t func,
                          void *p_user_data);
 
-CdioListNode_t *_cdio_list_find (CdioList_t *p_list, 
-                                 _cdio_list_iterfunc_t cmp_func, 
+CdioListNode_t *_cdio_list_find (CdioList_t *p_list,
+                                 _cdio_list_iterfunc_t cmp_func,
                                  void *p_user_data);
 
 #define _CDIO_LIST_FOREACH(node, list) \
@@ -88,11 +81,10 @@ void *_cdio_list_node_data (CdioListNode_t *p_node);
 
 #endif /* CDIO_DS_H_ */
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8
  *  indent-tabs-mode: nil
  * End:
  */
-

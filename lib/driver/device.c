@@ -31,6 +31,7 @@
 #include <cdio/cd_types.h>
 #include <cdio/logging.h>
 #include "cdio_private.h"
+#include <cdio/util.h>
 #include <cdio/mmc_cmds.h>
 
 #ifdef HAVE_STDLIB_H
@@ -476,7 +477,7 @@ cdio_free_device_list (char * ppsz_device_list[])
     free(*ppsz_device_list);
     *ppsz_device_list = NULL;
   }
-  free(ppsz_device_list_save);
+  CDIO_FREE_IF_NOT_NULL(ppsz_device_list_save);
 }
 
 

@@ -16,6 +16,10 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 /* iso9660 filesystem-based routines */
+
+/* FIXME: _cdio_list_free for iso9660 statbuf is insufficient because it doesn't
+   free bits that are allocated inside the data. */
+
 
 #if defined(HAVE_CONFIG_H) && !defined(__CDIO_CONFIG_H__)
 #include "config.h"
@@ -753,7 +757,7 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   uint8_t dir_len= iso9660_get_dir_len(p_iso9660_dir);
   iso711_t i_fname;
   unsigned int stat_len;
-  iso9660_stat_t *p_stat;
+  iso9660_stat_t *p_stat = NULL;
   bool err;
 
   if (!dir_len) return NULL;
@@ -1339,8 +1343,8 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
 
     cdio_assert (offset == (p_stat->secsize * ISO_BLOCKSIZE));
 
-    free (_dirbuf);
-    free (p_stat);
+    free(_dirbuf);
+    iso9660_stat_free(p_stat);
     return retval;
   }
 }
