@@ -625,9 +625,9 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
 
   if ( 0 == b_success ) {
     char buffer[100];
+    long int last_error = GetLastError();
     snprintf(buffer, sizeof(buffer),
 	     "MMC command code: 0x%x\n", p_cdb->field[0]);
-    long int last_error = GetLastError();
     windows_error(CDIO_LOG_INFO, last_error);
     cdio_log(CDIO_LOG_INFO, buffer);
     switch (last_error) {
