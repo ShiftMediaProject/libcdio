@@ -1117,9 +1117,6 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   char *psz_source_name;
   int open_access_mode;  /* Access mode passed to cdio_generic_init. */
 
-  if (!psz_access_mode)
-      psz_access_mode = get_access_mode(psz_orig_source_name);
-
   cdio_funcs_t _funcs = {
     .audio_get_volume       = audio_get_volume_freebsd,
     .audio_pause            = audio_pause_freebsd,
@@ -1164,6 +1161,9 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .set_blocksize          = set_blocksize_mmc,
     .set_speed              = set_speed_freebsd,
   };
+
+  if (!psz_access_mode)
+      psz_access_mode = get_access_mode(psz_orig_source_name);
 
   _data                     = calloc(1, sizeof (_img_private_t));
   _data->access_mode        = str_to_access_mode_freebsd(psz_access_mode);

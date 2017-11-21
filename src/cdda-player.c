@@ -626,7 +626,8 @@ read_toc(CdIo_t *p_cdio)
               - cdio_audio_get_msf_seconds(&toc[i-1]);
             snprintf(cd_info[i-1].length, sizeof(cd_info[0].length),
                      "%02d:%02d",
-                     s / CDIO_CD_SECS_PER_MIN,  s % CDIO_CD_SECS_PER_MIN);
+                     (uint8_t) (s / CDIO_CD_SECS_PER_MIN),
+                     (uint8_t) (s % CDIO_CD_SECS_PER_MIN));
           }
       } else {
         if ((i != i_last_track+1) ) {
