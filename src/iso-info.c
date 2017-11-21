@@ -62,6 +62,13 @@
 #define NORMAL ""
 #endif
 
+/* TODO: Find a better place from where cd-info can read it too. */
+/*
+   ECMA-119 allows only a depth of 8 directories. Nobody obeys.
+   Rock Ridge allows path length 1023. This would be max depth 512.
+*/
+#define CDIO_MAX_DIR_RECURSION 512
+
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
 static struct arguments
@@ -213,8 +220,9 @@ _log_handler (cdio_log_level_t level, const char message[])
   gl_default_cdio_log_handler (level, message);
 }
 
-static int
-print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
+static void
+print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
+		       unsigned int rec_counter)
 {
   CdioList_t *entlist;
   CdioList_t *dirlist =  _cdio_list_new ();
@@ -222,8 +230,6 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
   char *translated_name = (char *) malloc(4096);
   size_t translated_name_size = 4096;
-  int rc = 0;
-
   entlist = iso9660_ifs_readdir (p_iso, psz_path);
 
   if (opts.print_iso9660) {
@@ -234,7 +240,17 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
     free(translated_name);
     free(dirlist);
     report( stderr, "Error getting above directory information\n" );
-    return 1;
+    return;
+  }
+
+  rec_counter++;
+  if (rec_counter > CDIO_MAX_DIR_RECURSION) {
+    free(translated_name);
+    free(dirlist);
+    _cdio_list_free (entlist, true);
+    report( stderr,
+            "Directory recursion too deep. ISO most probably damaged.\n" );
+    return;
   }
 
   /* Iterate over files in this directory */
@@ -244,16 +260,13 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
       char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
-      if (strlen(psz_iso_name) == 0)
-	continue;
-
-      if (strlen(psz_iso_name) >= translated_name_size) {
+       if (strlen(psz_iso_name) >= translated_name_size) {
          translated_name_size = strlen(psz_iso_name)+1;
          free(translated_name);
          translated_name = (char *) malloc(translated_name_size);
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
-           return 2;
+           return;
          }
        }
 
@@ -303,17 +316,16 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      rc += print_iso9660_recurse (p_iso, _fullname);
+      print_iso9660_recurse (p_iso, _fullname, rec_counter);
     }
 
   _cdio_list_free (dirlist, true);
-  return rc;
 }
 
-static int
+static void
 print_iso9660_fs (iso9660_t *iso)
 {
-  return print_iso9660_recurse (iso, "/");
+  print_iso9660_recurse (iso, "/", 0);
 }
 
 static void
@@ -436,7 +448,6 @@ main(int argc, char *argv[])
 
   iso9660_t           *p_iso=NULL;
   iso_extension_mask_t iso_extension_mask = ISO_EXTENSION_ALL;
-  int rc = EXIT_SUCCESS;
 
   init();
 
@@ -506,7 +517,7 @@ main(int argc, char *argv[])
           printf("Note: both -f and -l options given -- "
                  "-l (long listing) takes precidence\n");
       }
-      rc = print_iso9660_fs(p_iso);
+      print_iso9660_fs(p_iso);
   } else if (opts.print_udf) {
       print_udf_fs();
   }
@@ -516,5 +527,5 @@ main(int argc, char *argv[])
   iso9660_close(p_iso);
   /* Not reached:*/
   free(program_name);
-  return(rc);
+  return(EXIT_SUCCESS);
 }

@@ -27,13 +27,12 @@ if ! "${cmd}" --quiet --no-header ${opts} 2>&1 ; then
     RC=1
 fi
 
-# FIXME: Fix after release
-# opts="--quiet ${srcdir}/test/data/${fname}.iso --iso9660"
-# if "${cmd}" --no-header ${opts} 2>&1 ; then
-#     ((RC+=1))
-# else
-#     echo "$0: expected failure"
-# fi
+opts="--quiet ${srcdir}/test/data/${fname}.iso --iso9660"
+if "${cmd}" --no-header ${opts} 2>&1 ; then
+    ((RC+=1))
+else
+    echo "$0: expected failure"
+fi
 
 exit $RC
 
