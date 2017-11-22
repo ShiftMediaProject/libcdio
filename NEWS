@@ -1,5 +1,5 @@
 version 1.0.0
-2017-11-xx
+2017-11-21  Thanksgiving
 
 - Remove deprecated items:
    * OS/2 driver (never really was supported)
@@ -21,6 +21,7 @@ version 1.0.0
 - Small texinfo doc fixes (Wieland Hoffmann)
 - Simplify making doc from autogen.sh
 - Bug fix for https://savannah.gnu.org/bugs/?45015 (Thomas Schmitt)
+- Bug fixes for #45017,#52265, and #52264
 - Add more compiler warning flags, i.e. -Wshadow, -Wundef, ...
 - Reduce numerous memory leaks (more though remain)
 
