@@ -32,7 +32,7 @@ AC_CONFIG_MACRO_DIR([m4])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])],
          [AC_SUBST([AM_DEFAULT_VERBOSITY], [1])])
 
-# FXIME: write a m4 macro to conver x.y.zjunk to x*10000 + y*100 + z
+# FIXME: write a m4 macro to convert x.y.zjunk to x*10000 + y*100 + z
 # LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1 | tr -d a-z`
 LIBCDIO_VERSION_NUM=10001
 AC_SUBST(LIBCDIO_VERSION_NUM)
