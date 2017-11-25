@@ -39,12 +39,15 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef _WIN32
+#  undef HAVE_SLEEP
+#endif
 #if !defined(HAVE_SLEEP)
-#  if defined(HAVE_USLEEP)
-#     define sleep(s) usleep(1000000*s)
-#  elif defined(_WIN32)
+#  if defined(_WIN32)
 #     include <windows.h>
 #     define sleep(s) Sleep(1000*s)
+#  elif defined(HAVE_USLEEP)
+#     define sleep(s) usleep(1000000*s)
 #  else
 #     define sleep(s) { int i; for(i=0; i<=1000*s; i++); }
 #  endif
