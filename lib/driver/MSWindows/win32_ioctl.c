@@ -181,6 +181,7 @@ audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf,
   const _img_private_t *p_env = p_user_data;
   CDROM_PLAY_AUDIO_MSF play;
   DWORD dw_bytes_returned;
+  bool b_success;
 
   play.StartingM = cdio_from_bcd8(p_start_msf->m);
   play.StartingS = cdio_from_bcd8(p_start_msf->s);
@@ -190,7 +191,7 @@ audio_play_msf_win32ioctl (void *p_user_data, msf_t *p_start_msf,
   play.EndingS   = cdio_from_bcd8(p_end_msf->s);
   play.EndingF   = cdio_from_bcd8(p_end_msf->f);
 
-  bool b_success =
+  b_success =
     DeviceIoControl(p_env->h_device_handle, IOCTL_CDROM_PLAY_AUDIO_MSF,
                     &play, sizeof(play), NULL, 0, &dw_bytes_returned, NULL);
 
