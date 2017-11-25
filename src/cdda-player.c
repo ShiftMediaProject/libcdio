@@ -256,7 +256,7 @@ sigwinch(int dummy)
 
 /* Signal handler - Ctrl-C and others. */
 static void
-ctrlc(int signal)
+ctrlc(int signal_num)
 {
   b_sig = true;
 }
