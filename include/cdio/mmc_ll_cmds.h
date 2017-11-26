@@ -60,7 +60,7 @@ extern "C" {
      @param i_timeout_ms value in milliseconds to use on timeout. Setting
      to 0 uses the default time-out value stored in
      mmc_timeout_ms.
-
+q
      @return DRIVER_OP_SUCCESS (0) if we got the status.
      return codes are the same as driver_return_code_t
   */
@@ -392,6 +392,9 @@ mmc_read_subchannel ( const CdIo_t *p_cdio,
    @param i_length pointer to number of bytes to request.
                    Will be overwritten by the number of bytes available.
    @param p_buf  pointer to the location for the returned data
+   @param i_timeout_ms value in milliseconds to use on timeout. Setting
+          to 0 uses the default time-out value stored in
+          mmc_timeout_ms.
 
    @return DRIVER_OP_SUCCESS on success
  */

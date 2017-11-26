@@ -103,18 +103,21 @@ main(int argc, const char *argv[])
 
     psz_tmp_subdir = get_temporary_name(NULL, "temporary directory");
     if (NULL == psz_tmp_subdir) {
+        free(psz_tmp_subdir);
         exit(77);
     }
-
     if (-1 == check_rc(_mkdir(psz_tmp_subdir),
-                       "mkdir", psz_tmp_subdir))
+                       "mkdir", psz_tmp_subdir)) {
+        free(psz_tmp_subdir);
         exit(77);
+    }
 
     cdio_realpath(psz_tmp_subdir, tmp_subdir);
 
     if (0 == strlen(tmp_subdir)) {
       fprintf(stderr, "cdio_realpath on temp directory %s failed\n",
               psz_tmp_subdir);
+      free(psz_tmp_subdir);
       exit(1);
     }
 
@@ -150,6 +153,7 @@ main(int argc, const char *argv[])
             if (0 != strncmp(psz_file_check, orig_file, PATH_MAX)) {
                 fprintf(stderr, "simple cdio_realpath failed: %s vs %s\n",
                         psz_file_check, orig_file);
+		free(psz_symlink_file);
                 exit(3);
             }
             check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
@@ -164,6 +168,7 @@ main(int argc, const char *argv[])
             if (0 != strncmp(psz_file_check, symlink_file, PATH_MAX)) {
                 fprintf(stderr, "direct cdio_realpath cycle test failed. %s vs %s\n",
                         psz_file_check, symlink_file);
+		free(psz_symlink_file);
                 exit(4);
             }
             check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
@@ -173,6 +178,9 @@ main(int argc, const char *argv[])
 
     check_rc(unlink(psz_orig_file), "unlink", psz_orig_file);
     check_rc(rmdir(psz_tmp_subdir), "rmdir", psz_tmp_subdir);
+		free(psz_symlink_file);
+    free(psz_tmp_subdir);
+    free(psz_orig_file);
 
     return 0;
 }

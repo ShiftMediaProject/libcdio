@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2011, 2014 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2011, 2014, 2017 Rocky Bernstein <rocky@gnu.org>
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -313,6 +313,7 @@ main(int argc, char *argv[])
 	}
 	printf("\n");
 	if (p_cdio) cdio_destroy(p_cdio);
+	p_cdio = NULL;
       }
 
     cdio_free_device_list(ppsz_cdrives);

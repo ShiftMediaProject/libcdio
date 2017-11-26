@@ -82,7 +82,6 @@ is_in(char **file_list, const char *file)
 int
 main(int argc, const char *argv[])
 {
-  cdio_log_set_handler (log_handler);
 #if defined(__MINGW32__)
   printf("testgetdevices test skipped until drive recording testing issues resolved\n");
   return 77;
@@ -96,6 +95,8 @@ main(int argc, const char *argv[])
   const char *cue_files[2] = {"cdda.cue", "isofs-m1.cue"};
   const char *nrg_files[1] = {"videocd.nrg"};
 
+
+  cdio_log_set_handler (log_handler);
 
   if (cdio_have_driver(-1) != false)
     {

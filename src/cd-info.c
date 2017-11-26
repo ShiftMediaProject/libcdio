@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2005, 2007-2008, 2011-2012, 2014
+  Copyright (C) 2003-2005, 2007-2008, 2011-2012, 2014, 2017
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
          and Heiko Eiﬂfeldt <heiko@hexco.de>
@@ -71,6 +71,7 @@
 #define STRONG "__________________________________\n"
 #define NORMAL ""
 
+#define CDIO_IOCTL_FINISHED 0
 #if CDIO_IOCTL_FINISHED
 static struct cdrom_multisession  ms;
 static struct cdrom_subchnl       sub;
@@ -925,16 +926,16 @@ main(int argc, char *argv[])
     printf("list of devices found:\n");
     if (NULL != d) {
       for ( ; *d != NULL ; d++ ) {
-        CdIo_t *p_cdio = cdio_open(source_name, driver_id);
+        CdIo_t *p_cdio_d = cdio_open(source_name, driver_id);
         cdio_hwinfo_t hwinfo;
         printf("Drive %s\n", *d);
-        if (mmc_get_hwinfo(p_cdio, &hwinfo)) {
+        if (mmc_get_hwinfo(p_cdio_d, &hwinfo)) {
           printf("%-8s: %s\n%-8s: %s\n%-8s: %s\n",
                  "Vendor"  , hwinfo.psz_vendor,
                  "Model"   , hwinfo.psz_model,
                  "Revision", hwinfo.psz_revision);
         }
-        if (p_cdio) cdio_destroy(p_cdio);
+        if (p_cdio_d) cdio_destroy(p_cdio_d);
       }
     }
     cdio_free_device_list(device_list);
@@ -1198,12 +1199,12 @@ main(int argc, char *argv[])
           cdio_audio_volume_t volume;
 
           if (DRIVER_OP_SUCCESS == cdio_audio_get_volume (p_cdio, &volume)) {
-            uint8_t i=0;
-            for (i=0; i<4; i++) {
-              uint8_t i_level     = volume.level[i];
+            uint8_t j=0;
+            for (j=0; j<4; j++) {
+              uint8_t i_level     = volume.level[j];
               report( stdout,
                       "volume level port %d: %3d (0..255) %3d (0..100)\n",
-                      i, i_level, (i_level*100+128) / 256 );
+                      j, i_level, (i_level*100+128) / 256 );
             }
 
           } else

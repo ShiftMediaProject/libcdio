@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2013 Rocky Bernstein
+  Copyright (C) 2013, 2017 Rocky Bernstein
   <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -60,6 +60,7 @@ int
 main(int argc, const char *argv[])
 {
   iso9660_t *p_iso;
+  iso9660_stat_t *p_statbuf;
 
   p_iso = iso9660_open(ISO9660_IMAGE);
   if (!p_iso) {
@@ -92,7 +93,7 @@ main(int argc, const char *argv[])
        find "." and in that Rock-Ridge information might be found which fills
        in more stat information that iso9660_fs_find_lsn also will find.
        . Ideally iso9660_fs_stat should be fixed. */
-       iso9660_stat_t *p_statbuf = iso9660_ifs_stat (p_iso, "/.");
+    p_statbuf = iso9660_ifs_stat (p_iso, "/.");
 
     if (NULL == p_statbuf) {
       fprintf(stderr,

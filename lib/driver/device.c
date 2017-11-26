@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008, 2011-2013
+  Copyright (C) 2005, 2006, 2008, 2011-2013, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -31,6 +31,7 @@
 #include <cdio/cd_types.h>
 #include <cdio/logging.h>
 #include "cdio_private.h"
+#include <cdio/util.h>
 #include <cdio/mmc_cmds.h>
 
 #ifdef HAVE_STDLIB_H
@@ -59,17 +60,15 @@ int CdIo_last_driver = CDIO_DRIVER_UNINIT;
 
 #ifdef HAVE_AIX_CDROM
 const driver_id_t cdio_os_driver = DRIVER_AIX;
-#elif  HAVE_FREEBSD_CDROM
+#elif  defined(HAVE_FREEBSD_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
-#elif  HAVE_LINUX_CDROM
+#elif  defined(HAVE_LINUX_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_LINUX;
-#elif  HAVE_DARWIN_CDROM
+#elif  defined(HAVE_DARWIN_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_OSX;
-#elif  HAVE_OS2_CDROM
-const driver_id_t cdio_os_driver = DRIVER_OS2;
-#elif  HAVE_SOLARIS_CDROM
+#elif  defined(HAVE_SOLARIS_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_SOLARIS;
-#elif  HAVE_WIN32_CDROM
+#elif  defined(HAVE_WIN32_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_WIN32;
 #else
 const driver_id_t cdio_os_driver = DRIVER_UNKNOWN;
@@ -120,19 +119,6 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &cdio_is_device_generic,
    &cdio_get_devices_aix,
    NULL
-  },
-
-  {DRIVER_BSDI,
-   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
-   "BSDI",
-   "BSDI ATAPI and SCSI driver",
-   &cdio_have_bsdi,
-   &cdio_open_bsdi,
-   &cdio_open_am_bsdi,
-   &cdio_get_default_device_bsdi,
-   &cdio_is_device_generic,
-   &cdio_get_devices_bsdi,
-   &close_tray_bsdi
   },
 
   {DRIVER_FREEBSD,
@@ -187,23 +173,10 @@ CdIo_driver_t CdIo_all_drivers[] = {
    &close_tray_solaris
   },
 
-  {DRIVER_OS2,
-   CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
-   "OS2",
-   "IBM OS/2 driver",
-   &cdio_have_os2,
-   &cdio_open_os2,
-   &cdio_open_am_os2,
-   &cdio_get_default_device_os2,
-   &cdio_is_device_os2,
-   &cdio_get_devices_os2,
-   &close_tray_os2
-  },
-
   {DRIVER_OSX,
    CDIO_SRC_IS_DEVICE_MASK|CDIO_SRC_IS_NATIVE_MASK|CDIO_SRC_IS_SCSI_MASK,
-   "OS X",
-   "Apple Darwin OS X driver",
+   "macOS",
+   "Apple macOS driver",
    &cdio_have_osx,
    &cdio_open_osx,
    &cdio_open_am_osx,
@@ -275,12 +248,10 @@ CdIo_driver_t CdIo_driver[sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0])-1
 
 const driver_id_t cdio_drivers[] = {
   DRIVER_AIX,
-  DRIVER_BSDI,
   DRIVER_FREEBSD,
   DRIVER_NETBSD,
   DRIVER_LINUX,
   DRIVER_SOLARIS,
-  DRIVER_OS2,
   DRIVER_OSX,
   DRIVER_WIN32,
   DRIVER_CDRDAO,
@@ -291,12 +262,10 @@ const driver_id_t cdio_drivers[] = {
 
 const driver_id_t cdio_device_drivers[] = {
   DRIVER_AIX,
-  DRIVER_BSDI,
   DRIVER_FREEBSD,
   DRIVER_NETBSD,
   DRIVER_LINUX,
   DRIVER_SOLARIS,
-  DRIVER_OS2,
   DRIVER_OSX,
   DRIVER_WIN32,
   DRIVER_UNKNOWN
@@ -508,7 +477,7 @@ cdio_free_device_list (char * ppsz_device_list[])
     free(*ppsz_device_list);
     *ppsz_device_list = NULL;
   }
-  free(ppsz_device_list_save);
+  CDIO_FREE_IF_NOT_NULL(ppsz_device_list_save);
 }
 
 
@@ -995,14 +964,12 @@ cdio_open_am (const char *psz_orig_source, driver_id_t driver_id,
     }
     break;
   case DRIVER_AIX:
-  case DRIVER_BSDI:
   case DRIVER_FREEBSD:
   case DRIVER_LINUX:
   case DRIVER_NETBSD:
   case DRIVER_SOLARIS:
   case DRIVER_WIN32:
   case DRIVER_OSX:
-  case DRIVER_OS2:
   case DRIVER_NRG:
   case DRIVER_BINCUE:
   case DRIVER_CDRDAO:

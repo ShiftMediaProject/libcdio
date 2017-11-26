@@ -846,7 +846,7 @@ cdio_get_devices_win32 (void)
   /* Scan the system for CD-ROM drives.
   */
 
-#if FINISHED
+#ifdef FINISHED
   /* Now check the currently mounted CD drives */
   if (NULL != (ret_drive = cdio_check_mounts("/etc/mtab"))) {
     cdio_add_device_list(&drives, drive, &num_drives);

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004-2005, 2008-2011, 2014
+  Copyright (C) 2003, 2004-2005, 2008-2011, 2014, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -798,7 +798,7 @@ cdio_get_devices_freebsd (void)
   char drive[40];
   char **drives = NULL;
   unsigned int num_drives=0;
-  bool exists = true, have_cam_drive = false;
+  bool exists = true;
   char c;
 
   /* Scan the system for CD-ROM drives.
@@ -829,7 +829,6 @@ cdio_get_devices_freebsd (void)
     exists = cdio_is_cdrom(drive, NULL);
     if ( exists ) {
       cdio_add_device_list(&drives, drive, &num_drives);
-      have_cam_drive = true;
     }
   }
 
@@ -848,8 +847,6 @@ cdio_get_devices_freebsd (void)
      whether atapicam runs, or to make pairs of cd and acd.
 
   */
-  exists = true;
-
   for ( c='0'; exists && c <='9'; c++ ) {
     sprintf(drive, "/dev/acd%c%s", c, DEVICE_POSTFIX);
     exists = cdio_is_cdrom(drive, NULL);
@@ -1120,9 +1117,6 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
   char *psz_source_name;
   int open_access_mode;  /* Access mode passed to cdio_generic_init. */
 
-  if (!psz_access_mode)
-      psz_access_mode = get_access_mode(psz_orig_source_name);
-
   cdio_funcs_t _funcs = {
     .audio_get_volume       = audio_get_volume_freebsd,
     .audio_pause            = audio_pause_freebsd,
@@ -1167,6 +1161,9 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     .set_blocksize          = set_blocksize_mmc,
     .set_speed              = set_speed_freebsd,
   };
+
+  if (!psz_access_mode)
+      psz_access_mode = get_access_mode(psz_orig_source_name);
 
   _data                     = calloc(1, sizeof (_img_private_t));
   _data->access_mode        = str_to_access_mode_freebsd(psz_access_mode);

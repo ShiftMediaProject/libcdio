@@ -1,7 +1,7 @@
-/* 
-  Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2011 Rocky Bernstein 
+/*
+  Copyright (C) 2003-2008, 2011, 2017 Rocky Bernstein
   <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -47,14 +47,14 @@
 int
 main(int argc, const char *argv[])
 {
-  char **ppsz_cd_drives;  /* List of all drives with an ISO9660 filesystem. */
+  char **ppsz_cd_drives = NULL; /* All drives with an ISO9660 filesystem. */
   driver_id_t driver_id;  /* Driver ID found */
   char *psz_drive;        /* Name of drive */
   CdIo_t *p_cdio;
 
   /* See if we can find a device with a loaded CD-DA in it. If successful
      drive_id will be set.  */
-  ppsz_cd_drives = 
+  ppsz_cd_drives =
     cdio_get_devices_with_cap_ret(NULL, CDIO_FS_ANAL_ISO9660_ANY,
 				  true, &driver_id);
 
@@ -64,15 +64,19 @@ main(int argc, const char *argv[])
     psz_drive = strdup(ppsz_cd_drives[0]);
     /* Don't need a list of CD's with CD-DA's any more. */
     cdio_free_device_list(ppsz_cd_drives);
+    ppsz_cd_drives = NULL;
   } else {
     printf("-- Unable find or access a CD-ROM drive with an ISO-9660 "
 	   "filesystem.\n");
+    if (ppsz_cd_drives)
+      cdio_free_device_list(ppsz_cd_drives);
     exit(SKIP_TEST_RC);
   }
 
   p_cdio = cdio_open (psz_drive, driver_id);
   if (!p_cdio) {
     fprintf(stderr, "Sorry, couldn't open %s\n", psz_drive);
+    free(psz_drive);
     return 1;
   } else {
     /* You make get different results looking up "/" versus "/." and the
@@ -81,38 +85,53 @@ main(int argc, const char *argv[])
        find "." and in that Rock-Ridge information might be found which fills
        in more stat information that iso9660_fs_find_lsn also will find.
        . Ideally iso9660_fs_stat should be fixed. */
-       iso9660_stat_t *p_statbuf = iso9660_fs_stat (p_cdio, "/.");
+    iso9660_stat_t *p_statbuf = iso9660_fs_stat (p_cdio, "/.");
 
+    free(psz_drive);
     if (NULL == p_statbuf) {
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "Could not get ISO-9660 file information for file /.\n");
       cdio_destroy(p_cdio);
       exit(2);
     } else {
       /* Now try getting the statbuf another way */
+
       char buf[ISO_BLOCKSIZE];
       char *psz_path = NULL;
       const lsn_t i_lsn = p_statbuf->lsn;
-      const iso9660_stat_t *p_statbuf2 = iso9660_fs_find_lsn (p_cdio, i_lsn);
-      const iso9660_stat_t *p_statbuf3 = 
+      iso9660_stat_t *p_statbuf2 = iso9660_fs_find_lsn (p_cdio, i_lsn);
+
+      /*
+	 // FIXME: This is for memory testing. iso966_stat_free leaves
+         // around junk. Some if it is in a faulty cdio_list_free() routine.
+         iso9660_stat_free(p_statbuf);
+         iso9660_stat_free(p_statbuf2);
+         cdio_destroy(p_cdio);
+         return 0;
+      */
+
+      iso9660_stat_t *p_statbuf3 =
 	iso9660_fs_find_lsn_with_path (p_cdio, i_lsn, &psz_path);
 
       /* Compare the two statbufs. */
-#if 0
-      if (0 != memcmp(p_statbuf, p_statbuf2, sizeof(iso9660_stat_t))) {
-#else
-      if (p_statbuf->lsn != p_statbuf2->lsn || 
+      if (p_statbuf->lsn != p_statbuf2->lsn ||
 	  p_statbuf->size != p_statbuf2->size ||
 	  p_statbuf->type != p_statbuf2->type) {
-#endif
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "fs_find_lsn isn't the same\n");
+
+	  iso9660_stat_free(p_statbuf);
+	  iso9660_stat_free(p_statbuf2);
+	  cdio_destroy(p_cdio);
 	  exit(3);
       }
 
       if (0 != memcmp(p_statbuf3, p_statbuf2, sizeof(iso9660_stat_t))) {
 	  fprintf(stderr, "File stat information between fs_find_lsn and "
 		  "fs_find_lsn_with_path isn't the same\n");
+	  iso9660_stat_free(p_statbuf2);
+	  iso9660_stat_free(p_statbuf3);
+	  cdio_destroy(p_cdio);
 	  exit(4);
       }
 
@@ -120,25 +139,29 @@ main(int argc, const char *argv[])
 	if (0 != strncmp("/./", psz_path, strlen("/./"))) {
 	  fprintf(stderr, "Path returned for fs_find_lsn_with_path "
 		  "is not correct should be /./, is %s\n", psz_path);
-	  exit(5);
 	  free(psz_path);
+	  cdio_destroy(p_cdio);
+	  exit(5);
 	}
       } else {
 	fprintf(stderr, "Path returned for fs_find_lsn_with_path is NULL\n");
+	cdio_destroy(p_cdio);
 	exit(6);
       }
-      
+
       /* Try reading from the directory. */
       memset (buf, 0, ISO_BLOCKSIZE);
       if ( 0 != cdio_read_data_sectors (p_cdio, buf, i_lsn, ISO_BLOCKSIZE, 1) )
 	{
 	  fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		  (long unsigned int) p_statbuf->lsn);
+	  iso9660_stat_free(p_statbuf);
+	  cdio_destroy(p_cdio);
 	  exit(7);
 	}
       exit(0);
     }
   }
-  
+
   exit(0);
 }

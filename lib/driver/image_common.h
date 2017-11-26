@@ -15,8 +15,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/*! Common image routines. 
-  
+/*! Common image routines.
+
   Because _img_private_t may vary over image formats, the routines are
   included into the image drivers after _img_private_t is defined.  In
   order for the below routines to work, there is a large part of
@@ -28,19 +28,19 @@
 #define CDIO_DRIVER_IMAGE_COMMON_H_
 
 typedef struct {
-  /* Things common to all drivers like this. 
+  /* Things common to all drivers like this.
      This must be first. */
-  generic_img_private_t gen; 
-  internal_position_t pos; 
-  
+  generic_img_private_t gen;
+  internal_position_t pos;
+
   char         *psz_cue_name;
   char         *psz_access_mode; /* Just the name of the driver.
                                     We add this for regularity with other
                                     real CD drivers which has an access mode.
                                   */
-  char         *psz_mcn;        /* Media Catalog Number (5.22.3) 
+  char         *psz_mcn;        /* Media Catalog Number (5.22.3)
                                    exactly 13 bytes */
-  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track 
+  track_info_t  tocent[CDIO_CD_MAX_TRACKS+1]; /* entry info for each track
                                                  add 1 for leadout. */
   discmode_t    disc_mode;
 
@@ -60,9 +60,6 @@ typedef struct {
 #endif
 } _img_private_t;
 
-#define free_if_notnull(p_obj) \
-  if (NULL != p_obj) { free(p_obj); p_obj=NULL; };
-
 /*!
   We don't need the image any more. Free all memory associated with
   it.
@@ -81,7 +78,7 @@ const char * _get_arg_image (void *user_data, const char key[]);
  */
 cdtext_t * _get_cdtext_image(void *p_user_data);
 
-/*! 
+/*!
   Get disc type associated with cd_obj.
 */
 discmode_t _get_discmode_image (void *p_user_data);
@@ -96,12 +93,12 @@ void _get_drive_cap_image (const void *user_data,
                            cdio_drive_misc_cap_t  *p_misc_cap);
 
 /*!
-  Return the number of of the first track. 
+  Return the number of of the first track.
   CDIO_INVALID_TRACK is returned on error.
 */
 track_t _get_first_track_num_image(void *p_user_data);
 
-/*! 
+/*!
   Find out if media has changed since the last call.
   @param p_user_data the CD object to be acted upon.
   @return 1 if media has changed since last call, 0 if not. Error
@@ -120,12 +117,12 @@ int get_media_changed_image(const void *p_user_data);
 char * _get_mcn_image(const void *p_user_data);
 
 /*!
-  Return the number of tracks. 
+  Return the number of tracks.
 */
 track_t _get_num_tracks_image(void *p_user_data);
 
 
-/*!  
+/*!
   Return the starting MSF (minutes/secs/frames) for the track number
   track_num in obj.  Tracks numbers start at 1.
   The "leadout" track is specified either by
@@ -147,10 +144,10 @@ track_flag_t get_track_copy_permit_image(void *p_user_data, track_t i_track);
 
 /*! Return 1 if track has pre-emphasis, 0 if not, or -1 for error.
   Is this meaningful if not an audio track?
-  
+
   pre-emphasis is a non linear frequency response.
 */
-track_flag_t get_track_preemphasis_image(const void *p_user_data, 
+track_flag_t get_track_preemphasis_image(const void *p_user_data,
                                          track_t i_track);
 
 /*! Return the starting LBA for the pregap for track number i_track.
@@ -170,7 +167,7 @@ char *get_track_isrc_image(const void *p_user_data, track_t i_track);
 
 /*!
   Read a data sector
-  
+
   @param p_cdio object to read from
 
   @param p_buf place to read data into.  The caller should make sure
@@ -188,14 +185,14 @@ char *get_track_isrc_image(const void *p_user_data, track_t i_track);
   @param i_blocks number of blocks to read.
 
   */
-driver_return_code_t 
-read_data_sectors_image ( void *p_user_data, void *p_buf, 
+driver_return_code_t
+read_data_sectors_image ( void *p_user_data, void *p_buf,
                           lsn_t i_lsn,  uint16_t i_blocksize,
                           uint32_t i_blocks );
 
 /*!
   Set the arg "key" with "value" in the source device.
-  Currently "source" to set the source device in I/O operations 
+  Currently "source" to set the source device in I/O operations
   is the only valid key.
 
   0 is returned if no error was found, and nonzero if there as an error.

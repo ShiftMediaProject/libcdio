@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2014 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2014, 2017 Rocky Bernstein
+  <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -60,6 +61,13 @@
 #define STRONG "__________________________________\n"
 #define NORMAL ""
 #endif
+
+/* TODO: Find a better place from where cd-info can read it too. */
+/*
+   ECMA-119 allows only a depth of 8 directories. Nobody obeys.
+   Rock Ridge allows path length 1023. This would be max depth 512.
+*/
+#define CDIO_MAX_DIR_RECURSION 512
 
 /* Used by `main' to communicate with `parse_opt'. And global options
  */
@@ -213,7 +221,8 @@ _log_handler (cdio_log_level_t level, const char message[])
 }
 
 static void
-print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
+print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
+		       unsigned int rec_counter)
 {
   CdioList_t *entlist;
   CdioList_t *dirlist =  _cdio_list_new ();
@@ -231,6 +240,16 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
     free(translated_name);
     free(dirlist);
     report( stderr, "Error getting above directory information\n" );
+    return;
+  }
+
+  rec_counter++;
+  if (rec_counter > CDIO_MAX_DIR_RECURSION) {
+    free(translated_name);
+    free(dirlist);
+    _cdio_list_free (entlist, true);
+    report( stderr,
+            "Directory recursion too deep. ISO most probably damaged.\n" );
     return;
   }
 
@@ -297,7 +316,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
-      print_iso9660_recurse (p_iso, _fullname);
+      print_iso9660_recurse (p_iso, _fullname, rec_counter);
     }
 
   _cdio_list_free (dirlist, true);
@@ -306,7 +325,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[])
 static void
 print_iso9660_fs (iso9660_t *iso)
 {
-  print_iso9660_recurse (iso, "/");
+  print_iso9660_recurse (iso, "/", 0);
 }
 
 static void

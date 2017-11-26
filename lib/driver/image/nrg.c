@@ -1268,18 +1268,17 @@ _get_track_green_nrg(void *p_user_data, track_t track_num)
 bool
 cdio_is_nrg(const char *psz_nrg)
 {
-  _img_private_t env;
+  _img_private_t *p_env  = calloc(1, sizeof (_img_private_t));
   bool is_nrg = false;
 
   if (psz_nrg == NULL) return false;
 
-  memset(&env, 0, sizeof(env));
-  if (!(env.gen.data_source = cdio_stdio_new (psz_nrg))) {
+  if (!(p_env->gen.data_source = cdio_stdio_new (psz_nrg))) {
     cdio_warn ("can't open nrg image file %s for reading", psz_nrg);
     return false;
   }
 
-  if (parse_nrg(&env, psz_nrg, CDIO_LOG_INFO)) {
+  if (parse_nrg(p_env, psz_nrg, CDIO_LOG_INFO)) {
     is_nrg = true;
 #ifdef ALSO_TEST_NAME
     size_t psz_len;
@@ -1290,7 +1289,7 @@ cdio_is_nrg(const char *psz_nrg)
     is_nrg = strncasecmp( psz_nrg+(psz_len-3), "nrg", 3 ) == 0;
 #endif
   }
-  cdio_stdio_destroy(env.gen.data_source);
+  _free_nrg(p_env);
   return is_nrg;
 }
 

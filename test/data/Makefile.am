@@ -5,6 +5,7 @@ check_DATA = \
 	bad-cat2.toc   \
 	bad-cat3.cue   \
 	bad-cat3.toc   \
+	bad-dir.iso    \
 	bad-file.toc   \
 	bad-mode1.cue  \
 	bad-mode1.toc  \

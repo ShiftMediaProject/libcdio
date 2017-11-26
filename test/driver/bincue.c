@@ -1,7 +1,7 @@
 /* -*- C -*-
   Copyright (C) 2004, 2006, 2008, 2010, 2011, 2012
   Rocky Bernstein <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* 
+/*
    Regression test for BIN/CUE device driver: lib/driver/image/bincue.c.
 */
 #ifdef HAVE_CONFIG_H
@@ -54,18 +54,18 @@ int
 main(int argc, const char *argv[])
 {
   const char *cue_file[NUM_GOOD_CUES] = {
-    "cdda.cue", 
-    "isofs-m1.cue", 
+    "cdda.cue",
+    "isofs-m1.cue",
   };
 
   const char *badcue_file[NUM_BAD_CUES] = {
-    "bad-cat1.cue", 
-    "bad-cat2.cue", 
-    "bad-cat3.cue", 
-    "bad-mode1.cue", 
-    "bad-msf-1.cue", 
-    "bad-msf-2.cue", 
-    "bad-msf-3.cue", 
+    "bad-cat1.cue",
+    "bad-cat2.cue",
+    "bad-cat3.cue",
+    "bad-mode1.cue",
+    "bad-msf-1.cue",
+    "bad-msf-2.cue",
+    "bad-msf-3.cue",
   };
   int ret=0;
   unsigned int i;
@@ -80,12 +80,12 @@ main(int argc, const char *argv[])
              "%s/%s", DATA_DIR, cue_file[i]);
     psz_binfile = cdio_is_cuefile(psz_cuefile);
     if (!psz_binfile) {
-      printf("Incorrect: %s doesn't parse as a CDRWin CUE file.\n", 
+      printf("Incorrect: %s doesn't parse as a CDRWin CUE file.\n",
              cue_file[i]);
       ret=i+1;
     } else {
-        if (verbose) 
-            printf("Correct: %s parses as a CDRWin CUE file.\n", 
+        if (verbose)
+            printf("Correct: %s parses as a CDRWin CUE file.\n",
                    cue_file[i]);
       free(psz_binfile);
     }
@@ -98,10 +98,10 @@ main(int argc, const char *argv[])
     psz_binfile=cdio_is_cuefile(psz_cuefile);
     if (!psz_binfile) {
         if (verbose)
-            printf("Correct: %s doesn't parse as a CDRWin CUE file.\n", 
+            printf("Correct: %s doesn't parse as a CDRWin CUE file.\n",
                    badcue_file[i]);
     } else {
-      printf("Incorrect: %s parses as a CDRWin CUE file.\n", 
+      printf("Incorrect: %s parses as a CDRWin CUE file.\n",
              badcue_file[i]);
       free(psz_binfile);
       ret+=50*i+1;
@@ -117,9 +117,10 @@ main(int argc, const char *argv[])
     if (!p_cdio) {
       printf("Can't open cdda.cue\n");
     } else {
+      char *psz_device;
+
       /* Just test performing some operations. */
       cdio_set_blocksize(p_cdio, 2048);
-      char *psz_device;
 
 #ifdef HAVE_CHDIR
       if (0 == chdir(DATA_DIR))
@@ -132,7 +133,7 @@ main(int argc, const char *argv[])
           // check_get_arg_source(p_cdio, psz_device);
 
           /* Could chdir to srcdir to hedge the bet? */
-          if (psz_device) 
+          if (psz_device)
               free(psz_device);
           else {
               /* Unless we do the chdir, will fail. So don't set as an
@@ -145,7 +146,7 @@ main(int argc, const char *argv[])
       cdio_destroy(p_cdio);
 
     }
-    
+
   }
 
   return ret;

@@ -84,29 +84,37 @@ main(int argc, const char *argv[])
 	strncmp(test_msg, last_debugmsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "debug message %s did not get handled\n",
 		last_debugmsg);
+        free(last_debugmsg);
 	exit(2);
     }
+    free(last_debugmsg);
 
     test_msg = "info";
     cdio_info("%s", test_msg);
     if (strncmp(test_msg, last_infomsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "info message %s did not get handled\n", last_infomsg);
+        free(last_infomsg);
 	exit(3);
     }
+    free(last_infomsg);
 
     test_msg = "warn";
     cdio_warn("%s", test_msg);
     if (strncmp(test_msg, last_warnmsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "warn message %s did not get handled\n", last_warnmsg);
+        free(last_warnmsg);
 	exit(4);
     }
+    free(last_warnmsg);
 
     test_msg = "error";
     cdio_error("%s", test_msg);
     if (strncmp(test_msg, last_errmsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "error message %s did not get handled\n", last_errmsg);
+        free(last_errmsg);
 	exit(5);
     }
+    free(last_errmsg);
 
     /* Try using generic cdio_log routine */
 
@@ -114,29 +122,37 @@ main(int argc, const char *argv[])
     cdio_log(CDIO_LOG_DEBUG, "%s", test_msg);
     if (strncmp(test_msg, last_debugmsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "debug message %s did not get handled, phase 2\n", last_debugmsg);
+        free(last_debugmsg);
 	exit(6);
     }
+    free(last_debugmsg);
 
     test_msg = "info via cdio_log";
     cdio_log(CDIO_LOG_INFO, "%s", test_msg);
     if (strncmp(test_msg, last_infomsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "info message %s did not get handled\n", last_infomsg);
+        free(last_infomsg);
 	exit(7);
     }
+    free(last_infomsg);
 
     test_msg = "warn via cdio_log";
     cdio_log(CDIO_LOG_WARN, "%s", test_msg);
     if (strncmp(test_msg, last_warnmsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "warn message %s did not get handled\n", last_warnmsg);
+        free(last_warnmsg);
 	exit(8);
     }
+    free(last_warnmsg);
 
     test_msg = "error via cdio_log";
     cdio_log(CDIO_LOG_ERROR, "%s", test_msg);
     if (strncmp(test_msg, last_errmsg, strlen(test_msg)) != 0) {
 	fprintf(stderr, "error message %s did not get handled\n", last_errmsg);
+        free(last_errmsg);
 	exit(9);
     }
+    free(last_errmsg);
 
     exit(0);
 }

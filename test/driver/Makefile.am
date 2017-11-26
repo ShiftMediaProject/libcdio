@@ -1,4 +1,4 @@
-#   Copyright (C) 2009, 2010, 2012 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2009, 2010, 2012, 2017 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -12,6 +12,8 @@
 #
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+.PHONY: check-leaks test check-short
 
 DATA_DIR = $(abs_top_srcdir)/test/data
 AM_CPPFLAGS = $(LIBCDIO_CFLAGS) $(LIBISO9660_CFLAGS) -DDATA_DIR=\"$(DATA_DIR)\"
@@ -74,6 +76,12 @@ MOSTLYCLEANFILES = \
 
 #: run regression tests. "test" is the same thing as "check"
 test: check-am
+
+#: run regression tests. "test" is the same thing as "check"
+check-leaks: $(check_PROGRAMS)
+	for p in $(check_PROGRAMS); do \
+	   valgrind ./$$p; \
+        done
 
 #: Run all tests without bloated output
 check-short:

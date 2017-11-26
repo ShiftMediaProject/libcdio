@@ -1,5 +1,7 @@
 /*
-  Copyright (C) 2005, 2008, 2010-2011, 2014 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2005, 2008, 2010-2011, 2014, 2017 Rocky Bernstein
+  <rocky@gnu.org>
+
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
 
   This program is free software: you can redistribute it and/or modify
@@ -169,24 +171,12 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
     while (len > 1){ /* There may be one byte for padding somewhere */
       rr = (iso_extension_record_t *) chr;
       sig = *chr+(*(chr+1) << 8);
-      switch(sig){
-      case SIG('S','P'):
-      case SIG('C','E'):
-      case SIG('E','R'):
-      case SIG('R','R'):
-      case SIG('P','X'):
-      case SIG('P','N'):
-      case SIG('S','L'):
-      case SIG('N','M'):
-      case SIG('C','L'):
-      case SIG('P','L'):
-      case SIG('T','F'):
-      case SIG('Z','F'):
-	break;
-      default:
-	 /* Something got screwed up here */
-	goto out;
-      }
+
+      /* We used to check for some vaid values of SIG, specifically
+	 SP, CE, ER, RR, PX, PN, SL, NM, CL, PL, TF, and ZF.
+	 However there are various extensions to this set. So we
+	 skip checking now.
+      */
 
       if (rr->len == 0) goto out; /* Something got screwed up here */
       chr += rr->len;

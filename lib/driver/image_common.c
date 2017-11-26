@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2004-2005, 2008, 2010-2011, 2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2005, 2008, 2010-2011, 2013, 2017
+   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@
 
 #include "image.h"
 #include "image_common.h"
+#include <cdio/util.h>
 #include "_cdio_stdio.h"
 
 #ifdef HAVE_STDLIB_H
@@ -61,14 +63,14 @@ _free_image (void *p_user_data)
 
   for (i_track=0; i_track < p_env->gen.i_tracks; i_track++) {
     track_info_t *p_tocent = &(p_env->tocent[i_track]);
-    free_if_notnull(p_tocent->filename);
-    free_if_notnull(p_tocent->isrc);
+    CDIO_FREE_IF_NOT_NULL(p_tocent->filename);
+    CDIO_FREE_IF_NOT_NULL(p_tocent->isrc);
     if (p_tocent->data_source) cdio_stdio_destroy(p_tocent->data_source);
   }
 
-  free_if_notnull(p_env->psz_mcn);
-  free_if_notnull(p_env->psz_cue_name);
-  free_if_notnull(p_env->psz_access_mode);
+  CDIO_FREE_IF_NOT_NULL(p_env->psz_mcn);
+  CDIO_FREE_IF_NOT_NULL(p_env->psz_cue_name);
+  CDIO_FREE_IF_NOT_NULL(p_env->psz_access_mode);
   cdtext_destroy(p_env->gen.cdtext);
   cdio_generic_stdio_free(p_env);
   free(p_env);
@@ -365,19 +367,19 @@ _set_arg_image (void *p_user_data, const char key[], const char value[])
 
   if (!strcmp (key, "source"))
     {
-      free_if_notnull (p_env->gen.source_name);
+      CDIO_FREE_IF_NOT_NULL(p_env->gen.source_name);
       if (!value) return DRIVER_OP_ERROR;
       p_env->gen.source_name = strdup (value);
     }
   else if (!strcmp (key, "cue"))
     {
-      free_if_notnull (p_env->psz_cue_name);
+      CDIO_FREE_IF_NOT_NULL(p_env->psz_cue_name);
       if (!value) return DRIVER_OP_ERROR;
       p_env->psz_cue_name = strdup (value);
     }
   else if (!strcmp (key, "access-mode"))
     {
-      free_if_notnull (p_env->psz_access_mode);
+      CDIO_FREE_IF_NOT_NULL(p_env->psz_access_mode);
       if (!value) return DRIVER_OP_ERROR;
       p_env->psz_access_mode = strdup (value);
     }

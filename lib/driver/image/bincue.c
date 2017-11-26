@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2002-2006, 2008, 2011-2012, 2014
+  Copyright (C) 2002-2006, 2008, 2011-2012, 2014, 2017
     Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
     cue parsing routine adapted from cuetools
@@ -331,16 +331,16 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
             goto err_exit;
           } else {
             /* Check that we have all digits*/
-            unsigned int i;
-            for (i=0; i<13; i++) {
-              if (!isdigit((unsigned char) psz_field[i])) {
+            unsigned int j;
+            for (j=0; j<13; j++) {
+              if (!isdigit((unsigned char) psz_field[j])) {
                 cdio_log(log_level,
                          "%s line %d after word CATALOG:",
                          psz_cue_name, i_line);
                 cdio_log(log_level,
                          "Character \"%c\" at postition %i of token \"%s\" "
                          "is not all digits.",
-                         psz_field[i], i+1, psz_field);
+                         psz_field[j], j+1, psz_field);
                 goto err_exit;
               }
             }
@@ -745,7 +745,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
               goto err_exit;
             }
             if (cd) {
-#if FIXED_ME
+#ifdef FIXME
               cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
 #else
               track_info_t  *this_track=

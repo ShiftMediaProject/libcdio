@@ -252,6 +252,7 @@ cdtext_destroy(cdtext_t *p_cdtext)
       }
     }
   }
+  free(p_cdtext);
 }
 
 /*!

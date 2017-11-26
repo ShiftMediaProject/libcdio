@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2010, 2012-2014 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2010, 2012-2014, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -49,16 +49,16 @@ myexit(CdIo_t *cdio, int rc)
 }
 
 void
-print_version (char *program_name, const char *version,
+print_version (char *prog_name, const char *version,
 	       int no_header, bool version_only)
 {
 
   if (no_header == 0) {
     report( stdout,
 	    "%s version %s\n"
-	    "Copyright (c) 2003-2005, 2007-2008, 2011-2015 "
+	    "Copyright (c) 2003-2005, 2007-2008, 2011-2015, 2017 "
 	    "R. Bernstein\n",
-	    program_name, version);
+	    prog_name, version);
     report( stdout,
             _("This is free software; see the source for copying conditions.\n\
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A\n\
@@ -79,7 +79,7 @@ PARTICULAR PURPOSE.\n\
       report( stdout, "Default CD-ROM device: %s\n", default_device);
     else
       report( stdout, "No CD-ROM device found.\n");
-    free(program_name);
+    free(prog_name);
     exit(EXIT_INFO);
   }
 
@@ -216,25 +216,27 @@ print_mmc_drive_features(CdIo_t *p_cdio)
 
       i_feature = CDIO_MMC_GET_LEN16(p);
       {
-	uint8_t *q;
 	const char *feature_str = mmc_feature2str(i_feature);
 	report( stdout, "%s Feature\n", feature_str);
 	switch( i_feature )
 	  {
 	  case CDIO_MMC_FEATURE_PROFILE_LIST:
-	    for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
-	      int i_profile=CDIO_MMC_GET_LEN16(q);
-	      const char *feature_profile_str =
-		mmc_feature_profile2str(i_profile);
-	      report( stdout, "\t%s", feature_profile_str );
-	      if (q[2] & 1) {
-		report( stdout, " - on");
+	    {
+	      uint8_t *q;
+	      for ( q = p+4 ; q < p + i_feature_additional ; q += 4 ) {
+		int i_profile=CDIO_MMC_GET_LEN16(q);
+		const char *feature_profile_str =
+		  mmc_feature_profile2str(i_profile);
+		report( stdout, "\t%s", feature_profile_str );
+		if (q[2] & 1) {
+		  report( stdout, " - on");
+		}
+		report( stdout, "\n");
 	      }
 	      report( stdout, "\n");
-	    }
-	    report( stdout, "\n");
 
-	    break;
+	      break;
+	    }
 	  case CDIO_MMC_FEATURE_CORE:
 	    {
 	      uint8_t *q = p+4;
@@ -389,7 +391,7 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
 
     report( stdout, _("Can set drive speed                       : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_SELECT_SPEED ? "Yes" : "No" );
-#if FIXED
+#ifdef FIXME
     report( stdout, _("Can detect if CD changed                  : %s\n"),
 	   i_misc_cap & CDIO_DRIVE_CAP_MISC_MEDIA_CHANGED ? "Yes" : "No" );
 #endif
@@ -439,7 +441,7 @@ print_drive_capabilities(cdio_drive_read_cap_t  i_read_cap,
     report( stdout, "Uknown drive writing properties\n" );
   } else {
     report( stdout, "\nWriting....\n");
-#if FIXED
+#ifdef FIXED
     report( stdout, _("  Can write using Burn Proof              : %s\n"),
 	   i_write_cap & CDIO_DRIVE_CAP_WRITE_BURN_PROOF ? "Yes" : "No" );
 #endif

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2008, 2010, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2008, 2010-2012, 2017 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2014 Robert Kausch <robert.kausch@freac.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -48,14 +48,14 @@
 
 #ifdef HAVE_STDBOOL_H
 # include <stdbool.h>
-#endif 
+#endif
 
 #include <cdio/sector.h>
 #include <cdio/util.h>
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
-#if defined(__NetBSD__) && defined(__i386__)
+#if defined(__NetBSD__) && (defined(__i386__) || defined(__amd64__))
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0d"
 #else
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0c"
@@ -83,7 +83,7 @@
 #define FIRST_TRACK_NUM (_obj->tochdr.starting_track)
 
 typedef struct {
-        generic_img_private_t gen; 
+        generic_img_private_t gen;
 
         bool toc_valid;
         struct ioc_toc_header tochdr;
@@ -95,8 +95,8 @@ typedef struct {
 
 static driver_return_code_t
 run_scsi_cmd_netbsd(void *p_user_data, unsigned int i_timeout_ms,
-                    unsigned int i_cdb, const mmc_cdb_t *p_cdb, 
-                    cdio_mmc_direction_t e_direction, 
+                    unsigned int i_cdb, const mmc_cdb_t *p_cdb,
+                    cdio_mmc_direction_t e_direction,
                     unsigned int i_buf, void *p_buf )
 {
         const _img_private_t *_obj = p_user_data;
@@ -142,7 +142,7 @@ read_audio_sectors_netbsd(void *user_data, void *data, lsn_t lsn,
         req.cmd[9] = 0x78;
         req.cmdlen = 10;
 
-        req.datalen = nblocks * CDIO_CD_FRAMESIZE_RAW; 
+        req.datalen = nblocks * CDIO_CD_FRAMESIZE_RAW;
         req.databuf = data;
         req.timeout = 10000;
         req.flags = SCCMD_READ;
@@ -160,7 +160,7 @@ read_audio_sectors_netbsd(void *user_data, void *data, lsn_t lsn,
 }
 
 static int
-read_mode2_sector_netbsd(void *user_data, void *data, lsn_t lsn, 
+read_mode2_sector_netbsd(void *user_data, void *data, lsn_t lsn,
                          bool mode2_form2)
 {
         scsireq_t req;
@@ -180,7 +180,7 @@ read_mode2_sector_netbsd(void *user_data, void *data, lsn_t lsn,
         req.cmd[9] = 0x58; /* subheader + userdata + ECC */
         req.cmdlen = 10;
 
-        req.datalen = M2RAW_SECTOR_SIZE; 
+        req.datalen = M2RAW_SECTOR_SIZE;
         req.databuf = buf;
         req.timeout = 10000;
         req.flags = SCCMD_READ;
@@ -203,7 +203,7 @@ read_mode2_sector_netbsd(void *user_data, void *data, lsn_t lsn,
 }
 
 static int
-read_mode2_sectors_netbsd(void *user_data, void *data, lsn_t lsn, 
+read_mode2_sectors_netbsd(void *user_data, void *data, lsn_t lsn,
                           bool mode2_form2, unsigned int nblocks)
 {
         int i, res;
@@ -235,14 +235,14 @@ set_arg_netbsd(void *user_data, const char key[], const char value[])
         } else if (!strcmp(key, "access-mode")) {
                 if (strcmp(value, "READ_CD"))
                         cdio_error("unknown access type: %s ignored.", value);
-        } else 
+        } else
                 return -1;
 
         return 0;
 }
 
 static bool
-_cdio_read_toc(_img_private_t *_obj) 
+_cdio_read_toc(_img_private_t *_obj)
 {
         int res;
         struct ioc_read_toc_entry req;
@@ -257,7 +257,7 @@ _cdio_read_toc(_img_private_t *_obj)
         req.address_format = CD_MSF_FORMAT;
         req.starting_track = FIRST_TRACK_NUM;
         req.data_len = (TOTAL_TRACKS + 1) /* leadout! */
-                * sizeof(struct cd_toc_entry); 
+                * sizeof(struct cd_toc_entry);
         req.data = _obj->tocent;
 
         res = ioctl(_obj->gen.fd, CDIOREADTOCENTRIES, &req);
@@ -268,11 +268,14 @@ _cdio_read_toc(_img_private_t *_obj)
         }
 
         _obj->toc_valid = 1;
+        _obj->gen.i_first_track = FIRST_TRACK_NUM;
+        _obj->gen.i_tracks = TOTAL_TRACKS;
+        _obj->gen.toc_init = true;
         return true;
 }
 
 static bool
-read_toc_netbsd (void *p_user_data) 
+read_toc_netbsd (void *p_user_data)
 {
 
         return _cdio_read_toc(p_user_data);
@@ -299,7 +302,7 @@ _cdio_read_discinfo(_img_private_t *_obj)
         req.cmd[9] = 0;
         req.cmdlen = 10;
 
-        req.datalen = FULLTOCBUF; 
+        req.datalen = FULLTOCBUF;
         req.databuf = buf;
         req.timeout = 10000;
         req.flags = SCCMD_READ;
@@ -336,7 +339,7 @@ _cdio_read_discinfo(_img_private_t *_obj)
         return 0;
 }
 
-static int 
+static int
 eject_media_netbsd(void *user_data) {
 
         _img_private_t *_obj = user_data;
@@ -383,11 +386,11 @@ get_arg_netbsd(void *user_data, const char key[])
 }
 
 static track_t
-get_first_track_num_netbsd(void *user_data) 
+get_first_track_num_netbsd(void *user_data)
 {
         _img_private_t *_obj = user_data;
         int res;
-  
+
         if (!_obj->toc_valid) {
                 res = _cdio_read_toc(_obj);
                 if (!res)
@@ -398,11 +401,11 @@ get_first_track_num_netbsd(void *user_data)
 }
 
 static track_t
-get_num_tracks_netbsd(void *user_data) 
+get_num_tracks_netbsd(void *user_data)
 {
         _img_private_t *_obj = user_data;
         int res;
-  
+
         if (!_obj->toc_valid) {
                 res = _cdio_read_toc(_obj);
                 if (!res)
@@ -412,19 +415,33 @@ get_num_tracks_netbsd(void *user_data)
         return TOTAL_TRACKS;
 }
 
-/*!  
-  Get format of track. 
+/*!
+  Return the international standard recording code ISRC.
+
+  Note: string is malloc'd so caller should free() then returned
+  string when done with it.
+
+ */
+static char *
+get_track_isrc_netbsd (const void *p_user_data, track_t i_track) {
+
+  const _img_private_t *p_env = p_user_data;
+  return mmc_get_track_isrc( p_env->gen.cdio, i_track );
+}
+
+/*!
+  Get format of track.
 */
 static track_format_t
-get_track_format_netbsd(void *user_data, track_t track_num) 
+get_track_format_netbsd(void *user_data, track_t track_num)
 {
         _img_private_t *_obj = user_data;
         int res;
-  
+
         if (!_obj->toc_valid) {
                 res = _cdio_read_toc(_obj);
                 if (!res)
-                        return CDIO_INVALID_TRACK;
+                        return TRACK_FORMAT_ERROR;
         }
 
         if (track_num > TOTAL_TRACKS || track_num == 0)
@@ -434,12 +451,12 @@ get_track_format_netbsd(void *user_data, track_t track_num)
                 if (!_obj->sessionformat_valid) {
                         res = _cdio_read_discinfo(_obj);
                         if (res)
-                                return CDIO_INVALID_TRACK;
+                                return TRACK_FORMAT_ERROR;
                 }
 
                 if (_obj->sessionformat[track_num - 1] == 0x10)
                         return TRACK_FORMAT_CDI;
-                else if (_obj->sessionformat[track_num - 1] == 0x20) 
+                else if (_obj->sessionformat[track_num - 1] == 0x20)
                         return TRACK_FORMAT_XA;
                 else
                         return TRACK_FORMAT_DATA;
@@ -456,16 +473,16 @@ get_track_format_netbsd(void *user_data, track_t track_num)
   FIXME: there's gotta be a better design for this and get_track_format?
 */
 static bool
-get_track_green_netbsd(void *user_data, track_t track_num) 
+get_track_green_netbsd(void *user_data, track_t track_num)
 {
 
         return (get_track_format_netbsd(user_data, track_num)
                 == TRACK_FORMAT_XA);
 }
 
-/*!  
+/*!
   Return the starting MSF (minutes/secs/frames) for track number
-  track_num in obj.  Track numbers usually start at something 
+  track_num in obj.  Track numbers usually start at something
   greater than 0, usually 1.
 
   The "leadout" track is specified either by
@@ -509,10 +526,10 @@ get_track_msf_netbsd(void *user_data, track_t track_num, msf_t *msf)
    fact the last lsn.
  */
 static lsn_t
-get_disc_last_lsn_netbsd(void *user_data) 
+get_disc_last_lsn_netbsd(void *user_data)
 {
         msf_t msf;
-  
+
         get_track_msf_netbsd(user_data, CDIO_CDROM_LEADOUT_TRACK, &msf);
 
         return (((msf.m * 60) + msf.s) * CDIO_CD_FRAMES_PER_SEC + msf.f);
@@ -540,11 +557,11 @@ cdio_get_default_device_netbsd()
 
 /*!
   Close tray on CD-ROM.
-  
+
   @param psz_device the CD-ROM drive to be closed.
-  
+
 */
-driver_return_code_t 
+driver_return_code_t
 close_tray_netbsd (const char *psz_device)
 {
 #ifdef HAVE_NETBSD_CDROM
@@ -579,7 +596,7 @@ static cdio_funcs_t _funcs = {
   .get_track_lba         = NULL, /* This could be implemented if need be. */
   .get_track_preemphasis = get_track_preemphasis_generic,
   .get_track_msf         = get_track_msf_netbsd,
-  .get_track_isrc        = get_track_isrc_mmc,
+  .get_track_isrc        = get_track_isrc_netbsd,
   .lseek                 = cdio_generic_lseek,
   .read                  = cdio_generic_read,
   .read_audio_sectors    = read_audio_sectors_netbsd,
@@ -605,7 +622,7 @@ cdio_open_netbsd(const char *source_name)
 #ifdef HAVE_NETBSD_CDROM
     CdIo_t *ret;
     _img_private_t *_data;
-    
+
     _data = calloc(1, sizeof(_img_private_t));
 
     _data->gen.init = false;
@@ -613,16 +630,16 @@ cdio_open_netbsd(const char *source_name)
     _data->sessionformat_valid = false;
     _data->gen.fd = -1;
     _data->gen.b_cdtext_error = false;
-    
+
     set_arg_netbsd(_data, "source",
                    (source_name ? source_name : DEFAULT_CDIO_DEVICE));
-    
+
     if (source_name && !cdio_is_device_generic(source_name))
         return (NULL);
-    
+
     ret = cdio_new(&_data->gen, &_funcs);
     if (ret == NULL) return NULL;
-    
+
     ret->driver_id = DRIVER_NETBSD;
 
     if (cdio_generic_init(_data, O_RDONLY)) {
@@ -633,7 +650,7 @@ cdio_open_netbsd(const char *source_name)
         return NULL;
     }
 
-#else 
+#else
   return NULL;
 #endif /* HAVE_NETBSD_CDROM */
 
@@ -655,13 +672,13 @@ cdio_have_netbsd (void)
 {
 #ifdef HAVE_NETBSD_CDROM
   return true;
-#else 
+#else
   return false;
 #endif /* HAVE_NETBSD_CDROM */
 }
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8

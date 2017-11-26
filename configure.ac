@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003-2008, 2010, 2011-2014
+dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2017
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
@@ -14,8 +14,8 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-define(RELEASE_NUM, 94)
-define(CDIO_VERSION_STR, 0.$1)
+define(RELEASE_NUM, 1.0.0)
+define(CDIO_VERSION_STR, $1)
 
 AC_PREREQ(2.61)
 
@@ -107,12 +107,12 @@ if test "x$GCC" != "xyes"; then
   *** This package has not been tested very well with non GNU compilers
   *** you should try to use 'gcc' for compiling this package.])
 else
-  # FIXME: add in:
-  #   -W -Wshadow -Wundef
   CHECK_CFLAGS="
 	-Wall
+	-Wbad-function-cast
 	-Wcast-align
 	-Wchar-subscripts
+	-Wdeclaration-after-statement
 	-Wdisabled-optimization
 	-Wendif-labels
 	-Winline
@@ -121,7 +121,9 @@ else
 	-Wnested-externs
 	-Wno-sign-compare
 	-Wpointer-arith
+	-Wshadow
 	-Wstrict-prototypes
+	-Wundef
 	-Wunused
 	-Wwrite-strings
 "
@@ -380,7 +382,7 @@ case $host_os in
        ## AC_DEFINE([HAVE_AIX_CDROM], [1],
        ##     [Define 1 if you have AIX CD-ROM support])
        ;;
-     darwin[[6-9]].*|darwin1[[0-6]].*)
+     darwin[[6-9]].*|darwin[[1-9]][[0-9]].*)
        AC_CHECK_HEADERS(IOKit/IOKitLib.h CoreFoundation/CFBase.h,
                         [have_iokit_h="yes"])
        if test "x$have_iokit_h" = "xyes" ; then
@@ -463,7 +465,9 @@ int has_timeout=sizeof(test.timeout);],
           ])
         # regression tests need native-style absolute paths.
         # $native_srcdir is used here.
-	native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+	if test "$cross_compiling" != yes; then
+	  native_abs_top_srcdir=$(cd $srcdir; /bin/bash.exe -c 'builtin pwd -W')
+	fi
 
 	AC_CHECK_HEADERS(windows.h)
 	AC_DEFINE([MINGW32], [1],
@@ -492,7 +496,7 @@ int has_timeout=sizeof(test.timeout);],
 	fi
 	enable_cdda_player="no"
 	;;
-     freebsd[[4-9]].*|freebsd10.*|dragonfly*|kfreebsd*)
+     freebsd[[4-9]].*|freebsd[[1-9]][[0-9]].*|dragonfly*|kfreebsd*)
      	AC_DEFINE([HAVE_FREEBSD_CDROM], [1],
                   [Define 1 if you have FreeBSD CD-ROM support])
  	LIBS="$LIBS -lcam"
@@ -592,16 +596,19 @@ if test "x$ac_cv_member_struct_tm_tm_gmtoff" = "xyes"; then
    AC_MSG_RESULT($has_tzname)
 fi
 
+AM_ICONV
+if test "x$am_cv_func_iconv" = "xno"; then
+   AC_MSG_ERROR([iconv is needed])
+fi
+
 AC_ARG_ENABLE(joliet,
 	AS_HELP_STRING([--disable-joliet], [don't include Joliet extension support (default enabled)]),
 	[enable_joliet=$enableval],
 	[enable_joliet=yes])
+
+AM_LANGINFO_CODESET
 if test "x${enable_joliet}" != "xno"; then
-  AM_ICONV
-  AM_LANGINFO_CODESET
-  if test "x$am_cv_func_iconv" = "xyes"; then
-     joliet_supported="yes"
-  fi
+  joliet_supported="yes"
   if test "x$joliet_supported" = "xyes"; then
      AC_DEFINE(HAVE_JOLIET, [1],
      [Define 1 if you want ISO-9660 Joliet extension support.

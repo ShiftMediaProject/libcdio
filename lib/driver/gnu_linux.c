@@ -1,6 +1,7 @@
 /*
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-  Copyright (C) 2002-2006, 2008-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2002-2006, 2008-2013, 2017 Rocky Bernstein
+  <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -115,8 +116,8 @@ run_mmc_cmd_linux( void *p_user_data,
                    cdio_mmc_direction_t e_direction,
                    unsigned int i_buf,
                    /*in/out*/ void *p_buf );
-static access_mode_t
 
+static access_mode_t
 str_to_access_mode_linux(const char *psz_access_mode)
 {
   const access_mode_t default_access_mode = _AM_IOCTL;
@@ -1401,7 +1402,7 @@ set_arg_linux (void *p_user_data, const char key[], const char value[])
     }
   else if (!strcmp (key, "access-mode"))
     {
-      return str_to_access_mode_linux(value);
+      p_env->access_mode = str_to_access_mode_linux(key);
     }
   else return DRIVER_OP_ERROR;
 
@@ -1700,7 +1701,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_pause           = audio_pause_linux,
     .audio_play_msf        = audio_play_msf_linux,
     .audio_play_track_index= audio_play_track_index_linux,
-#if USE_MMC_SUBCHANNEL
+#ifdef USE_MMC_SUBCHANNEL
     .audio_read_subchannel = audio_read_subchannel_mmc,
 #else
     .audio_read_subchannel = audio_read_subchannel_linux,
@@ -1718,7 +1719,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .get_devices           = cdio_get_devices_linux,
     .get_disc_last_lsn     = get_disc_last_lsn_linux,
     .get_discmode          = get_discmode_linux,
-#if USE_LINUX_CAP
+#if defined(USE_LINUX_CAP)
     .get_drive_cap         = get_drive_cap_linux,
 #else
     .get_drive_cap         = get_drive_cap_mmc,

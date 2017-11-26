@@ -1,11 +1,11 @@
-#!/bin/sh
+#!@SHELL@
 
 if test -z $srcdir ; then
-  srcdir=`pwd`
+  srcdir=$(pwd)
 fi
 
 if test "X$top_builddir" = "X" ; then
-  top_builddir=`pwd`/..
+  top_builddir=$(pwd)/..
 fi
 
 . ${top_builddir}/test/check_common_fn
@@ -14,7 +14,7 @@ if test ! -x ../src/iso-info@EXEEXT@ ; then
   exit 77
 fi
 
-BASE=`basename $0 .sh`
+BASE=$(basename $0 .sh)
 fname=copying
 
 opts="--quiet ${srcdir}/data/${fname}.iso --iso9660 "
@@ -46,7 +46,7 @@ if test -n "@HAVE_ROCK@"; then
 fi
 
 if test -n "@HAVE_JOLIET@" ; then
-  BASE=`basename $0 .sh`
+  BASE=$(basename $0 .sh)
   fname=joliet
   opts="--quiet ${srcdir}/data/${fname}.iso --iso9660 "
   test_iso_info  "$opts" ${fname}-nojoliet.dump ${srcdir}/${fname}.right
@@ -62,8 +62,13 @@ fi
 for fname in malformed malformed2; do
     opts="--quiet ${srcdir}/data/${fname}.iso -f "
     test_iso_info  "$opts" ${fname}.dump ${srcdir}/${fname}.right
-    RC=$?
-    check_result $RC "iso-info $fname test" "$cmdline"
+    BAD_RC=$?
+    if test $BAD_RC -ne  0 ; then
+	check_result 0 "iso-info $fname test" "$cmdline"
+    else
+	echo "$0: in $fname Expecting nonzero return"
+	RC=1
+    fi
 done
 
 

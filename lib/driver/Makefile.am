@@ -1,4 +1,4 @@
-#   Copyright (C) 2003-2010, 2012-2013
+#   Copyright (C) 2003-2010, 2012-2013, 2017
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libcdio_la_CURRENT = 16
+libcdio_la_CURRENT = 17
 libcdio_la_REVISION = 0
 libcdio_la_AGE = 0
 
@@ -59,7 +59,6 @@ libcdio_sources = \
 	_cdio_stream.h \
 	abs_path.c \
 	aix.c \
-	bsdi.c \
 	audio.c \
 	cd_types.c \
 	cdio.c \
@@ -95,7 +94,6 @@ libcdio_sources = \
 	MSWindows/win32.c \
 	MSWindows/win32.h \
 	netbsd.c \
-	os2.c \
 	osx.c \
 	read.c \
         realpath.c \
@@ -176,13 +174,12 @@ if BUILD_VERSIONED_LIBS
 libcdio_la_LDFLAGS = $(libcdio_la_ldflags) -Wl,--version-script=libcdio.la.ver
 libcdio_la_DEPENDENCIES = libcdio.la.ver
 
-libcdio.la.ver: $(libcdio_la_OBJECTS) $(srcdir)/libcdio.sym
+libcdio.la.ver: $(srcdir)/libcdio.sym
 	@echo 'CDIO_$(libcdio_la_MAJOR) { ' > $@
-	@objs=`for obj in $(libcdio_la_OBJECTS); do sed -ne "s/^pic_object='\(.*\)'$$/\1/p" $$obj; done`; \
-	if test -n "$${objs}" ; then \
-	  nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then if test $$first = true; then echo "  global:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@; \
-	  nm $${objs} | sed -n -e 's/^.*[ 	][ABCDGIRSTW][ABCDGIRSTW]*[ 	][ 	]*\([_A-Za-z][_A-Za-z0-9]*\)$$/\1/p' | sort -u | { first=true; while read symbol; do if grep -q "^$${symbol}\$$" $(srcdir)/libcdio.sym; then :; else if test $$first = true; then echo "  local:"; first=false; fi; echo "    $${symbol};"; fi; done; } >> $@; \
-	fi
+	@echo '  global:' >> $@
+	@sed 's/^/    /;s/$$/;/' $< >> $@
+	@echo '  local:' >> $@
+	@echo '    *;' >> $@
 	@echo '};' >> $@
 else
 libcdio_la_LDFLAGS = $(libcdio_la_ldflags)
