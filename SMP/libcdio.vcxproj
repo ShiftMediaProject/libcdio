@@ -97,7 +97,6 @@
     <ClCompile Include="..\lib\driver\abs_path.c" />
     <ClCompile Include="..\lib\driver\aix.c" />
     <ClCompile Include="..\lib\driver\audio.c" />
-    <ClCompile Include="..\lib\driver\bsdi.c" />
     <ClCompile Include="..\lib\driver\cdio.c" />
     <ClCompile Include="..\lib\driver\cdtext.c" />
     <ClCompile Include="..\lib\driver\cd_types.c" />
@@ -124,7 +123,6 @@
     </ClCompile>
     <ClCompile Include="..\lib\driver\MSWindows\win32_ioctl.c" />
     <ClCompile Include="..\lib\driver\netbsd.c" />
-    <ClCompile Include="..\lib\driver\os2.c" />
     <ClCompile Include="..\lib\driver\osx.c" />
     <ClCompile Include="..\lib\driver\read.c" />
     <ClCompile Include="..\lib\driver\realpath.c" />

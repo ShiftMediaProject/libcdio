@@ -155,9 +155,6 @@
     <ClCompile Include="..\lib\driver\audio.c">
       <Filter>Source Files\driver</Filter>
     </ClCompile>
-    <ClCompile Include="..\lib\driver\bsdi.c">
-      <Filter>Source Files\driver</Filter>
-    </ClCompile>
     <ClCompile Include="..\lib\driver\cd_types.c">
       <Filter>Source Files\driver</Filter>
     </ClCompile>
@@ -186,9 +183,6 @@
       <Filter>Source Files\driver</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\driver\netbsd.c">
-      <Filter>Source Files\driver</Filter>
-    </ClCompile>
-    <ClCompile Include="..\lib\driver\os2.c">
       <Filter>Source Files\driver</Filter>
     </ClCompile>
     <ClCompile Include="..\lib\driver\osx.c">
