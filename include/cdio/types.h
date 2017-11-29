@@ -335,6 +335,10 @@ typedef uint8_t ubyte;
   CDIO_TRACK_FLAG_SCMS =                 0x10   /**< SCMS (5.29.2.7) */
 } cdio_track_flag;
 
+
+/* Note that this matches the free() prototype.*/
+typedef void (*CdioDataFree_t)(void *ptr);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

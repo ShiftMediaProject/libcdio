@@ -68,6 +68,7 @@ main(int argc, const char *argv[])
 	    ISO9660_IMAGE);
     return 1;
   } else {
+    unsigned int rc=0;
     uint8_t joliet_level = iso9660_ifs_get_joliet_level(p_iso);
     if (joliet_level != 0) {
       printf("Expecting joliet level to be 0, got %u\n", joliet_level);
@@ -75,7 +76,9 @@ main(int argc, const char *argv[])
     } else {
       printf("-- No joliet, as expected.\n");
     }
+    iso9660_close(p_iso);
     p_iso = iso9660_open_ext(ISO9660_IMAGE, ISO_EXTENSION_ALL);
+
     joliet_level = iso9660_ifs_get_joliet_level(p_iso);
     if ( joliet_level != 0) {
       printf("Expecting joliet level to still be 0, got %d\n", joliet_level);
@@ -103,8 +106,8 @@ main(int argc, const char *argv[])
       char buf[ISO_BLOCKSIZE];
       char *psz_path = NULL;
       const lsn_t i_lsn = p_statbuf->lsn;
-      const iso9660_stat_t *p_statbuf2 = iso9660_ifs_find_lsn (p_iso, i_lsn);
-      const iso9660_stat_t *p_statbuf3 =
+      iso9660_stat_t *p_statbuf2 = iso9660_ifs_find_lsn (p_iso, i_lsn);
+      iso9660_stat_t *p_statbuf3 =
 	iso9660_ifs_find_lsn_with_path (p_iso, i_lsn, &psz_path);
 
       /* Compare the two statbufs. */
@@ -114,28 +117,29 @@ main(int argc, const char *argv[])
 
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "iso9660_ifs_find_lsn isn't the same\n");
-	  iso9660_stat_free(p_statbuf);
-	  exit(3);
+	  rc = 3;
+	  goto exit;
       }
 
       if (p_statbuf3->lsn != p_statbuf2->lsn ||
 	  p_statbuf3->size != p_statbuf2->size ||
 	  p_statbuf3->type != p_statbuf2->type) {
-          iso9660_stat_free(p_statbuf);
-	  exit(4);
+	rc = 4;
+	goto exit;
       }
 
       if (psz_path != NULL) {
 	if (0 != strncmp("/./", psz_path, strlen("/./"))) {
 	  fprintf(stderr, "Path returned for ifs_find_lsn_with_path "
 		  "is not correct should be /./, is %s\n", psz_path);
-          iso9660_stat_free(p_statbuf);
-	  exit(5);
+	  rc = 5;
+	  goto exit;
 	}
 	free(psz_path);
       } else {
 	fprintf(stderr, "Path returned for fs_find_lsn_with_path is NULL\n");
-	iso9660_stat_free(p_statbuf);
+	rc = 6;
+	goto exit;
 	exit(6);
       }
 
@@ -145,11 +149,15 @@ main(int argc, const char *argv[])
 	{
 	  fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		  (long unsigned int) p_statbuf->lsn);
-	  iso9660_stat_free(p_statbuf);
-	  exit(7);
+	  rc = 7;
+	  goto exit;
 	}
-      iso9660_stat_free(p_statbuf);
-      exit(0);
+  exit:
+    iso9660_stat_free(p_statbuf2);
+    iso9660_stat_free(p_statbuf3);
+    iso9660_stat_free(p_statbuf);
+    iso9660_close(p_iso);
+    exit(rc);
     }
   }
 

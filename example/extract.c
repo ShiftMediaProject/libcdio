@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2012 Pete Batard <pete@akeo.ie>
-  Based on samples copyright (c) 2003-2011 Rocky Bernstein <rocky@gnu.org>
+  Based on samples copyright (c) 2003-2011, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -236,7 +236,7 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
 out:
   if (fd != NULL)
     fclose(fd);
-  _cdio_list_free(p_entlist, true);
+  _cdio_list_free(p_entlist, true, (CdioDataFree_t) iso9660_stat_free);
   return r;
 }
 

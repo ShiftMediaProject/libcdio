@@ -258,6 +258,7 @@ iso9660_close (iso9660_t *p_iso)
 {
   if (NULL != p_iso) {
     cdio_stdio_destroy(p_iso->stream);
+    p_iso->stream = NULL;
     free(p_iso);
   }
   return true;
@@ -1316,13 +1317,13 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
     if (!_dirbuf)
       {
       cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
-      _cdio_list_free (retval, true);
+      _cdio_list_free (retval, true, NULL);
       return NULL;
       }
 
     if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn,
 				ISO_BLOCKSIZE, p_stat->secsize)) {
-      _cdio_list_free (retval, true);
+      _cdio_list_free (retval, true, NULL);
       return NULL;
     }
 
@@ -1381,7 +1382,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       {
         cdio_warn("Invalid directory buffer sector size %u", p_stat->secsize);
 	iso9660_stat_free(p_stat);
-	_cdio_list_free (retval, true);
+	_cdio_list_free (retval, true, NULL);
         return NULL;
       }
 
@@ -1390,13 +1391,13 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       {
         cdio_warn("Couldn't calloc(1, %lu)", (unsigned long)dirbuf_len);
 	iso9660_stat_free(p_stat);
-	_cdio_list_free (retval, true);
+	_cdio_list_free (retval, true, NULL);
         return NULL;
       }
 
     ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, p_stat->secsize);
     if (ret != dirbuf_len) 	  {
-      _cdio_list_free (retval, true);
+      _cdio_list_free (retval, true, NULL);
       iso9660_stat_free(p_stat);
       free (_dirbuf);
       return NULL;
@@ -1427,7 +1428,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     iso9660_stat_free(p_stat);
 
     if (offset != dirbuf_len) {
-      _cdio_list_free (retval, true);
+      _cdio_list_free (retval, true, (CdioDataFree_t) iso9660_stat_free);
       return NULL;
     }
 
@@ -1464,6 +1465,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
       if (statbuf->type == _STAT_DIR
           && strcmp ((char *) statbuf->filename, ".")
           && strcmp ((char *) statbuf->filename, "..")) {
+	snprintf (*ppsz_full_filename, len, "%s%s/", psz_path, psz_filename);
         _cdio_list_append (dirlist, strdup(*ppsz_full_filename));
       }
 
@@ -1472,19 +1474,19 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 	iso9660_stat_t *ret_stat = calloc(1, len2);
 	if (!ret_stat)
 	  {
-	    _cdio_list_free (dirlist, true);
+	    _cdio_list_free (dirlist, true, free);
 	    cdio_warn("Couldn't calloc(1, %d)", len2);
 	    return NULL;
 	  }
 	memcpy(ret_stat, statbuf, len2);
-        _cdio_list_free (entlist, true);
-        _cdio_list_free (dirlist, true);
+        _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
+        _cdio_list_free (dirlist, true, free);
         return ret_stat;
       }
 
     }
 
-  _cdio_list_free (entlist, true);
+  _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
 
   /* now recurse/descend over directories encountered */
 
@@ -1499,7 +1501,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 				   ppsz_full_filename);
 
       if (NULL != ret_stat) {
-        _cdio_list_free (dirlist, true);
+        _cdio_list_free (dirlist, true, free);
         return ret_stat;
       }
     }
@@ -1508,7 +1510,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
     free(*ppsz_full_filename);
     *ppsz_full_filename = NULL;
   }
-  _cdio_list_free (dirlist, true);
+  _cdio_list_free (dirlist, true, free);
   return NULL;
 }
 
@@ -1575,8 +1577,9 @@ void
 iso9660_stat_free(iso9660_stat_t *p_stat)
 {
   if (p_stat != NULL) {
-    if (p_stat->rr.psz_symlink)
+    if (p_stat->rr.psz_symlink) {
       CDIO_FREE_IF_NOT_NULL(p_stat->rr.psz_symlink);
+    }
     free(p_stat);
   }
 }

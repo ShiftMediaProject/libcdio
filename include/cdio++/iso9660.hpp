@@ -48,68 +48,68 @@ public:
     {
       memset(&pvd, 0, sizeof(pvd));
     }
-    
+
     PVD(iso9660_pvd_t *p_new_pvd)
-    { 
+    {
       memcpy(&pvd, p_new_pvd, sizeof(pvd));
     };
 
     /*!
       Return the PVD's application ID.
-      NULL is returned if there is some problem in getting this. 
+      NULL is returned if there is some problem in getting this.
     */
     char * get_application_id();
-    
+
     int get_pvd_block_size();
-    
+
     /*!
       Return the PVD's preparer ID.
-      NULL is returned if there is some problem in getting this. 
+      NULL is returned if there is some problem in getting this.
     */
     char * get_preparer_id();
-    
+
     /*!
       Return the PVD's publisher ID.
-      NULL is returned if there is some problem in getting this. 
+      NULL is returned if there is some problem in getting this.
     */
     char * get_publisher_id();
-    
+
     const char *get_pvd_id();
-    
+
     int get_pvd_space_size();
-    
+
     uint8_t get_pvd_type();
-    
+
     /*! Return the primary volume id version number (of pvd).
-      If there is an error 0 is returned. 
+      If there is an error 0 is returned.
     */
     int get_pvd_version();
-    
+
     /*! Return the LSN of the root directory for pvd.
-      If there is an error CDIO_INVALID_LSN is returned. 
+      If there is an error CDIO_INVALID_LSN is returned.
     */
     lsn_t get_root_lsn();
-  
+
     /*!
       Return the PVD's system ID.
-      NULL is returned if there is some problem in getting this. 
+      NULL is returned if there is some problem in getting this.
     */
     char * get_system_id();
-    
+
     /*!
       Return the PVD's volume ID.
-      NULL is returned if there is some problem in getting this. 
+      NULL is returned if there is some problem in getting this.
     */
     char * get_volume_id();
-    
+
     /*!
       Return the PVD's volumeset ID.
-      NULL is returned if there is some problem in getting this. 
+      NULL is returned if there is some problem in getting this.
     */
     char * get_volumeset_id();
-    
+
   };
-    
+
   class Stat  // ISO 9660 file information
   {
   public:
@@ -118,37 +118,37 @@ public:
     typedef vector< ISO9660::Stat *> stat_vector_t;
 
     Stat(iso9660_stat_t *p_new_stat)
-    { 
+    {
       p_stat = p_new_stat;
     };
 
-    Stat(const Stat& copy_in) 
+    Stat(const Stat& copy_in)
     {
       free(p_stat);
-      p_stat = (iso9660_stat_t *) 
-        calloc( 1, sizeof(iso9660_stat_t) 
+      p_stat = (iso9660_stat_t *)
+        calloc( 1, sizeof(iso9660_stat_t)
                 + strlen(copy_in.p_stat->filename)+1 );
       p_stat = copy_in.p_stat;
     }
-      
-    const Stat& operator= (const Stat& right) 
+
+    const Stat& operator= (const Stat& right)
     {
       free(p_stat);
       this->p_stat = right.p_stat;
       return right;
     }
-    
-    ~Stat() 
+
+    ~Stat()
     {
       iso9660_stat_free(p_stat);
       p_stat = NULL;
     }
-    
+
   };
 
 #ifdef FS
  #undef FS
-#endif  
+#endif
   class FS : public CdioDevice // ISO 9660 Filesystem on a CD or CD-image
   {
   public:
@@ -158,7 +158,7 @@ public:
     /*!
       Given a directory pointer, find the filesystem entry that contains
       lsn and return information about it.
-      
+
       @return Stat * of entry if we found lsn, or NULL otherwise.
       Caller must release returned object using delete when done.
     */
@@ -170,8 +170,8 @@ public:
     PVD *read_pvd ();
 
     /*!
-      Read the Super block of an ISO 9660 image. This is the 
-      Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume 
+      Read the Super block of an ISO 9660 image. This is the
+      Primary Volume Descriptor (PVD) and perhaps a Supplemental Volume
       Descriptor if (Joliet) extensions are acceptable.
     */
     bool read_superblock (iso_extension_mask_t iso_extension_mask);
@@ -186,29 +186,29 @@ public:
     /*!
       Return file status for path name psz_path. NULL is returned on
       error.
-      
+
       If translate is true, version numbers in the ISO 9660 name are
       dropped, i.e. ;1 is removed and if level 1 ISO-9660 names are
       lowercased.
-      
+
       Mode2 is used only if translate is true and is a hack that
       really should go away in libcdio sometime. If set use mode 2
       reading, otherwise use mode 1 reading.
-      
+
       @return file status object for psz_path. NULL is returned on
       error. Caller must release returned object using delete when done.
     */
     Stat *
     stat (const char psz_path[], bool b_translate=false, bool b_mode2=false)
     {
-      if (b_translate) 
-        return new Stat(iso9660_fs_stat_translate (p_cdio, psz_path, 
+      if (b_translate)
+        return new Stat(iso9660_fs_stat_translate (p_cdio, psz_path,
                                                             b_mode2));
-      else 
+      else
         return new Stat(iso9660_fs_stat (p_cdio, psz_path));
     }
   };
-  
+
   class IFS  // ISO 9660 filesystem image
   {
   public:
@@ -216,20 +216,20 @@ public:
     typedef vector< ISO9660::Stat *> stat_vector_t;
 
     IFS()
-    { 
-      p_iso9660=NULL; 
+    {
+      p_iso9660=NULL;
     };
 
-    ~IFS() 
-    { 
-      iso9660_close(p_iso9660); 
+    ~IFS()
+    {
+      iso9660_close(p_iso9660);
       p_iso9660 = (iso9660_t *) NULL;
     };
-    
+
     /*! Close previously opened ISO 9660 image and free resources
       associated with the image. Call this when done using using an ISO
       9660 image.
-      
+
       @return true is unconditionally returned. If there was an error
       false would be returned.
     */
@@ -238,45 +238,45 @@ public:
     /*!
       Given a directory pointer, find the filesystem entry that contains
       lsn and return information about it.
-      
+
       Returns Stat*  of entry if we found lsn, or NULL otherwise.
       Caller must release returned object using delete when done.
     */
     Stat *find_lsn(lsn_t i_lsn);
 
-    /*!  
+    /*!
       Get the application ID.  psz_app_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
-    bool get_application_id(/*out*/ char * &psz_app_id) 
+    bool get_application_id(/*out*/ char * &psz_app_id)
     {
       return iso9660_ifs_get_application_id(p_iso9660, &psz_app_id);
     }
-    
-    /*!  
-      Return the Joliet level recognized. 
+
+    /*!
+      Return the Joliet level recognized.
     */
     uint8_t get_joliet_level();
-    
-    /*!  
+
+    /*!
       Get the preparer ID.  psz_preparer_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
-    bool get_preparer_id(/*out*/ char * &psz_preparer_id) 
+    bool get_preparer_id(/*out*/ char * &psz_preparer_id)
     {
       return iso9660_ifs_get_preparer_id(p_iso9660, &psz_preparer_id);
     }
 
-    /*!  
+    /*!
       Get the publisher ID.  psz_publisher_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
-    bool get_publisher_id(/*out*/ char * &psz_publisher_id) 
+    bool get_publisher_id(/*out*/ char * &psz_publisher_id)
     {
       return iso9660_ifs_get_publisher_id(p_iso9660, &psz_publisher_id);
     }
-    
-    /*!  
+
+    /*!
       Get the system ID.  psz_system_id is set to NULL if there
       is some problem in getting this and false is returned.
     */
@@ -284,21 +284,21 @@ public:
     {
       return iso9660_ifs_get_system_id(p_iso9660, &psz_system_id);
     }
-    
+
     /*! Return the volume ID in the PVD. psz_volume_id is set to
       NULL if there is some problem in getting this and false is
       returned.
     */
-    bool get_volume_id(/*out*/ char * &psz_volume_id) 
+    bool get_volume_id(/*out*/ char * &psz_volume_id)
     {
       return iso9660_ifs_get_volume_id(p_iso9660, &psz_volume_id);
     }
-    
+
     /*! Return the volumeset ID in the PVD. psz_volumeset_id is set to
       NULL if there is some problem in getting this and false is
       returned.
     */
-    bool get_volumeset_id(/*out*/ char * &psz_volumeset_id) 
+    bool get_volumeset_id(/*out*/ char * &psz_volumeset_id)
     {
       return iso9660_ifs_get_volumeset_id(p_iso9660, &psz_volumeset_id);
     }
@@ -312,16 +312,16 @@ public:
       have a mode. NULL is returned on error. An open routine should be
       called before using any read routine. If device object was
       previously opened it is closed first.
-      
+
       @param psz_path location of ISO 9660 image
       @param iso_extension_mask the kinds of ISO 9660 extensions will be
       considered on access.
-      
+
       @return true if open succeeded or false if error.
-      
+
       @see open_fuzzy
     */
-    bool open(const char *psz_path, 
+    bool open(const char *psz_path,
               iso_extension_mask_t iso_extension_mask=ISO_EXTENSION_NONE)
     {
       if (p_iso9660) iso9660_close(p_iso9660);
@@ -334,10 +334,10 @@ public:
       checks. This may be useful when trying to read an ISO 9660 image
       contained in a file format that libiso9660 doesn't know natively
       (or knows imperfectly.)
-      
+
       Maybe in the future we will have a mode. NULL is returned on
       error.
-      
+
       @see open
     */
     bool open_fuzzy (const char *psz_path,
@@ -349,7 +349,7 @@ public:
       PVD object is returned if read, and NULL if there was an error.
     */
     PVD *read_pvd ();
-  
+
     /*!
       Read the Super block of an ISO 9660 image but determine framesize
       and datastart and a possible additional offset. Generally here we are
@@ -370,7 +370,7 @@ public:
 
       @see read_superblock
     */
-    bool 
+    bool
     read_superblock_fuzzy (iso_extension_mask_t iso_extension_mask
                            =ISO_EXTENSION_NONE,
                            uint16_t i_fuzz=20);
@@ -379,18 +379,18 @@ public:
       pointers for the files inside that directory. The caller must free
       the returned result.
     */
-    bool readdir (const char psz_path[], stat_vector_t& stat_vector) 
+    bool readdir (const char psz_path[], stat_vector_t& stat_vector)
     {
       CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
-      
+
       if (p_stat_list) {
         CdioListNode_t *p_entnode;
         _CDIO_LIST_FOREACH (p_entnode, p_stat_list) {
-          iso9660_stat_t *p_statbuf = 
+          iso9660_stat_t *p_statbuf =
             (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
           stat_vector.push_back(new ISO9660::Stat(p_statbuf));
         }
-        _cdio_list_free (p_stat_list, false);
+        _cdio_list_free (p_stat_list, false, (CdioDataFree_t) iso9660_stat_free);
         return true;
       } else {
         return false;
@@ -400,25 +400,25 @@ public:
     /*!
       Seek to a position and then read n bytes. Size read is returned.
     */
-    long int 
-    seek_read (void *ptr, lsn_t start, long int i_size=1) 
+    long int
+    seek_read (void *ptr, lsn_t start, long int i_size=1)
     {
       return iso9660_iso_seek_read (p_iso9660, ptr, start, i_size);
     }
-    
-    /*!  
+
+    /*!
       Return file status for pathname. NULL is returned on error.
       Caller must release returned object using delete when done.
     */
     Stat *
-    stat (const char psz_path[], bool b_translate=false) 
+    stat (const char psz_path[], bool b_translate=false)
     {
-      if (b_translate) 
+      if (b_translate)
         return new Stat(iso9660_ifs_stat_translate (p_iso9660, psz_path));
-      else 
+      else
         return new Stat(iso9660_ifs_stat (p_iso9660, psz_path));
     }
-    
+
   private:
     iso9660_t *p_iso9660;
   };

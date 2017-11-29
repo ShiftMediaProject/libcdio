@@ -194,7 +194,7 @@ AC_DEFINE(LIBCDIO_CONFIG_H, 1,
 dnl headers
 
 AC_HEADER_STDC
-AC_CHECK_HEADERS(errno.h fcntl.h glob.h limits.h pwd.h stdbool.h)
+AC_CHECK_HEADERS(alloca.h errno.h fcntl.h glob.h limits.h pwd.h stdbool.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
 		 sys/time.h sys/timeb.h sys/utsname.h)
 

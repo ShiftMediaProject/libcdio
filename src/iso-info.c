@@ -54,6 +54,10 @@
 #include <unistd.h>
 #endif
 
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+
 #if 0
 #define STRONG "\033[1m"
 #define NORMAL "\033[0m"
@@ -228,7 +232,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
   CdioList_t *dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
-  char *translated_name = (char *) malloc(4096);
+  char *translated_name = (char *) alloca(4096);
   size_t translated_name_size = 4096;
   entlist = iso9660_ifs_readdir (p_iso, psz_path);
 
@@ -237,7 +241,6 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
   }
 
   if (NULL == entlist) {
-    free(translated_name);
     free(dirlist);
     report( stderr, "Error getting above directory information\n" );
     return;
@@ -245,9 +248,8 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
 
   rec_counter++;
   if (rec_counter > CDIO_MAX_DIR_RECURSION) {
-    free(translated_name);
     free(dirlist);
-    _cdio_list_free (entlist, true);
+    _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
     report( stderr,
             "Directory recursion too deep. ISO most probably damaged.\n" );
     return;
@@ -260,14 +262,8 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
       char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
-       if (strlen(psz_iso_name) >= translated_name_size) {
+      if (strlen(psz_iso_name) >= translated_name_size) {
          translated_name_size = strlen(psz_iso_name)+1;
-         free(translated_name);
-         translated_name = (char *) malloc(translated_name_size);
-         if (!translated_name) {
-           report( stderr, "Error allocating memory\n" );
-           return;
-         }
        }
 
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
@@ -292,19 +288,15 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
                        0 == opts.no_rock_ridge,
                        iso9660_ifs_is_xa(p_iso) && 0 == opts.no_xa,
                        psz_iso_name, translated_name);
-      } else
+      } else {
         if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
           printf("%9u %s%s\n", (unsigned int) p_statbuf->size, psz_path,
                  yep == p_statbuf->rr.b3_rock
                  ? psz_iso_name : translated_name);
-      if (p_statbuf->rr.i_symlink) {
-        free(p_statbuf->rr.psz_symlink);
-        p_statbuf->rr.i_symlink = 0;
       }
     }
-    free (translated_name);
 
-  _cdio_list_free (entlist, true);
+  _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
 
   if (opts.print_iso9660) {
     printf ("\n");
@@ -319,7 +311,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
       print_iso9660_recurse (p_iso, _fullname, rec_counter);
     }
 
-  _cdio_list_free (dirlist, true);
+  _cdio_list_free (dirlist, true, free);
 }
 
 static void
