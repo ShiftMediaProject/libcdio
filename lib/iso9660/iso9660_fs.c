@@ -206,6 +206,11 @@ iso9660_open_ext_private (const char *psz_path,
 /*!
   Open an ISO 9660 image for reading. Maybe in the future we will have
   a mode. NULL is returned on error.
+
+  @param psz_path full path of ISO9660 file.
+
+  @return a IS9660 structure  is unconditionally returned. The caller
+  should call iso9660_close() when done.
 */
 iso9660_t *
 iso9660_open (const char *psz_path /*, mode*/)
@@ -214,8 +219,11 @@ iso9660_open (const char *psz_path /*, mode*/)
 }
 
 /*!
-  Open an ISO 9660 image for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
+  Open an ISO 9660 image for reading allowing various ISO 9660
+  extensions.  Maybe in the future we will have a mode. NULL is
+  returned on error.
+
+  @see iso9660_open_fuzzy
 */
 iso9660_t *
 iso9660_open_ext (const char *psz_path,
@@ -225,9 +233,19 @@ iso9660_open_ext (const char *psz_path,
 }
 
 
-/*!
-  Open an ISO 9660 image for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
+/*! Open an ISO 9660 image for "fuzzy" reading. This means that we
+  will try to guess various internal offset based on internal
+  checks. This may be useful when trying to read an ISO 9660 image
+  contained in a file format that libiso9660 doesn't know natively
+  (or knows imperfectly.)
+
+  Some tolerence allowed for positioning the ISO 9660 image. We scan
+  for STANDARD_ID and use that to set the eventual offset to adjust
+  by (as long as that is <= i_fuzz).
+
+  Maybe in the future we will have a mode. NULL is returned on error.
+
+  @see iso9660_open, @see iso9660_fuzzy_ext
 */
 iso9660_t *
 iso9660_open_fuzzy (const char *psz_path, uint16_t i_fuzz /*, mode*/)
@@ -236,8 +254,13 @@ iso9660_open_fuzzy (const char *psz_path, uint16_t i_fuzz /*, mode*/)
 }
 
 /*!
-  Open an ISO 9660 image for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
+  Open an ISO 9660 image for reading with some tolerence for positioning
+  of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
+  the eventual offset to adjust by (as long as that is <= i_fuzz).
+
+  Maybe in the future we will have a mode. NULL is returned on error.
+
+  @see iso9660_open_ext @see iso9660_open_fuzzy
 */
 iso9660_t *
 iso9660_open_fuzzy_ext (const char *psz_path,
@@ -248,10 +271,12 @@ iso9660_open_fuzzy_ext (const char *psz_path,
 				  true);
 }
 
-/*!
-  Close previously opened ISO 9660 image.
-  True is unconditionally returned. If there was an error false would
-  be returned.
+/*! Close previously opened ISO 9660 image and free resources
+    associated with the image. Call this when done using using an ISO
+    9660 image.
+
+    @return true is unconditionally returned. If there was an error
+    false would be returned.
 */
 bool
 iso9660_close (iso9660_t *p_iso)
@@ -1178,7 +1203,22 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 }
 
 /*!
-  Get file status for psz_path into stat. NULL is returned on error.
+  Return file status for psz_path. NULL is returned on error.
+
+  @param p_cdio the CD object to read from
+
+  @param psz_path filename path to look up and get information about
+
+  @return ISO 9660 file information
+
+  Important note:
+
+  You make get different results looking up "/" versus "/." and the
+  latter may give more complete information. "/" will take information
+  from the PVD only, whereas "/." will force a directory read of "/" and
+  find "." and in that Rock-Ridge information might be found which fills
+  in more stat information. Ideally iso9660_fs_stat should be fixed.
+  Patches anyone?
  */
 iso9660_stat_t *
 iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
@@ -1235,9 +1275,21 @@ fs_stat_translate (void *p_image, stat_root_t stat_root,
   return p_stat;
 }
 
+/*!
+  Return file status for path name psz_path. NULL is returned on error.
+  pathname version numbers in the ISO 9660 name are dropped, i.e. ;1
+  is removed and if level 1 ISO-9660 names are lowercased.
+
+  @param p_cdio the CD object to read from
+
+  @param psz_path filename path to look up and get information about
+
+  @return ISO 9660 file information.  The caller must free the
+  returned result using iso9660_stat_free().
+
+ */
 iso9660_stat_t *
-iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
-			   bool b_mode2)
+iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[])
 {
   return fs_stat_translate(p_cdio, (stat_root_t *) _fs_stat_root,
 			   (stat_traverse_t *) _fs_stat_traverse,
@@ -1245,10 +1297,14 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
 }
 
 /*!
-  Get file status for psz_path into stat. NULL is returned on error.
-  pathname version numbers in the ISO 9660
-  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
-  are lowercased.
+  @param p_iso the ISO-9660 file image to get data from
+
+  @param psz_path filename path translate
+
+  @return file status for path name psz_path. NULL is returned on
+  error.  pathname version numbers in the ISO 9660 name are dropped,
+  i.e. ;1 is removed and if level 1 ISO-9660 names are lowercased.
+  The caller must free the returned result using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
@@ -1260,7 +1316,13 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
 
 
 /*!
-  Get file status for psz_path into stat. NULL is returned on error.
+
+  @param p_cdio the CD object to read from
+
+  @param pzs_path path the look up
+
+  @return file status for pathname. NULL is returned on error.
+  The caller must free the returned result using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
@@ -1290,7 +1352,7 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
   b_mode2 is historical. It is not used.
 */
 CdioList_t *
-iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
+iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
 {
   generic_img_private_t *p_env;
   iso9660_stat_t *p_stat;
@@ -1530,9 +1592,17 @@ iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
-   lsn and return information about it.
+   LSN and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @param p_iso the ISO-9660 file image to get data from.
+   @param i_lsn the LSN to find
+   @param ppsz_full_filename the place to store the name of the path that has LSN.
+   On entry this should point to NULL. If not, the value will be freed.
+   On exit a value is malloc'd and the caller is responsible for
+   freeing the result.
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_fs_find_lsn_with_path(CdIo_t *p_cdio, lsn_t i_lsn,
@@ -1546,21 +1616,40 @@ iso9660_fs_find_lsn_with_path(CdIo_t *p_cdio, lsn_t i_lsn,
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @param p_iso the ISO-9660 file image to get data from.
+
+   @param i_lsn the LSN to find
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn)
 {
   char *psz_full_filename = NULL;
-  return find_lsn_recurse (p_iso, (iso9660_readdir_t *) iso9660_ifs_readdir,
-			   "/", i_lsn, &psz_full_filename);
+  iso9660_stat_t *ret  =
+    find_lsn_recurse (p_iso, (iso9660_readdir_t *) iso9660_ifs_readdir,
+		      "/", i_lsn, &psz_full_filename);
+  if (psz_full_filename != NULL)
+    free(psz_full_filename);
+  return ret;
 }
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @param p_iso pointer to iso_t
+
+   @param i_lsn LSN to find
+
+   @param ppsz_path  full path of lsn filename. On entry *ppsz_path should be
+   NULL. On return it will be allocated an point to the full path of the
+   file at lsn or NULL if the lsn is not found. You should deallocate
+   *ppsz_path when you are done using it.
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, lsn_t i_lsn,
@@ -1572,6 +1661,9 @@ iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, lsn_t i_lsn,
 
 /*!
   Free the passed iso9660_stat_t structure.
+
+  @param p_stat iso9660 stat buffer to free.
+
  */
 void
 iso9660_stat_free(iso9660_stat_t *p_stat)

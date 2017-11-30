@@ -68,6 +68,10 @@
 #include <errno.h>
 #endif
 
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+
 #define STRONG "__________________________________\n"
 #define NORMAL ""
 
@@ -544,20 +548,19 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
   CdioList_t *p_dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level;
-  char *translated_name = (char *) malloc(4096);
+  char *translated_name = (char *) alloca(4096);
   size_t translated_name_size = 4096;
 
   i_joliet_level = (opts.no_joliet)
     ? 0
     : cdio_get_joliet_level(p_cdio);
 
-  p_entlist = iso9660_fs_readdir (p_cdio, pathname, false);
+  p_entlist = iso9660_fs_readdir (p_cdio, pathname);
 
   printf ("%s:\n", pathname);
 
   if (NULL == p_entlist) {
     report( stderr, "Error getting above directory information\n" );
-    free(translated_name);
     free(p_dirlist);
     return;
   }
@@ -571,8 +574,6 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       char _fullname[4096] = { 0, };
        if (strlen(psz_iso_name) >= translated_name_size) {
          translated_name_size = strlen(psz_iso_name)+1;
-         free(translated_name);
-         translated_name = (char *) malloc(translated_name_size);
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
 	   _cdio_list_free (p_dirlist, true, free);
@@ -604,7 +605,6 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
         p_statbuf->rr.i_symlink = 0;
       }
     }
-    free (translated_name);
 
   _cdio_list_free (p_entlist, true, (CdioDataFree_t) iso9660_stat_free);
 

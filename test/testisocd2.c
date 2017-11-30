@@ -135,7 +135,6 @@ main(int argc, const char *argv[])
 	  rc = 5;
 	  goto exit;
 	}
-	free(psz_path);
       } else {
 	fprintf(stderr, "Path returned for fs_find_lsn_with_path is NULL\n");
 	rc = 6;
@@ -153,11 +152,13 @@ main(int argc, const char *argv[])
 	  goto exit;
 	}
   exit:
-    iso9660_stat_free(p_statbuf2);
-    iso9660_stat_free(p_statbuf3);
-    iso9660_stat_free(p_statbuf);
-    iso9660_close(p_iso);
-    exit(rc);
+      if (psz_path != NULL)
+      	free(psz_path);
+      iso9660_stat_free(p_statbuf2);
+      iso9660_stat_free(p_statbuf3);
+      iso9660_stat_free(p_statbuf);
+      iso9660_close(p_iso);
+      exit(rc);
     }
   }
 

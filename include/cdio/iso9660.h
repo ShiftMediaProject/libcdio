@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003-2008, 2012-2013
+    Copyright (C) 2003-2008, 2012-2013, 2017
                   Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -563,8 +563,11 @@ typedef struct _iso9660_s iso9660_t;
     associated with the image. Call this when done using using an ISO
     9660 image.
 
+    @param p_iso the ISO-9660 file image to get data from
+
     @return true is unconditionally returned. If there was an error
-    false would be returned.
+    false would be returned. Resources associated with p_iso are
+    freed.
   */
   bool iso9660_close (iso9660_t * p_iso);
 
@@ -572,6 +575,12 @@ typedef struct _iso9660_s iso9660_t;
   /*!
     Open an ISO 9660 image for reading. Maybe in the future we will have
     a mode. NULL is returned on error.
+
+    @param psz_path full path of ISO9660 file.
+
+
+    @return a IS9660 structure  is unconditionally returned. The caller
+    should call iso9660_close() when done.
   */
   iso9660_t *iso9660_open (const char *psz_path /*flags, mode */);
 
@@ -867,17 +876,30 @@ iso9660_stat_t *iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
-   lsn and return information about it.
+   LSN and return information about it.
+
+   @param p_iso the ISO-9660 file image to get data from.
+
+   @param i_lsn the LSN to find
+
+   @param ppsz_full_filename the place to store the name of the path that has LSN.
+   On entry this should point to NULL. If not, the value will be freed.
+   On exit a value is malloc'd and the caller is responsible for
+   freeing the result.
 
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value using iso9660_stat_free().
  */
 iso9660_stat_t *iso9660_fs_find_lsn_with_path(CdIo_t *p_cdio, lsn_t i_lsn,
-                                              /*out*/ char **ppsz_path);
+                                              /*out*/ char **ppsz_full_filename);
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
+
+   @param p_iso the ISO-9660 file image to get data from.
+
+   @param i_lsn the LSN to find
 
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value using iso9660_stat_free().
@@ -890,7 +912,9 @@ iso9660_stat_t *iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn);
    lsn and return information about it.
 
    @param p_iso pointer to iso_t
+
    @param i_lsn LSN to find
+
    @param ppsz_path  full path of lsn filename. On entry *ppsz_path should be
    NULL. On return it will be allocated an point to the full path of the
    file at lsn or NULL if the lsn is not found. You should deallocate
@@ -905,6 +929,9 @@ iso9660_stat_t *iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso,
 
 /*!
   Free the passed iso9660_stat_t structure.
+
+  @param p_stat iso9660 stat buffer to free.
+
  */
 void iso9660_stat_free(iso9660_stat_t *p_stat);
 
@@ -915,7 +942,9 @@ void iso9660_stat_free(iso9660_stat_t *p_stat);
 
   @param psz_path filename path to look up and get information about
 
-  @return ISO 9660 file information
+  @return ISO 9660 file information. The caller must free the returned
+  result using iso9660_stat_free().
+
 
   Important note:
 
@@ -934,49 +963,88 @@ iso9660_stat_t *iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[]);
   pathname version numbers in the ISO 9660 name are dropped, i.e. ;1
   is removed and if level 1 ISO-9660 names are lowercased.
 
-  b_mode2 is historical. It is not used.
+  @param p_cdio the CD object to read from
+
+  @param psz_path filename path to look up and get information about
+
+  @return ISO 9660 file information.  The caller must free the
+  returned result using iso9660_stat_free().
+
  */
 iso9660_stat_t *iso9660_fs_stat_translate (CdIo_t *p_cdio,
-                                           const char psz_path[],
-                                           bool b_mode2);
-
+                                           const char psz_path[]);
 /*!
-  Return file status for pathname. NULL is returned on error.
+
+  @param p_cdio the CD object to read from
+
+  @param pzs_path path the look up
+
+  @return file status for pathname. NULL is returned on error.
+  The caller must free the returned result using iso9660_stat_free().
  */
 iso9660_stat_t *iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[]);
 
 
-/*!  Return file status for path name psz_path. NULL is returned on
+/*!
+  @param p_iso the ISO-9660 file image to get data from
+
+  @param psz_path filename path translate
+
+  @return file status for path name psz_path. NULL is returned on
   error.  pathname version numbers in the ISO 9660 name are dropped,
   i.e. ;1 is removed and if level 1 ISO-9660 names are lowercased.
+  The caller must free the returned result using iso9660_stat_free().
  */
 iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *p_iso,
                                             const char psz_path[]);
 
-/*!  Read psz_path (a directory) and return a list of iso9660_stat_t
-  pointers for the files inside that directory. The caller must free the
-  returned result using _cdio_list_free().
+/*!
+  Read psz_path (a directory) and return a list of iso9660_stat_t
+  pointers for the files inside that directory.
 
-  b_mode2 is historical. It is not used.
+  @param p_cdio the CD object to read from
+
+  @param pzs_path path the read the directory from.
+
+  @return file status for psz_path. The caller must free the
+  The caller must free the returned result using iso9660_stat_free().
 */
-CdioList_t * iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[],
-                                 bool b_mode2);
+CdioList_t * iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[]);
 
-/*!  Read psz_path (a directory) and return a list of iso9660_stat_t
-  pointers for the files inside that directory. The caller must free
-  the returned result using _cdio_list_free().
+/*!
+  Read psz_path (a directory) and return a list of iso9660_stat_t
+  pointers for the files inside that directory.
+
+  @param p_iso the ISO-9660 file image to get data from
+
+  @param pzs_path path the read the directory from.
+
+  @return file status for psz_path. The caller must free the
+  The caller must free the returned result using iso9660_stat_free().
 */
 CdioList_t * iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[]);
 
 /*!
   Return the PVD's application ID.
+
+  @param p_pvd the PVD to get data from
+
+  @return  the application id.
   NULL is returned if there is some problem in getting this.
+  The caller must free the resturned result using free() if
+  not null.
 */
 char * iso9660_get_application_id(iso9660_pvd_t *p_pvd);
 
 /*!
-  Get the application ID.  psz_app_id is set to NULL if there
-  is some problem in getting this and false is returned.
+  Return the PVD's application ID.
+
+  @param p_iso the ISO-9660 file image to get data from
+
+  @return  the application id.
+  NULL is returned if there is some problem in getting this.
+  The caller must free the resturned result using free() if
+  not null.
 */
 bool iso9660_ifs_get_application_id(iso9660_t *p_iso,
                                     /*out*/ cdio_utf8_t **p_psz_app_id);

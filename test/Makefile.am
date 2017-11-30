@@ -138,7 +138,7 @@ clean-local: clean-local-check
 clean-local-check:
 	-rm -rf exampleIso*.iso.prep *.log *.trs *.orig *.rej
 
-#: run regression tests. "test" is the same thing as "check"
+#: run valgrind on C progrma
 check-leaks: $(check_PROGRAMS)
 	for p in $(check_PROGRAMS); do \
 	   valgrind ./$$p; \

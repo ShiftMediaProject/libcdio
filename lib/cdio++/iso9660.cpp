@@ -1,5 +1,5 @@
 /* -*- C++ -*-
-  Copyright (C) 2006, 2008, 2011 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2011, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -70,11 +70,9 @@ ISO9660::FS::read_superblock (iso_extension_mask_t iso_extension_mask)
   returned result.
 */
 bool
-ISO9660::FS::readdir (const char psz_path[], stat_vector_t& stat_vector,
-		      bool b_mode2)
+ISO9660::FS::readdir (const char psz_path[], stat_vector_t& stat_vector)
 {
-  CdioList_t * p_stat_list = iso9660_fs_readdir (p_cdio, psz_path,
-						 b_mode2);
+  CdioList_t * p_stat_list = iso9660_fs_readdir (p_cdio, psz_path);
   if (p_stat_list) {
     CdioListNode_t *p_entnode;
     _CDIO_LIST_FOREACH (p_entnode, p_stat_list) {

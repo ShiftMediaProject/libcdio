@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006, 2008, 2011, 2012 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2006, 2008, 2011-2012, 2016 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -180,8 +180,7 @@ public:
       pointers for the files inside that directory. The caller must free the
       returned result.
     */
-    bool readdir (const char psz_path[], stat_vector_t& stat_vector,
-                  bool b_mode2=false);
+    bool readdir (const char psz_path[], stat_vector_t& stat_vector);
 
     /*!
       Return file status for path name psz_path. NULL is returned on
@@ -191,19 +190,14 @@ public:
       dropped, i.e. ;1 is removed and if level 1 ISO-9660 names are
       lowercased.
 
-      Mode2 is used only if translate is true and is a hack that
-      really should go away in libcdio sometime. If set use mode 2
-      reading, otherwise use mode 1 reading.
-
       @return file status object for psz_path. NULL is returned on
       error. Caller must release returned object using delete when done.
     */
     Stat *
-    stat (const char psz_path[], bool b_translate=false, bool b_mode2=false)
+    stat (const char psz_path[], bool b_translate=false)
     {
       if (b_translate)
-        return new Stat(iso9660_fs_stat_translate (p_cdio, psz_path,
-                                                            b_mode2));
+        return new Stat(iso9660_fs_stat_translate (p_cdio, psz_path));
       else
         return new Stat(iso9660_fs_stat (p_cdio, psz_path));
     }
