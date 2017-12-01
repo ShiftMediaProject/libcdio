@@ -1716,6 +1716,7 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
     {
       iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
       iso9660_stat_t *p_stat;
+      unsigned int i_last_component = 1;
 
       if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
 	continue;
@@ -1724,7 +1725,11 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 					p_iso->u_joliet_level);
       have_rr = p_stat->rr.b3_rock;
       if ( have_rr != yep) {
-	have_rr = iso_have_rr_traverse (p_iso, p_stat, &splitpath[1], pu_file_limit);
+	if (strlen(splitpath[0]) == 0)
+	  have_rr = false;
+	else
+	  have_rr = iso_have_rr_traverse (p_iso, p_stat, &splitpath[i_last_component],
+					  pu_file_limit);
       }
       free(p_stat);
       if (have_rr != nope) {
