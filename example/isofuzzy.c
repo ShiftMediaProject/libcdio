@@ -55,7 +55,7 @@
 int
 main(int argc, const char *argv[])
 {
-  CdioList_t *p_entlist;
+  CdioISO9660FileList_t *p_entlist;
   CdioListNode_t *entnode;
   char const *psz_fname;
   iso9660_t *p_iso;
@@ -87,7 +87,7 @@ main(int argc, const char *argv[])
       printf ("-- /%s\n", filename);
     }
 
-    _cdio_list_free(p_entlist, true, (CdioDataFree_t) iso9660_stat_free);
+    iso9660_filelist_free(p_entlist);
   }
 
   iso9660_close(p_iso);

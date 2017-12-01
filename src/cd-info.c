@@ -561,7 +561,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
 
   if (NULL == p_entlist) {
     report( stderr, "Error getting above directory information\n" );
-    free(p_dirlist);
+    _cdio_list_free (p_dirlist, true, free);
     return;
   }
 
@@ -577,7 +577,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
 	   _cdio_list_free (p_dirlist, true, free);
-	   _cdio_list_free (p_entlist, true, (CdioDataFree_t) iso9660_stat_free);
+	   iso9660_filelist_free(p_entlist);
            return;
          }
        }
@@ -606,7 +606,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       }
     }
 
-  _cdio_list_free (p_entlist, true, (CdioDataFree_t) iso9660_stat_free);
+  iso9660_filelist_free(p_entlist);
 
   printf ("\n");
 
@@ -619,7 +619,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       print_iso9660_recurse (p_cdio, _fullname, fs);
     }
 
-  _cdio_list_free (p_dirlist, true, free);
+ _cdio_list_free (p_dirlist, true, free);
 }
 
 static void

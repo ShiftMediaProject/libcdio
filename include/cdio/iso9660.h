@@ -506,6 +506,12 @@ typedef struct iso9660_svd_s  iso9660_svd_t;
 
 PRAGMA_END_PACKED
 
+/*! \brief A data type for a list of ISO9660
+  statbuf information returned from the variious
+  Cdio iso9660 readdir routines.
+ */
+typedef CdioList_t CdioISO9660FileList_t;
+
 /*! \brief Unix stat-like version of iso9660_dir
 
    The iso9660_stat structure is not part of the ISO-9660
@@ -997,6 +1003,24 @@ iso9660_stat_t *iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[]);
  */
 iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *p_iso,
                                             const char psz_path[]);
+
+
+/*!
+  Create a new data structure to hold a list of
+  ISO9660 statbuf entries.
+  pointers for the files inside that directory.
+
+  @return allocated list. Free with iso9660_filelist_free()
+*/
+CdioISO9660FileList_t * iso9660_filelist_new(void);
+
+
+
+/*!
+  Free the passed CdioISOC9660Filelist_t structure.
+*/
+void iso9660_filelist_free(CdioISO9660FileList_t *p_filelist);
+
 
 /*!
   Read psz_path (a directory) and return a list of iso9660_stat_t

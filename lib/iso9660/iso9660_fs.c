@@ -1347,11 +1347,16 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
 
 /*!
   Read psz_path (a directory) and return a list of iso9660_stat_t
-  of the files inside that. The caller must free the returned result.
+  pointers for the files inside that directory.
 
-  b_mode2 is historical. It is not used.
+  @param p_cdio the CD object to read from
+
+  @param pzs_path path the read the directory from.
+
+  @return file status for psz_path. The caller must free the
+  The caller must free the returned result using iso9660_stat_free().
 */
-CdioList_t *
+CdioISO9660FileList_t *
 iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
 {
   generic_img_private_t *p_env;
@@ -1416,7 +1421,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
   Read psz_path (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-CdioList_t *
+CdioISO9660FileList_t *
 iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 {
   iso9660_stat_t *p_stat;
@@ -1498,16 +1503,21 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
   }
 }
 
-typedef CdioList_t * (iso9660_readdir_t)
+typedef CdioISO9660FileList_t * (iso9660_readdir_t)
   (void *p_image,  const char * psz_path);
+
+CdioISO9660FileList_t *
+iso9660_filelist_new(void) {
+  return (CdioISO9660FileList_t *) _cdio_list_new ();
+}
 
 static iso9660_stat_t *
 find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 		  const char psz_path[], lsn_t lsn,
 		  /*out*/ char **ppsz_full_filename)
 {
-  CdioList_t *entlist = iso9660_readdir (p_image, psz_path);
-  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioISO9660FileList_t *entlist = iso9660_readdir (p_image, psz_path);
+  CdioISO9660FileList_t *dirlist = iso9660_filelist_new();
   CdioListNode_t *entnode;
 
   cdio_assert (entlist != NULL);
@@ -1675,6 +1685,15 @@ iso9660_stat_free(iso9660_stat_t *p_stat)
     free(p_stat);
   }
 }
+
+/*!
+  Free the passed CdioISOC9660Filelist_t structure.
+*/
+void
+iso9660_filelist_free(CdioISO9660FileList_t *p_filelist) {
+  _cdio_list_free(p_filelist, true, (CdioDataFree_t) iso9660_stat_free);
+}
+
 
 /*!
   Return true if ISO 9660 image has extended attrributes (XA).

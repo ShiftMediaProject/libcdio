@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004, 2005, 2006, 2007, 2008, 2011
+  Copyright (C) 2004-2008, 2011, 2017
    Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -64,7 +64,7 @@
 int
 main(int argc, const char *argv[])
 {
-  CdioList_t *p_entlist;
+  CdioISO9660FileList_t *p_entlist;
   CdioListNode_t *p_entnode;
   char const *psz_fname;
   iso9660_t *p_iso;
@@ -110,7 +110,7 @@ main(int argc, const char *argv[])
 	      p_statbuf->lsn, p_statbuf->size, psz_path, filename);
     }
 
-    _cdio_list_free(p_entlist, true, (CdioDataFree_t) iso9660_stat_free);
+   iso9660_filelist_free(p_entlist);
   }
 
 

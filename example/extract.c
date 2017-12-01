@@ -171,9 +171,9 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
   char psz_fullpath[4096], *psz_basename;
   const char *psz_iso_name = &psz_fullpath[strlen(psz_extract_dir)];
   unsigned char buf[ISO_BLOCKSIZE];
-  CdioListNode_t* p_entnode;
+  CdioListNode_t *p_entnode;
   iso9660_stat_t *p_statbuf;
-  CdioList_t* p_entlist;
+  CdioISO9660FileList_t* p_entlist;
   size_t i;
   lsn_t lsn;
   int64_t i_file_length;
@@ -236,7 +236,7 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
 out:
   if (fd != NULL)
     fclose(fd);
-  _cdio_list_free(p_entlist, true, (CdioDataFree_t) iso9660_stat_free);
+  iso9660_filelist_free(p_entlist);
   return r;
 }
 

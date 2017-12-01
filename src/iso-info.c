@@ -228,7 +228,7 @@ static void
 print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
 		       unsigned int rec_counter)
 {
-  CdioList_t *entlist;
+  CdioISO9660FileList_t *entlist;
   CdioList_t *dirlist =  _cdio_list_new ();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
@@ -241,15 +241,15 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
   }
 
   if (NULL == entlist) {
-    free(dirlist);
+    _cdio_list_free (dirlist, true, free);
     report( stderr, "Error getting above directory information\n" );
     return;
   }
 
   rec_counter++;
   if (rec_counter > CDIO_MAX_DIR_RECURSION) {
-    free(dirlist);
-    _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
+    _cdio_list_free (dirlist, true, free);
+    iso9660_filelist_free(entlist);
     report( stderr,
             "Directory recursion too deep. ISO most probably damaged.\n" );
     return;
@@ -296,7 +296,7 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
       }
     }
 
-  _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
+  iso9660_filelist_free(entlist);
 
   if (opts.print_iso9660) {
     printf ("\n");
