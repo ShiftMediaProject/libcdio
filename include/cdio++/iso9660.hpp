@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2006, 2008, 2011-2012, 2016 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2006, 2008, 2011-2012, 2016-2017 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -375,7 +375,7 @@ public:
     */
     bool readdir (const char psz_path[], stat_vector_t& stat_vector)
     {
-      CdioList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
+      CdioISO9660FileList_t *p_stat_list = iso9660_ifs_readdir (p_iso9660, psz_path);
 
       if (p_stat_list) {
         CdioListNode_t *p_entnode;
@@ -384,7 +384,7 @@ public:
             (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
           stat_vector.push_back(new ISO9660::Stat(p_statbuf));
         }
-        _cdio_list_free (p_stat_list, false, (CdioDataFree_t) iso9660_stat_free);
+	iso9660_filelist_free(p_stat_list);
         return true;
       } else {
         return false;
