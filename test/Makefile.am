@@ -138,7 +138,7 @@ clean-local: clean-local-check
 clean-local-check:
 	-rm -rf exampleIso*.iso.prep *.log *.trs *.orig *.rej
 
-#: run valgrind on C progrma
+#: run valgrind on C programs
 check-leaks: $(check_PROGRAMS)
 	for p in $(check_PROGRAMS); do \
 	   valgrind ./$$p; \

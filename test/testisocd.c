@@ -100,18 +100,9 @@ main(int argc, const char *argv[])
       char *psz_path = NULL;
       const lsn_t i_lsn = p_statbuf->lsn;
       iso9660_stat_t *p_statbuf2 = iso9660_fs_find_lsn (p_cdio, i_lsn);
-
-      /*
-	 // FIXME: This is for memory testing. iso966_stat_free leaves
-         // around junk. Some if it is in a faulty cdio_list_free() routine.
-         iso9660_stat_free(p_statbuf);
-         iso9660_stat_free(p_statbuf2);
-         cdio_destroy(p_cdio);
-         return 0;
-      */
-
       iso9660_stat_t *p_statbuf3 =
 	iso9660_fs_find_lsn_with_path (p_cdio, i_lsn, &psz_path);
+      int rc=0;
 
       /* Compare the two statbufs. */
       if (p_statbuf->lsn != p_statbuf2->lsn ||
@@ -119,20 +110,15 @@ main(int argc, const char *argv[])
 	  p_statbuf->type != p_statbuf2->type) {
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "fs_find_lsn isn't the same\n");
-
-	  iso9660_stat_free(p_statbuf);
-	  iso9660_stat_free(p_statbuf2);
-	  cdio_destroy(p_cdio);
-	  exit(3);
+	  rc=3;
+	  goto exit;
       }
 
       if (0 != memcmp(p_statbuf3, p_statbuf2, sizeof(iso9660_stat_t))) {
 	  fprintf(stderr, "File stat information between fs_find_lsn and "
 		  "fs_find_lsn_with_path isn't the same\n");
-	  iso9660_stat_free(p_statbuf2);
-	  iso9660_stat_free(p_statbuf3);
-	  cdio_destroy(p_cdio);
-	  exit(4);
+	  rc=4;
+	  goto exit;
       }
 
       if (psz_path != NULL) {
@@ -140,13 +126,14 @@ main(int argc, const char *argv[])
 	  fprintf(stderr, "Path returned for fs_find_lsn_with_path "
 		  "is not correct should be /./, is %s\n", psz_path);
 	  free(psz_path);
-	  cdio_destroy(p_cdio);
-	  exit(5);
+	  rc=5;
+	  goto exit;
 	}
       } else {
 	fprintf(stderr, "Path returned for fs_find_lsn_with_path is NULL\n");
-	cdio_destroy(p_cdio);
-	exit(6);
+	free(psz_path);
+	rc=6;
+	goto exit;
       }
 
       /* Try reading from the directory. */
@@ -155,11 +142,14 @@ main(int argc, const char *argv[])
 	{
 	  fprintf(stderr, "Error reading ISO 9660 file at lsn %lu\n",
 		  (long unsigned int) p_statbuf->lsn);
-	  iso9660_stat_free(p_statbuf);
-	  cdio_destroy(p_cdio);
-	  exit(7);
+	  rc=7;
 	}
-      exit(0);
+    exit:
+      iso9660_stat_free(p_statbuf);
+      iso9660_stat_free(p_statbuf2);
+      iso9660_stat_free(p_statbuf3);
+      cdio_destroy(p_cdio);
+      exit(rc);
     }
   }
 

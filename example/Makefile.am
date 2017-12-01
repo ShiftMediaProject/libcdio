@@ -60,6 +60,11 @@ test: check-am
 check-short:
 	$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
 
+#: run valgrind on C programs
+check-leaks: $(check_PROGRAMS)
+	for p in $(check_PROGRAMS); do \
+	   valgrind ./$$p; \
+        done
 
 AM_CPPFLAGS = $(LIBCDIO_CFLAGS)
 

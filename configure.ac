@@ -197,6 +197,7 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(alloca.h errno.h fcntl.h glob.h limits.h pwd.h stdbool.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
 		 sys/time.h sys/timeb.h sys/utsname.h)
+AC_STRUCT_TIMEZONE
 
 ## FreeBSD 4 has getopt in unistd.h. So we include that before
 ## getopt.h
