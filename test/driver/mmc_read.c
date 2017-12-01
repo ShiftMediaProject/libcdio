@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 2010-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010-2013, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -134,10 +134,11 @@ handle_outcome(CdIo_t *p_cdio, driver_return_code_t i_status,
     cdio_mmc_request_sense_t *p_temp_sense_reply = NULL;
     *pi_sense_avail = mmc_last_cmd_sense(p_cdio, &p_temp_sense_reply);
     print_status_sense(i_status, *pi_sense_avail, p_temp_sense_reply, i_flag & 1);
-    if (18 <= *pi_sense_avail)
-	memcpy(p_sense_reply, p_temp_sense_reply, sizeof(cdio_mmc_request_sense_t));
-    else
-	memset(p_sense_reply, 0, sizeof(cdio_mmc_request_sense_t));
+    if (18 <= *pi_sense_avail) {
+        memset(p_sense_reply, 0, sizeof(cdio_mmc_request_sense_t));
+        memcpy(p_sense_reply, p_temp_sense_reply, *pi_sense_avail);
+    } else
+        memset(p_sense_reply, 0, sizeof(cdio_mmc_request_sense_t));
     cdio_free(p_temp_sense_reply);
     return i_status;
 }

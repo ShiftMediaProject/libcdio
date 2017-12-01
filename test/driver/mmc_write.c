@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 2010, 2012-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010, 2012-2013, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -116,10 +116,11 @@ handle_outcome(CdIo_t *p_cdio, driver_return_code_t i_status,
     cdio_mmc_request_sense_t *p_temp_sense_reply = NULL;
     *pi_sense_avail = mmc_last_cmd_sense(p_cdio, &p_temp_sense_reply);
     print_status_sense(i_status, *pi_sense_avail, p_temp_sense_reply, i_flag & 1);
-    if (18 <= *pi_sense_avail)
-	memcpy(p_sense_reply, p_temp_sense_reply, sizeof(cdio_mmc_request_sense_t));
-    else
-	memset(p_sense_reply, 0, sizeof(cdio_mmc_request_sense_t));
+    if (18 <= *pi_sense_avail) {
+        memset(p_sense_reply, 0, sizeof(cdio_mmc_request_sense_t));
+        memcpy(p_sense_reply, p_temp_sense_reply, *pi_sense_avail);
+    } else
+        memset(p_sense_reply, 0, sizeof(cdio_mmc_request_sense_t));
     cdio_free(p_temp_sense_reply);
     return i_status;
 }
@@ -442,12 +443,14 @@ static int
 test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
 {
     int i_ret;
-    unsigned int i_sense_avail;
-    int page_code = 5, subpage_code = 0, i_alloc_len, i_size;
+    unsigned int i_sense_avail = 0;
+    int page_code = 5, subpage_code = 0, i_alloc_len, i_size = 0;
     int write_type, final_return = 1, new_write_type, old_i_size;
     cdio_mmc_request_sense_t sense_reply;
     unsigned char buf[265], old_buf[265];        /* page size is max. 255 + 10 */
     static char w_types[4][8] = {"Packet", "TAO", "SAO", "Raw"};
+
+    memset(buf, 0, sizeof(buf));
 
     i_alloc_len = 10;
     i_ret = mode_sense(p_cdio, &i_sense_avail, &sense_reply,

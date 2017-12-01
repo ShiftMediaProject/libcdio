@@ -1278,11 +1278,13 @@ run_mmc_cmd_linux(void *p_user_data,
   _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
   cdio_mmc_request_sense_t sense;
-  unsigned char *u_sense = (unsigned char *) &sense;
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memset (&cgc, 0, sizeof (struct cdrom_generic_command));
+
+  memset(&cgc, 0, sizeof (struct cdrom_generic_command));
+  memset(&sense, 0, sizeof (struct cdio_mmc_request_sense));
   memcpy(&cgc.cmd, p_cdb, i_cdb);
+
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
   cgc.sense  = (struct request_sense *) &sense;
@@ -1295,7 +1297,6 @@ run_mmc_cmd_linux(void *p_user_data,
   cgc.timeout = i_timeout_ms;
 #endif
 
-  memset(u_sense, 0, sizeof(sense));
   {
     int i_rc = ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
 
