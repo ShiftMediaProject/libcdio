@@ -1551,14 +1551,14 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 	    return NULL;
 	  }
 	memcpy(ret_stat, statbuf, len2);
-        _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
+        iso9660_filelist_free (entlist);
         _cdio_list_free (dirlist, true, free);
         return ret_stat;
       }
 
     }
 
-  _cdio_list_free (entlist, true, (CdioDataFree_t) iso9660_stat_free);
+  iso9660_filelist_free (entlist);
 
   /* now recurse/descend over directories encountered */
 
