@@ -544,8 +544,8 @@ static void
 print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
                        cdio_fs_anal_t fs)
 {
-  CdioList_t *p_entlist;
-  CdioList_t *p_dirlist =  _cdio_list_new ();
+  CdioISO9660FileList_t *p_entlist;
+  CdioISO9660DirList_t *p_dirlist = iso9660_dirlist_new();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level;
   char *translated_name = (char *) alloca(4096);
@@ -555,13 +555,13 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
     ? 0
     : cdio_get_joliet_level(p_cdio);
 
-  p_entlist = iso9660_fs_readdir (p_cdio, pathname);
+  p_entlist = iso9660_fs_readdir(p_cdio, pathname);
 
   printf ("%s:\n", pathname);
 
   if (NULL == p_entlist) {
     report( stderr, "Error getting above directory information\n" );
-    _cdio_list_free (p_dirlist, true, free);
+    iso9660_dirlist_free(p_dirlist);
     return;
   }
 
@@ -576,8 +576,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
          translated_name_size = strlen(psz_iso_name)+1;
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
-	   _cdio_list_free (p_dirlist, true, free);
-	   iso9660_filelist_free(p_entlist);
+	   iso9660_dirlist_free(p_dirlist);
            return;
          }
        }
@@ -619,7 +618,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       print_iso9660_recurse (p_cdio, _fullname, fs);
     }
 
- _cdio_list_free (p_dirlist, true, free);
+  iso9660_dirlist_free(p_dirlist);
 }
 
 static void

@@ -507,10 +507,16 @@ typedef struct iso9660_svd_s  iso9660_svd_t;
 PRAGMA_END_PACKED
 
 /*! \brief A data type for a list of ISO9660
-  statbuf information returned from the variious
+  statbuf file pointers returned from the various
   Cdio iso9660 readdir routines.
  */
 typedef CdioList_t CdioISO9660FileList_t;
+
+/*! \brief A data type for a list of ISO9660
+  statbuf drectory pointer returned from the variious
+  Cdio iso9660 readdir routines.
+ */
+typedef CdioList_t CdioISO9660DirList_t;
 
 /*! \brief Unix stat-like version of iso9660_dir
 
@@ -1007,19 +1013,35 @@ iso9660_stat_t *iso9660_ifs_stat_translate (iso9660_t *p_iso,
 
 /*!
   Create a new data structure to hold a list of
-  ISO9660 statbuf entries.
-  pointers for the files inside that directory.
+  ISO9660 statbuf-entry pointers for the files inside
+  a directory.
 
   @return allocated list. Free with iso9660_filelist_free()
 */
 CdioISO9660FileList_t * iso9660_filelist_new(void);
 
 
+/*!
+  Create a new data structure to hold a list of
+  ISO9660 statbuf entries for directory
+  pointers for the files inside a directory.
+
+  @return allocated list. Free with iso9660_dirlist_free()
+*/
+CdioISO9660DirList_t * iso9660_dirlist_new(void);
+
+
 
 /*!
-  Free the passed CdioISOC9660Filelist_t structure.
+  Free the passed CdioISOC9660FileList_t structure.
 */
 void iso9660_filelist_free(CdioISO9660FileList_t *p_filelist);
+
+
+/*!
+  Free the passed CdioISOC9660Dirlist_t structure.
+*/
+void iso9660_dirlist_free(CdioISO9660DirList_t *p_filelist);
 
 
 /*!
