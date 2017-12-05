@@ -205,7 +205,7 @@ iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
   p_tm->tm_sec    = idr_date->dt_second - idr_date->dt_gmtoff * (15 * 60);
   p_tm->tm_isdst  = -1; /* information not available */
 
-#if HAVE_STRUCT_TM_TM_ZONE == 1
+#ifdef HAVE_STRUCT_TM_TM_ZONE
   /* Initialize everything */
   p_tm->tm_zone   = 0;
 #endif
