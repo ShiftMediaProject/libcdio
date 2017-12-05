@@ -458,7 +458,10 @@ cdio_eject_media_drive (const char *psz_drive)
 {
   CdIo_t *p_cdio = cdio_open (psz_drive, DRIVER_DEVICE);
   if (p_cdio) {
-    return cdio_eject_media(&p_cdio);
+    driver_return_code_t rc;
+    rc = cdio_eject_media(&p_cdio);
+    cdio_destroy(p_cdio);
+    return rc;
   } else {
     return DRIVER_OP_UNINIT;
   }
