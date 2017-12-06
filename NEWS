@@ -1,6 +1,6 @@
 2017-12-10 version 1.1.0 Dr. Gecko
 
-- Remove all remaining memory leads, invalid
+- Remove all remaining memory leaks, invalid
   reads, writes (as per valgrind) in library,
   test and demo code
 - Types CdioISO9660{Dir,File}List_t,  have been added
