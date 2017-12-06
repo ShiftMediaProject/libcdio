@@ -277,7 +277,7 @@ iso9660_get_ltime (const iso9660_ltime_t *p_ldate,
 #ifndef HAVE_TM_GMTOFF
   p_tm->tm_sec += p_ldate->lt_gmtoff * (15 * 60);
 #endif
-#if HAVE_STRUCT_TM_TM_ZONE == 1
+#ifdef HAVE_STRUCT_TM_TM_ZONE
   /* Initialize everything */
   p_tm->tm_zone = 0;
 #endif
