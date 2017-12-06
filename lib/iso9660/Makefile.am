@@ -41,7 +41,7 @@
 #     incompatibility with previous versions.
 
 libiso9660_la_CURRENT = 10
-libiso9660_la_REVISION = 0
+libiso9660_la_REVISION = 1
 libiso9660_la_AGE = 0
 
 EXTRA_DIST = libiso9660.sym
