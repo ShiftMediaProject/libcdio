@@ -1,3 +1,11 @@
+2017-12-10 version 1.1.0 Dr. Gecko
+
+- Remove all remaining memory leads, invalid
+  reads, writes (as per valgrind) in library,
+  test and demo code
+- Types CdioISO9660{Dir,File}List_t,  have been added
+  and iso9660_{dir,file}list_{new,free} have been added.
+
 version 1.0.0
 2017-11-21  Thanksgiving
 
