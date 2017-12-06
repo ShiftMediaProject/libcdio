@@ -25,7 +25,8 @@
 #define err_exit(fmt, args...)                      \
   report (stderr, "%s: "fmt, program_name, ##args); \
   iso9660_close(p_iso);                             \
-  free(program_name);                               \
+  if (NULL != program_name) free(program_name);     \
+  if (NULL != source_name)  free(source_name);      \
   return(EXIT_FAILURE);
 
 #ifdef HAVE_CONFIG_H
@@ -220,6 +221,14 @@ _log_handler (cdio_log_level_t level, const char message[])
 
   if (level == CDIO_LOG_WARN  && opts.silent)
     return;
+
+  if (level == CDIO_LOG_ERROR) {
+    fprintf (stderr, "**ERROR: %s\n", message);
+    fflush (stderr);
+    // print an error like default, but *don't* exit.
+    return;
+  }
+
 
   gl_default_cdio_log_handler (level, message);
 }
