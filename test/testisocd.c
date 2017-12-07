@@ -18,6 +18,7 @@
 
 /* Tests reading ISO 9660 info from a CD.  */
 #include "portable.h"
+#include "cdio_assert.h"
 
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
@@ -103,6 +104,7 @@ main(int argc, const char *argv[])
       iso9660_stat_t *p_statbuf3 =
 	iso9660_fs_find_lsn_with_path (p_cdio, i_lsn, &psz_path);
       int rc=0;
+      const unsigned int statbuf_test_size = 100;
 
       /* Compare the two statbufs. */
       if (p_statbuf->lsn != p_statbuf2->lsn ||
@@ -114,7 +116,8 @@ main(int argc, const char *argv[])
 	  goto exit;
       }
 
-      if (0 != memcmp(p_statbuf3, p_statbuf2, sizeof(iso9660_stat_t))) {
+      cdio_assert(statbuf_test_size < sizeof(iso9660_stat_t));
+      if (0 != memcmp(p_statbuf3, p_statbuf2, statbuf_test_size)) {
 	  fprintf(stderr, "File stat information between fs_find_lsn and "
 		  "fs_find_lsn_with_path isn't the same\n");
 	  rc=4;
@@ -131,7 +134,6 @@ main(int argc, const char *argv[])
 	}
       } else {
 	fprintf(stderr, "Path returned for fs_find_lsn_with_path is NULL\n");
-	free(psz_path);
 	rc=6;
 	goto exit;
       }
@@ -145,6 +147,8 @@ main(int argc, const char *argv[])
 	  rc=7;
 	}
     exit:
+      if (psz_path != NULL)
+	free(psz_path);
       iso9660_stat_free(p_statbuf);
       iso9660_stat_free(p_statbuf2);
       iso9660_stat_free(p_statbuf3);

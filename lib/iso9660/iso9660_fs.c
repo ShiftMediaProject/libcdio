@@ -1553,6 +1553,8 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 	  {
 	    iso9660_dirlist_free(dirlist);
 	    cdio_warn("Couldn't calloc(1, %d)", len2);
+	    free(*ppsz_full_filename);
+	    *ppsz_full_filename = NULL;
 	    return NULL;
 	  }
 	memcpy(ret_stat, statbuf, len2);
@@ -1601,8 +1603,12 @@ iso9660_stat_t *
 iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
 {
   char *psz_full_filename = NULL;
-  return find_lsn_recurse (p_cdio, (iso9660_readdir_t *) iso9660_fs_readdir,
-			   "/", i_lsn, &psz_full_filename);
+  iso9660_stat_t * p_statbuf;
+  p_statbuf = find_lsn_recurse (p_cdio, (iso9660_readdir_t *) iso9660_fs_readdir,
+				"/", i_lsn, &psz_full_filename);
+  if (psz_full_filename != NULL)
+    free(psz_full_filename);
+  return p_statbuf;
 }
 
 /*!

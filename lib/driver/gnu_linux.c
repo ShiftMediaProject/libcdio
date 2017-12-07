@@ -805,6 +805,8 @@ dvd_discmode_linux (_img_private_t *p_env)
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
 
+  memset(&dvd, 0, sizeof(dvd));
+
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == ioctl (p_env->gen.fd, DVD_READ_STRUCT, &dvd)) {

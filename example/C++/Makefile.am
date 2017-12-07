@@ -57,7 +57,7 @@ TESTS               = $(check_PROGRAMS)
 # iso programs create file "copying"
 MOSTLYCLEANFILES = copying *.wav
 
-#: run valgrind on C programs
+#: run valgrind on C++ programs
 check-leaks: $(check_PROGRAMS)
 	for p in $(check_PROGRAMS); do \
 	   valgrind ./$$p; \
