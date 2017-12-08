@@ -883,6 +883,8 @@ get_discmode_solaris (void *p_user_data)
   struct dk_minfo media;
   int ret;
 
+  memset(&media, 0, sizeof(media));
+
   /* Get the media info */
   if((ret = ioctl(p_env->gen.fd, DKIOCGMEDIAINFO, &media)) != 0) {
      cdio_warn ("DKIOCGMEDIAINFO failed: %s\n", strerror(errno));

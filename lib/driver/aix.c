@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2010, 2011-2013
+  Copyright (C) 2004-2006, 2008, 2010, 2011-2013, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -726,6 +726,8 @@ get_discmode_aix (void *p_user_data)
   _img_private_t *p_env = p_user_data;
   struct mode_form_op media;
   int ret;
+
+  memset(&media, 0, sizeof(media));
 
   /* Get the media info */
   media.action= CD_GET_MODE;

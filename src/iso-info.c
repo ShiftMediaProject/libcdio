@@ -223,9 +223,9 @@ _log_handler (cdio_log_level_t level, const char message[])
     return;
 
   if (level == CDIO_LOG_ERROR) {
+    // print an error like default, but *don't* exit.
     fprintf (stderr, "**ERROR: %s\n", message);
     fflush (stderr);
-    // print an error like default, but *don't* exit.
     return;
   }
 

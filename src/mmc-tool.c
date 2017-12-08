@@ -38,12 +38,6 @@
 #include <cdio/mmc_cmds.h>
 #include "getopt.h"
 
-static void
-init(const char *argv0)
-{
-  program_name = strrchr(argv0,'/');
-  program_name = program_name ? strdup(program_name+1) : strdup(argv0);
-}
 
 /* Configuration option codes */
 typedef enum {
@@ -260,6 +254,26 @@ parse_options (int argc, char *argv[])
 }
 
 static void
+_log_handler (cdio_log_level_t level, const char message[])
+{
+  if (level == CDIO_LOG_ERROR) {
+    // print an error like default, but *don't* exit.
+    fprintf (stderr, "**ERROR: %s\n", message);
+    fflush (stderr);
+    return;
+  }
+  gl_default_cdio_log_handler (level, message);
+}
+
+static void
+init(const char *argv0)
+{
+  gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
+  program_name = strrchr(argv0,'/');
+  program_name = program_name ? strdup(program_name+1) : strdup(argv0);
+}
+
+static void
 print_mode_sense (unsigned int i_mmc_size, const uint8_t buf[30])
 {
   printf("Mode sense %d information\n", i_mmc_size);
@@ -431,7 +445,8 @@ main(int argc, char *argv[])
 
   if (NULL == p_cdio) {
     printf("Couldn't find CD\n");
-    return 1;
+    rc = 1;
+    goto exit;
   }
 
   for (i=0; i < last_op; i++) {
@@ -521,7 +536,9 @@ main(int argc, char *argv[])
     }
   }
 
+ exit:
   free(source_name);
+  free(program_name);
   cdio_destroy(p_cdio);
 
   return rc;
