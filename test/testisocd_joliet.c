@@ -18,6 +18,7 @@
 
 /* Tests reading ISO 9660 info from an ISO 9660 image.  */
 #include "portable.h"
+#include "cdio_assert.h"
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -110,6 +111,7 @@ main(int argc, const char *argv[])
       iso9660_stat_t *p_statbuf3 =
 	iso9660_ifs_find_lsn_with_path (p_iso, i_lsn, &psz_path);
       int rc=0;
+      const unsigned int statbuf_test_size = 100;
 
       /* Compare the two statbufs. */
       if (p_statbuf->lsn != p_statbuf2->lsn ||
@@ -118,11 +120,16 @@ main(int argc, const char *argv[])
 
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "iso9660_ifs_find_lsn isn't the same\n");
+	  printf("statbuf  lsn: %d, size: %d, type: %d\n",
+		 p_statbuf->lsn, p_statbuf->size, p_statbuf->type);
+	  printf("statbuf2 lsn: %d, size: %d, type: %d\n",
+		 p_statbuf2->lsn, p_statbuf2->size, p_statbuf2->type);
 	  rc=3;
 	  goto exit;
       }
 
-      if (0 != memcmp(p_statbuf3, p_statbuf2, sizeof(iso9660_stat_t))) {
+      cdio_assert(statbuf_test_size < sizeof(iso9660_stat_t));
+      if (0 != memcmp(p_statbuf3, p_statbuf2, statbuf_test_size)) {
 	  fprintf(stderr, "File stat information between fs_find_lsn and "
 		  "fs_find_lsn_with_path isn't the same\n");
 	  rc=4;
