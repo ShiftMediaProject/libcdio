@@ -1775,8 +1775,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_linux();
     if (NULL == psz_source) {
-      free(_data);
-      return NULL;
+      goto err_exit;
     }
 
     set_arg_linux(_data, "source", psz_source);
@@ -1789,13 +1788,14 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 #if 0
       cdio_info ("source %s is not a device", psz_orig_source);
 #endif
-      free(_data);
-      return NULL;
+      goto err_exit;
     }
   }
 
   ret = cdio_new ((void *)_data, &_funcs);
-  if (ret == NULL) return NULL;
+  if (ret == NULL) {
+    goto err_exit;
+  }
 
   ret->driver_id = DRIVER_LINUX;
 
@@ -1809,11 +1809,12 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   if (cdio_generic_init(_data, open_access_mode)) {
     set_scsi_tuple_linux(_data);
     return ret;
-  } else {
-    cdio_generic_free (_data);
-    free(ret);
-    return NULL;
   }
+  free(ret);
+
+ err_exit:
+    cdio_generic_free(_data);
+    return NULL;
 
 #else
   return NULL;

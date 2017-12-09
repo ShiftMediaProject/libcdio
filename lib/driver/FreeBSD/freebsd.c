@@ -1228,8 +1228,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
                                    &os_errno, &pass_dev_no, &flock_fd, msg, 0);
       if (lock_result <= 0) {
         cdio_warn ("%s", msg);
-        cdio_generic_free (_data);
-        return NULL;
+	goto err_exit;
       }
       /* One should rather keep this fd open until _data->gen.fd gets closed.
          It eventually locks a device sibling of _data->gen.source_name.
@@ -1243,15 +1242,13 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     } else {
       if (init_freebsd_cam(_data))
 	return ret;
-      else {
-	cdio_generic_free (_data);
-	return NULL;
       }
     }
-  } else {
-    cdio_generic_free (_data);
+
+ err_exit:
+    free(ret);
+    cdio_generic_free(_data);
     return NULL;
-  }
 
 #else
   return NULL;
