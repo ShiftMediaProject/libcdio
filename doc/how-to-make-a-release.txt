@@ -26,8 +26,8 @@
 
 - ./autogen.sh && make && make check
 
-  export LIBCDIO_VERSION=1.1.0 # adjust
-- git commit -m'Get ready for release ${LIBCDIO_VERSION}" .
+  export LIBCDIO_VERSION=1.1.1 # adjust
+- git commit -m"Get ready for release ${LIBCDIO_VERSION}" .
 
 - make ChangeLog
 
