@@ -90,6 +90,7 @@ static bool
 parse_options (int argc, char *argv[])
 {
   int opt;
+  int rc = EXIT_FAILURE;
   operation_t op;
   int i_blocksize = 0;
 
@@ -210,21 +211,14 @@ parse_options (int argc, char *argv[])
 	break;
       case 'V':
         print_version(program_name, VERSION, 0, true);
-	free(program_name);
-        exit (EXIT_SUCCESS);
-        break;
-
+	rc = EXIT_SUCCESS;
+	goto error_exit;
       case '?':
 	fprintf(stdout, helpText, program_name);
-	free(program_name);
-	exit(EXIT_INFO);
-	break;
-
+	goto error_exit;
       case OPT_USAGE:
 	fprintf(stderr, usageText, program_name);
-	free(program_name);
-	exit(EXIT_FAILURE);
-	break;
+	goto error_exit;
 
       case OPT_HANDLED:
 	break;
@@ -236,8 +230,7 @@ parse_options (int argc, char *argv[])
     if (source_name != NULL) {
       report( stderr, "%s: Source specified in option %s and as %s\n",
 	      program_name, source_name, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
 
     source_name = strdup(remaining_arg);
@@ -245,12 +238,15 @@ parse_options (int argc, char *argv[])
     if (optind < argc) {
       report( stderr, "%s: Source specified in previously %s and %s\n",
 	      program_name, source_name, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      free(source_name);
+      goto error_exit;
     }
   }
 
   return true;
+ error_exit:
+  free(program_name);
+  exit(rc);
 }
 
 static void
