@@ -475,7 +475,6 @@ main(int argc, char *argv[])
   p_iso = iso9660_open_ext (source_name, iso_extension_mask);
 
   if (p_iso==NULL) {
-    free(source_name);
     err_exit("Error in opening ISO-9660 image%s\n", "");
   }
 

@@ -122,14 +122,13 @@ parse_options (int argc, char *argv[])
 
     case '?':
       fprintf(stdout, helpText, program_name);
-      free(program_name);
+      goto error_exit;
       exit(EXIT_INFO);
       break;
 
     case OP_USAGE:
       fprintf(stderr, usageText, program_name);
-      free(program_name);
-      exit(EXIT_FAILURE);
+      goto error_exit;
       break;
 
     case OP_HANDLED:
@@ -148,8 +147,7 @@ parse_options (int argc, char *argv[])
     if (source_name != NULL) {
       report( stderr, "%s: Source specified in option %s and as %s\n",
 	      program_name, source_name, remaining_arg);
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
 
     if (opts.source_image == (source_image_t) DRIVER_DEVICE)
@@ -160,12 +158,17 @@ parse_options (int argc, char *argv[])
     if (optind < argc) {
       report( stderr, "%s: Source specified in previously %s and %s\n",
 	      program_name, source_name, remaining_arg);
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
   }
-
   return true;
+ error_exit:
+  if (source_name != NULL) {
+    free(source_name);
+  }
+  free(program_name);
+  exit (EXIT_FAILURE);
+
 }
 
 /* CDIO logging routines */
