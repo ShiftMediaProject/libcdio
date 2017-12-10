@@ -123,7 +123,6 @@ parse_options (int argc, char *argv[])
     case '?':
       fprintf(stdout, helpText, program_name);
       goto error_exit;
-      exit(EXIT_INFO);
       break;
 
     case OP_USAGE:
