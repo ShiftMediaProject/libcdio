@@ -879,6 +879,8 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
 
+   @param p_cdio the CD object to read from
+
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value using iso9660_stat_free().
  */
@@ -890,7 +892,7 @@ iso9660_stat_t *iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
    Given a directory pointer, find the filesystem entry that contains
    LSN and return information about it.
 
-   @param p_iso the ISO-9660 file image to get data from.
+   @param p_cdio the ISO-9660 file image to get data from.
 
    @param i_lsn the LSN to find
 
@@ -987,9 +989,9 @@ iso9660_stat_t *iso9660_fs_stat_translate (CdIo_t *p_cdio,
                                            const char psz_path[]);
 /*!
 
-  @param p_cdio the CD object to read from
+  @param p_iso the ISO-9660 file image to get data from
 
-  @param pzs_path path the look up
+  @param psz_path path the look up
 
   @return file status for pathname. NULL is returned on error.
   The caller must free the returned result using iso9660_stat_free().
@@ -1050,7 +1052,7 @@ void iso9660_dirlist_free(CdioISO9660DirList_t *p_filelist);
 
   @param p_cdio the CD object to read from
 
-  @param pzs_path path the read the directory from.
+  @param psz_path path the read the directory from.
 
   @return file status for psz_path. The caller must free the
   The caller must free the returned result using iso9660_stat_free().
@@ -1063,7 +1065,7 @@ CdioList_t * iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[]);
 
   @param p_iso the ISO-9660 file image to get data from
 
-  @param pzs_path path the read the directory from.
+  @param psz_path path the read the directory from.
 
   @return file status for psz_path. The caller must free the
   The caller must free the returned result using iso9660_stat_free().
@@ -1087,7 +1089,8 @@ char * iso9660_get_application_id(iso9660_pvd_t *p_pvd);
 
   @param p_iso the ISO-9660 file image to get data from
 
-  @return  the application id.
+  @param p_psz_app_id the application id set on success.
+
   NULL is returned if there is some problem in getting this.
   The caller must free the resturned result using free() if
   not null.
