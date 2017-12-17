@@ -635,20 +635,25 @@ cdio_open_netbsd(const char *source_name)
                    (source_name ? source_name : DEFAULT_CDIO_DEVICE));
 
     if (source_name && !cdio_is_device_generic(source_name))
-        return (NULL);
+        goto err_exit;
 
     ret = cdio_new(&_data->gen, &_funcs);
-    if (ret == NULL) return NULL;
+    if (ret == NULL) {
+        goto err_exit;
+    }
 
     ret->driver_id = DRIVER_NETBSD;
 
     if (cdio_generic_init(_data, O_RDONLY)) {
         return ret;
     } else {
-        cdio_generic_free(_data);
         free(ret);
-        return NULL;
+        goto err_exit;
     }
+
+ err_exit:
+    cdio_generic_free(_data);
+    return NULL;
 
 #else
   return NULL;

@@ -25,7 +25,8 @@
 #define err_exit(fmt, args...)                      \
   report (stderr, "%s: "fmt, program_name, ##args); \
   iso9660_close(p_iso);                             \
-  free(program_name);                               \
+  if (NULL != program_name) free(program_name);     \
+  if (NULL != source_name)  free(source_name);      \
   return(EXIT_FAILURE);
 
 #ifdef HAVE_CONFIG_H
@@ -52,6 +53,10 @@
 #endif
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
+
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
 #endif
 
 #if 0
@@ -102,6 +107,7 @@ static bool
 parse_options (int argc, char *argv[])
 {
   int opt;
+  int rc = EXIT_FAILURE;
 
   static const char helpText[] =
     "Usage: %s [OPTION...]\n"
@@ -173,15 +179,13 @@ parse_options (int argc, char *argv[])
 
       case '?':
         fprintf(stdout, helpText, program_name);
-        free(program_name);
-        exit(EXIT_INFO);
-        break;
+	rc = EXIT_INFO;
+	goto error_exit;
 
       case OP_USAGE:
         fprintf(stderr, usageText, program_name);
-        free(program_name);
-        exit(EXIT_FAILURE);
-        break;
+	rc = EXIT_INFO;
+	goto error_exit;
 
       case OP_HANDLED:
         break;
@@ -193,14 +197,16 @@ parse_options (int argc, char *argv[])
     if ( optind < argc ) {
       report( stderr, "%s: Source specified in previously %s and %s\n",
               program_name, source_name, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
     if (NULL != source_name)  free(source_name);
     source_name = strdup(remaining_arg);
   }
 
   return true;
+ error_exit:
+  free(program_name);
+  exit(rc);
 }
 
 /* CDIO logging routines */
@@ -217,6 +223,14 @@ _log_handler (cdio_log_level_t level, const char message[])
   if (level == CDIO_LOG_WARN  && opts.silent)
     return;
 
+  if (level == CDIO_LOG_ERROR) {
+    // print an error like default, but *don't* exit.
+    fprintf (stderr, "**ERROR: %s\n", message);
+    fflush (stderr);
+    return;
+  }
+
+
   gl_default_cdio_log_handler (level, message);
 }
 
@@ -224,11 +238,11 @@ static void
 print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
 		       unsigned int rec_counter)
 {
-  CdioList_t *entlist;
-  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioISO9660FileList_t *entlist;
+  CdioISO9660DirList_t *p_dirlist = iso9660_dirlist_new();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level = iso9660_ifs_get_joliet_level(p_iso);
-  char *translated_name = (char *) malloc(4096);
+  char *translated_name = (char *) alloca(4096);
   size_t translated_name_size = 4096;
   entlist = iso9660_ifs_readdir (p_iso, psz_path);
 
@@ -237,17 +251,15 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
   }
 
   if (NULL == entlist) {
-    free(translated_name);
-    free(dirlist);
+    iso9660_dirlist_free(p_dirlist);
     report( stderr, "Error getting above directory information\n" );
     return;
   }
 
   rec_counter++;
   if (rec_counter > CDIO_MAX_DIR_RECURSION) {
-    free(translated_name);
-    free(dirlist);
-    _cdio_list_free (entlist, true);
+    iso9660_dirlist_free(p_dirlist);
+    iso9660_filelist_free(entlist);
     report( stderr,
             "Directory recursion too deep. ISO most probably damaged.\n" );
     return;
@@ -260,14 +272,8 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
       iso9660_stat_t *p_statbuf = _cdio_list_node_data (entnode);
       char *psz_iso_name = p_statbuf->filename;
       char _fullname[4096] = { 0, };
-       if (strlen(psz_iso_name) >= translated_name_size) {
+      if (strlen(psz_iso_name) >= translated_name_size) {
          translated_name_size = strlen(psz_iso_name)+1;
-         free(translated_name);
-         translated_name = (char *) malloc(translated_name_size);
-         if (!translated_name) {
-           report( stderr, "Error allocating memory\n" );
-           return;
-         }
        }
 
       if (yep != p_statbuf->rr.b3_rock || 1 == opts.no_rock_ridge) {
@@ -285,26 +291,22 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
       if (p_statbuf->type == _STAT_DIR
           && strcmp (psz_iso_name, ".")
           && strcmp (psz_iso_name, ".."))
-        _cdio_list_append (dirlist, strdup (_fullname));
+        _cdio_list_append (p_dirlist, strdup (_fullname));
 
       if (opts.print_iso9660) {
         print_fs_attrs(p_statbuf,
                        0 == opts.no_rock_ridge,
                        iso9660_ifs_is_xa(p_iso) && 0 == opts.no_xa,
                        psz_iso_name, translated_name);
-      } else
+      } else {
         if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
           printf("%9u %s%s\n", (unsigned int) p_statbuf->size, psz_path,
                  yep == p_statbuf->rr.b3_rock
                  ? psz_iso_name : translated_name);
-      if (p_statbuf->rr.i_symlink) {
-        free(p_statbuf->rr.psz_symlink);
-        p_statbuf->rr.i_symlink = 0;
       }
     }
-    free (translated_name);
 
-  _cdio_list_free (entlist, true);
+  iso9660_filelist_free(entlist);
 
   if (opts.print_iso9660) {
     printf ("\n");
@@ -312,14 +314,14 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
 
   /* Now recurse over the directories. */
 
-  _CDIO_LIST_FOREACH (entnode, dirlist)
+  _CDIO_LIST_FOREACH (entnode, p_dirlist)
     {
       char *_fullname = _cdio_list_node_data (entnode);
 
       print_iso9660_recurse (p_iso, _fullname, rec_counter);
     }
 
-  _cdio_list_free (dirlist, true);
+  iso9660_dirlist_free(p_dirlist);
 }
 
 static void
@@ -474,7 +476,6 @@ main(int argc, char *argv[])
   p_iso = iso9660_open_ext (source_name, iso_extension_mask);
 
   if (p_iso==NULL) {
-    free(source_name);
     err_exit("Error in opening ISO-9660 image%s\n", "");
   }
 

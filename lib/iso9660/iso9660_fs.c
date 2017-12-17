@@ -206,6 +206,11 @@ iso9660_open_ext_private (const char *psz_path,
 /*!
   Open an ISO 9660 image for reading. Maybe in the future we will have
   a mode. NULL is returned on error.
+
+  @param psz_path full path of ISO9660 file.
+
+  @return a IS9660 structure  is unconditionally returned. The caller
+  should call iso9660_close() when done.
 */
 iso9660_t *
 iso9660_open (const char *psz_path /*, mode*/)
@@ -214,8 +219,11 @@ iso9660_open (const char *psz_path /*, mode*/)
 }
 
 /*!
-  Open an ISO 9660 image for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
+  Open an ISO 9660 image for reading allowing various ISO 9660
+  extensions.  Maybe in the future we will have a mode. NULL is
+  returned on error.
+
+  @see iso9660_open_fuzzy
 */
 iso9660_t *
 iso9660_open_ext (const char *psz_path,
@@ -225,9 +233,19 @@ iso9660_open_ext (const char *psz_path,
 }
 
 
-/*!
-  Open an ISO 9660 image for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
+/*! Open an ISO 9660 image for "fuzzy" reading. This means that we
+  will try to guess various internal offset based on internal
+  checks. This may be useful when trying to read an ISO 9660 image
+  contained in a file format that libiso9660 doesn't know natively
+  (or knows imperfectly.)
+
+  Some tolerence allowed for positioning the ISO 9660 image. We scan
+  for STANDARD_ID and use that to set the eventual offset to adjust
+  by (as long as that is <= i_fuzz).
+
+  Maybe in the future we will have a mode. NULL is returned on error.
+
+  @see iso9660_open, @see iso9660_fuzzy_ext
 */
 iso9660_t *
 iso9660_open_fuzzy (const char *psz_path, uint16_t i_fuzz /*, mode*/)
@@ -236,8 +254,13 @@ iso9660_open_fuzzy (const char *psz_path, uint16_t i_fuzz /*, mode*/)
 }
 
 /*!
-  Open an ISO 9660 image for reading. Maybe in the future we will have
-  a mode. NULL is returned on error.
+  Open an ISO 9660 image for reading with some tolerence for positioning
+  of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
+  the eventual offset to adjust by (as long as that is <= i_fuzz).
+
+  Maybe in the future we will have a mode. NULL is returned on error.
+
+  @see iso9660_open_ext @see iso9660_open_fuzzy
 */
 iso9660_t *
 iso9660_open_fuzzy_ext (const char *psz_path,
@@ -248,16 +271,19 @@ iso9660_open_fuzzy_ext (const char *psz_path,
 				  true);
 }
 
-/*!
-  Close previously opened ISO 9660 image.
-  True is unconditionally returned. If there was an error false would
-  be returned.
+/*! Close previously opened ISO 9660 image and free resources
+    associated with the image. Call this when done using using an ISO
+    9660 image.
+
+    @return true is unconditionally returned. If there was an error
+    false would be returned.
 */
 bool
 iso9660_close (iso9660_t *p_iso)
 {
   if (NULL != p_iso) {
     cdio_stdio_destroy(p_iso->stream);
+    p_iso->stream = NULL;
     free(p_iso);
   }
   return true;
@@ -1177,7 +1203,22 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 }
 
 /*!
-  Get file status for psz_path into stat. NULL is returned on error.
+  Return file status for psz_path. NULL is returned on error.
+
+  @param p_cdio the CD object to read from
+
+  @param psz_path filename path to look up and get information about
+
+  @return ISO 9660 file information
+
+  Important note:
+
+  You make get different results looking up "/" versus "/." and the
+  latter may give more complete information. "/" will take information
+  from the PVD only, whereas "/." will force a directory read of "/" and
+  find "." and in that Rock-Ridge information might be found which fills
+  in more stat information. Ideally iso9660_fs_stat should be fixed.
+  Patches anyone?
  */
 iso9660_stat_t *
 iso9660_fs_stat (CdIo_t *p_cdio, const char psz_path[])
@@ -1234,9 +1275,21 @@ fs_stat_translate (void *p_image, stat_root_t stat_root,
   return p_stat;
 }
 
+/*!
+  Return file status for path name psz_path. NULL is returned on error.
+  pathname version numbers in the ISO 9660 name are dropped, i.e. ;1
+  is removed and if level 1 ISO-9660 names are lowercased.
+
+  @param p_cdio the CD object to read from
+
+  @param psz_path filename path to look up and get information about
+
+  @return ISO 9660 file information.  The caller must free the
+  returned result using iso9660_stat_free().
+
+ */
 iso9660_stat_t *
-iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
-			   bool b_mode2)
+iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[])
 {
   return fs_stat_translate(p_cdio, (stat_root_t *) _fs_stat_root,
 			   (stat_traverse_t *) _fs_stat_traverse,
@@ -1244,10 +1297,14 @@ iso9660_fs_stat_translate (CdIo_t *p_cdio, const char psz_path[],
 }
 
 /*!
-  Get file status for psz_path into stat. NULL is returned on error.
-  pathname version numbers in the ISO 9660
-  name are dropped, i.e. ;1 is removed and if level 1 ISO-9660 names
-  are lowercased.
+  @param p_iso the ISO-9660 file image to get data from
+
+  @param psz_path filename path translate
+
+  @return file status for path name psz_path. NULL is returned on
+  error.  pathname version numbers in the ISO 9660 name are dropped,
+  i.e. ;1 is removed and if level 1 ISO-9660 names are lowercased.
+  The caller must free the returned result using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
@@ -1259,7 +1316,13 @@ iso9660_ifs_stat_translate (iso9660_t *p_iso, const char psz_path[])
 
 
 /*!
-  Get file status for psz_path into stat. NULL is returned on error.
+
+  @param p_cdio the CD object to read from
+
+  @param pzs_path path the look up
+
+  @return file status for pathname. NULL is returned on error.
+  The caller must free the returned result using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
@@ -1284,12 +1347,17 @@ iso9660_ifs_stat (iso9660_t *p_iso, const char psz_path[])
 
 /*!
   Read psz_path (a directory) and return a list of iso9660_stat_t
-  of the files inside that. The caller must free the returned result.
+  pointers for the files inside that directory.
 
-  b_mode2 is historical. It is not used.
+  @param p_cdio the CD object to read from
+
+  @param pzs_path path the read the directory from.
+
+  @return file status for psz_path. The caller must free the
+  The caller must free the returned result using iso9660_stat_free().
 */
-CdioList_t *
-iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
+CdioISO9660FileList_t *
+iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
 {
   generic_img_private_t *p_env;
   iso9660_stat_t *p_stat;
@@ -1310,19 +1378,19 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
   {
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
-    CdioList_t *retval = _cdio_list_new ();
+    CdioISO9660DirList_t *retval = _cdio_list_new ();
 
     _dirbuf = calloc(1, p_stat->secsize * ISO_BLOCKSIZE);
     if (!_dirbuf)
       {
       cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
-      _cdio_list_free (retval, true);
+      iso9660_dirlist_free(retval);
       return NULL;
       }
 
     if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn,
 				ISO_BLOCKSIZE, p_stat->secsize)) {
-      _cdio_list_free (retval, true);
+      iso9660_dirlist_free(retval);
       return NULL;
     }
 
@@ -1353,7 +1421,7 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[], bool b_mode2)
   Read psz_path (a directory) and return a list of iso9660_stat_t
   of the files inside that. The caller must free the returned result.
 */
-CdioList_t *
+CdioISO9660FileList_t *
 iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
 {
   iso9660_stat_t *p_stat;
@@ -1381,7 +1449,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       {
         cdio_warn("Invalid directory buffer sector size %u", p_stat->secsize);
 	iso9660_stat_free(p_stat);
-	_cdio_list_free (retval, true);
+	_cdio_list_free (retval, true, NULL);
         return NULL;
       }
 
@@ -1390,13 +1458,13 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
       {
         cdio_warn("Couldn't calloc(1, %lu)", (unsigned long)dirbuf_len);
 	iso9660_stat_free(p_stat);
-	_cdio_list_free (retval, true);
+	_cdio_list_free (retval, true, NULL);
         return NULL;
       }
 
     ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, p_stat->secsize);
     if (ret != dirbuf_len) 	  {
-      _cdio_list_free (retval, true);
+      _cdio_list_free (retval, true, NULL);
       iso9660_stat_free(p_stat);
       free (_dirbuf);
       return NULL;
@@ -1427,7 +1495,7 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     iso9660_stat_free(p_stat);
 
     if (offset != dirbuf_len) {
-      _cdio_list_free (retval, true);
+      _cdio_list_free (retval, true, (CdioDataFree_t) iso9660_stat_free);
       return NULL;
     }
 
@@ -1435,16 +1503,26 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
   }
 }
 
-typedef CdioList_t * (iso9660_readdir_t)
+typedef CdioISO9660FileList_t * (iso9660_readdir_t)
   (void *p_image,  const char * psz_path);
+
+CdioISO9660FileList_t *
+iso9660_filelist_new(void) {
+  return (CdioISO9660FileList_t *) _cdio_list_new ();
+}
+
+CdioISO9660DirList_t *
+iso9660_dirlist_new(void) {
+  return (CdioISO9660FileList_t *) _cdio_list_new ();
+}
 
 static iso9660_stat_t *
 find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 		  const char psz_path[], lsn_t lsn,
 		  /*out*/ char **ppsz_full_filename)
 {
-  CdioList_t *entlist = iso9660_readdir (p_image, psz_path);
-  CdioList_t *dirlist =  _cdio_list_new ();
+  CdioISO9660FileList_t *entlist = iso9660_readdir (p_image, psz_path);
+  CdioISO9660DirList_t *dirlist = iso9660_filelist_new();
   CdioListNode_t *entnode;
 
   cdio_assert (entlist != NULL);
@@ -1464,6 +1542,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
       if (statbuf->type == _STAT_DIR
           && strcmp ((char *) statbuf->filename, ".")
           && strcmp ((char *) statbuf->filename, "..")) {
+	snprintf (*ppsz_full_filename, len, "%s%s/", psz_path, psz_filename);
         _cdio_list_append (dirlist, strdup(*ppsz_full_filename));
       }
 
@@ -1472,19 +1551,21 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 	iso9660_stat_t *ret_stat = calloc(1, len2);
 	if (!ret_stat)
 	  {
-	    _cdio_list_free (dirlist, true);
+	    iso9660_dirlist_free(dirlist);
 	    cdio_warn("Couldn't calloc(1, %d)", len2);
+	    free(*ppsz_full_filename);
+	    *ppsz_full_filename = NULL;
 	    return NULL;
 	  }
 	memcpy(ret_stat, statbuf, len2);
-        _cdio_list_free (entlist, true);
-        _cdio_list_free (dirlist, true);
+        iso9660_filelist_free (entlist);
+	iso9660_dirlist_free(dirlist);
         return ret_stat;
       }
 
     }
 
-  _cdio_list_free (entlist, true);
+  iso9660_filelist_free (entlist);
 
   /* now recurse/descend over directories encountered */
 
@@ -1499,7 +1580,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
 				   ppsz_full_filename);
 
       if (NULL != ret_stat) {
-        _cdio_list_free (dirlist, true);
+	iso9660_dirlist_free(dirlist);
         return ret_stat;
       }
     }
@@ -1508,7 +1589,7 @@ find_lsn_recurse (void *p_image, iso9660_readdir_t iso9660_readdir,
     free(*ppsz_full_filename);
     *ppsz_full_filename = NULL;
   }
-  _cdio_list_free (dirlist, true);
+  iso9660_dirlist_free(dirlist);
   return NULL;
 }
 
@@ -1522,15 +1603,27 @@ iso9660_stat_t *
 iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
 {
   char *psz_full_filename = NULL;
-  return find_lsn_recurse (p_cdio, (iso9660_readdir_t *) iso9660_fs_readdir,
-			   "/", i_lsn, &psz_full_filename);
+  iso9660_stat_t * p_statbuf;
+  p_statbuf = find_lsn_recurse (p_cdio, (iso9660_readdir_t *) iso9660_fs_readdir,
+				"/", i_lsn, &psz_full_filename);
+  if (psz_full_filename != NULL)
+    free(psz_full_filename);
+  return p_statbuf;
 }
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
-   lsn and return information about it.
+   LSN and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @param p_iso the ISO-9660 file image to get data from.
+   @param i_lsn the LSN to find
+   @param ppsz_full_filename the place to store the name of the path that has LSN.
+   On entry this should point to NULL. If not, the value will be freed.
+   On exit a value is malloc'd and the caller is responsible for
+   freeing the result.
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_fs_find_lsn_with_path(CdIo_t *p_cdio, lsn_t i_lsn,
@@ -1544,21 +1637,40 @@ iso9660_fs_find_lsn_with_path(CdIo_t *p_cdio, lsn_t i_lsn,
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @param p_iso the ISO-9660 file image to get data from.
+
+   @param i_lsn the LSN to find
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_find_lsn(iso9660_t *p_iso, lsn_t i_lsn)
 {
   char *psz_full_filename = NULL;
-  return find_lsn_recurse (p_iso, (iso9660_readdir_t *) iso9660_ifs_readdir,
-			   "/", i_lsn, &psz_full_filename);
+  iso9660_stat_t *ret  =
+    find_lsn_recurse (p_iso, (iso9660_readdir_t *) iso9660_ifs_readdir,
+		      "/", i_lsn, &psz_full_filename);
+  if (psz_full_filename != NULL)
+    free(psz_full_filename);
+  return ret;
 }
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
    lsn and return information about it.
 
-   Returns stat_t of entry if we found lsn, or NULL otherwise.
+   @param p_iso pointer to iso_t
+
+   @param i_lsn LSN to find
+
+   @param ppsz_path  full path of lsn filename. On entry *ppsz_path should be
+   NULL. On return it will be allocated an point to the full path of the
+   file at lsn or NULL if the lsn is not found. You should deallocate
+   *ppsz_path when you are done using it.
+
+   @return stat_t of entry if we found lsn, or NULL otherwise.
+   Caller must free return value using iso9660_stat_free().
  */
 iso9660_stat_t *
 iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, lsn_t i_lsn,
@@ -1570,16 +1682,37 @@ iso9660_ifs_find_lsn_with_path(iso9660_t *p_iso, lsn_t i_lsn,
 
 /*!
   Free the passed iso9660_stat_t structure.
+
+  @param p_stat iso9660 stat buffer to free.
+
  */
 void
 iso9660_stat_free(iso9660_stat_t *p_stat)
 {
   if (p_stat != NULL) {
-    if (p_stat->rr.psz_symlink)
+    if (p_stat->rr.psz_symlink) {
       CDIO_FREE_IF_NOT_NULL(p_stat->rr.psz_symlink);
+    }
     free(p_stat);
   }
 }
+
+/*!
+  Free the passed CdioISOC9660FileList_t structure.
+*/
+void
+iso9660_filelist_free(CdioISO9660FileList_t *p_filelist) {
+  _cdio_list_free(p_filelist, true, (CdioDataFree_t) iso9660_stat_free);
+}
+
+/*!
+  Free the passed CdioISOC9660DirList_t structure.
+*/
+void
+iso9660_dirlist_free(CdioISO9660DirList_t *p_filelist) {
+  _cdio_list_free(p_filelist, true, free);
+}
+
 
 /*!
   Return true if ISO 9660 image has extended attrributes (XA).
@@ -1621,6 +1754,7 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
     {
       iso9660_dir_t *p_iso9660_dir = (void *) &_dirbuf[offset];
       iso9660_stat_t *p_stat;
+      unsigned int i_last_component = 1;
 
       if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
 	continue;
@@ -1629,7 +1763,11 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 					p_iso->u_joliet_level);
       have_rr = p_stat->rr.b3_rock;
       if ( have_rr != yep) {
-	have_rr = iso_have_rr_traverse (p_iso, p_stat, &splitpath[1], pu_file_limit);
+	if (strlen(splitpath[0]) == 0)
+	  have_rr = false;
+	else
+	  have_rr = iso_have_rr_traverse (p_iso, p_stat, &splitpath[i_last_component],
+					  pu_file_limit);
       }
       free(p_stat);
       if (have_rr != nope) {

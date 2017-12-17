@@ -43,7 +43,7 @@ extern "C" {
 /** methods */
 CdioList_t *_cdio_list_new (void);
 
-void _cdio_list_free (CdioList_t *p_list, int free_data);
+void _cdio_list_free (CdioList_t *p_list, int free_data, CdioDataFree_t free_fn);
 
 unsigned _cdio_list_length (const CdioList_t *list);
 
@@ -69,7 +69,8 @@ CdioListNode_t *_cdio_list_end (CdioList_t *p_list);
 
 CdioListNode_t *_cdio_list_node_next (CdioListNode_t *p_node);
 
-void _cdio_list_node_free (CdioListNode_t *p_node, int i_free_data);
+  void _cdio_list_node_free (CdioListNode_t *p_node, int i_free_data,
+                             CdioDataFree_t free_fn);
 
 void *_cdio_list_node_data (CdioListNode_t *p_node);
 

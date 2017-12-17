@@ -77,7 +77,7 @@ MOSTLYCLEANFILES = \
 #: run regression tests. "test" is the same thing as "check"
 test: check-am
 
-#: run regression tests. "test" is the same thing as "check"
+#: run valgrind on C progrma
 check-leaks: $(check_PROGRAMS)
 	for p in $(check_PROGRAMS); do \
 	   valgrind ./$$p; \

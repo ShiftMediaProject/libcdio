@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2008, 2011-2012, 2014
+  Copyright (C) 2004-2008, 2011-2012, 2014, 2017
   Rocky Bernstein <rocky@gnu.org>
     toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
@@ -715,6 +715,7 @@ parse_tocfile (_img_private_t *cd, const char *psz_cue_name)
 		cdio_log (log_level,
 			  "%s line %d: can't open file `%s' for reading",
 			  psz_cue_name, i_line, psz_field);
+		cdio_stdio_destroy (s);
 		goto err_exit;
 	      }
 	      cdio_stdio_destroy (s);

@@ -43,8 +43,9 @@ extern "C" {
 #endif /* __cplusplus */
 
 #ifndef HAVE_STRNDUP
-#include <string.h>
-static inline char *strndup(const char *s, size_t n)
+#undef  strndup
+#define strndup libcdio_strndup
+static inline char *libcdio_strndup(const char *s, size_t n)
 {
     char *result;
     size_t len = strlen (s);

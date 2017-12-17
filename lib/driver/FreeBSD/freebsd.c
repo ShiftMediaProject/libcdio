@@ -962,27 +962,32 @@ get_media_changed_freebsd (const void *p_user_data)
 static const char*
 get_access_mode(const char *psz_source)
 {
-    char *psz_src;
+    char *psz_src = NULL;
     if (!psz_source) {
-	psz_src = cdio_get_default_device_freebsd();
+        psz_src = cdio_get_default_device_freebsd();
     } else {
-	psz_src = strdup(psz_source);
+        psz_src = strdup(psz_source);
     }
 
-    if (psz_src) {
-	if (!(strncmp(psz_src, "/dev/acd", 8)))
-	    return "ioctl";
-	else {
-	    char devname[256];
-	    int  bytes = readlink(psz_src, devname, 255);
+    if (psz_src != NULL) {
+        if (!(strncmp(psz_src, "/dev/acd", 8))) {
+            free(psz_src);
+            return "ioctl";
+	} else {
+            char devname[256];
+            int  bytes = readlink(psz_src, devname, 255);
 
-	    if (bytes > 0) {
-		devname[bytes]=0;
-		if (!(strncmp(devname, "acd", 3)))
-		    return "ioctl";
-	    }
-	}
+            if (bytes > 0) {
+                devname[bytes]=0;
+                if (!(strncmp(devname, "acd", 3))) {
+		    free(psz_src);
+                    return "ioctl";
+		}
+            }
+        }
     }
+    if (psz_src != NULL)
+      free(psz_src);
     return "CAM";
 }
 
@@ -1174,7 +1179,10 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
 
   if (NULL == psz_orig_source_name) {
     psz_source_name=cdio_get_default_device_freebsd();
-    if (NULL == psz_source_name) return NULL;
+    if (NULL == psz_source_name) {
+      cdio_generic_free (_data);
+      return NULL;
+    }
     _data->device  = psz_source_name;
     set_arg_freebsd(_data, "source", psz_source_name);
   } else {
@@ -1186,13 +1194,16 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
 #if 0
       cdio_info ("source %s is a not a device", psz_orig_source_name);
 #endif
-      free(_data);
+      cdio_generic_free (_data);
       return NULL;
     }
   }
 
   ret = cdio_new ((void *)_data, &_funcs);
-  if (ret == NULL) return NULL;
+  if (ret == NULL) {
+    cdio_generic_free (_data);
+    return NULL;
+  }
 
   open_access_mode = 0;
   if (_AM_MMC_RDWR == _data->access_mode) {
@@ -1217,8 +1228,7 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
                                    &os_errno, &pass_dev_no, &flock_fd, msg, 0);
       if (lock_result <= 0) {
         cdio_warn ("%s", msg);
-        cdio_generic_free (_data);
-        return NULL;
+	goto err_exit;
       }
       /* One should rather keep this fd open until _data->gen.fd gets closed.
          It eventually locks a device sibling of _data->gen.source_name.
@@ -1232,20 +1242,17 @@ cdio_open_am_freebsd (const char *psz_orig_source_name,
     } else {
       if (init_freebsd_cam(_data))
 	return ret;
-      else {
-	cdio_generic_free (_data);
-	return NULL;
       }
     }
-  } else {
-    cdio_generic_free (_data);
+
+ err_exit:
+    free(ret);
+    cdio_generic_free(_data);
     return NULL;
-  }
 
 #else
   return NULL;
 #endif /* HAVE_FREEBSD_CDROM */
-
 }
 
 bool

@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2009, 2011-2013
+  Copyright (C) 2004-2009, 2011-2013, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -108,7 +108,6 @@ cdio_generic_free (void *p_user_data)
 
   if (NULL != p_env->cdtext) {
       cdtext_destroy(p_env->cdtext);
-      free(p_env->cdtext);
       p_env->cdtext = NULL;
   }
 
@@ -319,6 +318,8 @@ get_discmode_generic (void *p_user_data )
 
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
+
+  memset(&dvd, 0, sizeof(dvd));
 
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;

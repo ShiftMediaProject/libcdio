@@ -26,8 +26,8 @@
 
 - ./autogen.sh && make && make check
 
-  export LIBCDIO_VERSION=0.94 # adjust
-- git commit -m'Get ready for release ${LIBCDIO_VERSION}" .
+  export LIBCDIO_VERSION=1.1.1 # adjust
+- git commit -m"Get ready for release ${LIBCDIO_VERSION}" .
 
 - make ChangeLog
 
@@ -42,16 +42,10 @@
 
    gnupload from the automake distribution.
    locate gnupload
-   /src/build/automake-1.12.4/lib/gnupload --to ftp.gnu.org:libcdio libcdio-#{LIBCDIO_VERSION}.tar.gz  (Use "is" password)
-
-- Update/Announce on Freshmeat:
-   http://freshmeat.net/add-release/36670/
-   (http://freshmeat.net/projects/libcdio/ "add release")
-
-  The NEWS file is your friend.
+   /src/build/automake-1.12.4/lib/gnupload --to ftp.gnu.org:libcdio libcdio-#{LIBCDIO_VERSION}.tar.*  # (Use "is" password)
 
 - copy doxygen html to web pages:
-  cd libcdio-www/doxygen
+  cd ../libcdio-www/doxygen
   rm *.html
   cp ../../libcdio/doc/doxygen/html/*.html .
   cvs update .

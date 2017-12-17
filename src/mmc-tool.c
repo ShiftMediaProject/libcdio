@@ -38,12 +38,6 @@
 #include <cdio/mmc_cmds.h>
 #include "getopt.h"
 
-static void
-init(const char *argv0)
-{
-  program_name = strrchr(argv0,'/');
-  program_name = program_name ? strdup(program_name+1) : strdup(argv0);
-}
 
 /* Configuration option codes */
 typedef enum {
@@ -96,6 +90,7 @@ static bool
 parse_options (int argc, char *argv[])
 {
   int opt;
+  int rc = EXIT_FAILURE;
   operation_t op;
   int i_blocksize = 0;
 
@@ -216,21 +211,14 @@ parse_options (int argc, char *argv[])
 	break;
       case 'V':
         print_version(program_name, VERSION, 0, true);
-	free(program_name);
-        exit (EXIT_SUCCESS);
-        break;
-
+	rc = EXIT_SUCCESS;
+	goto error_exit;
       case '?':
 	fprintf(stdout, helpText, program_name);
-	free(program_name);
-	exit(EXIT_INFO);
-	break;
-
+	goto error_exit;
       case OPT_USAGE:
 	fprintf(stderr, usageText, program_name);
-	free(program_name);
-	exit(EXIT_FAILURE);
-	break;
+	goto error_exit;
 
       case OPT_HANDLED:
 	break;
@@ -242,8 +230,7 @@ parse_options (int argc, char *argv[])
     if (source_name != NULL) {
       report( stderr, "%s: Source specified in option %s and as %s\n",
 	      program_name, source_name, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
 
     source_name = strdup(remaining_arg);
@@ -251,12 +238,35 @@ parse_options (int argc, char *argv[])
     if (optind < argc) {
       report( stderr, "%s: Source specified in previously %s and %s\n",
 	      program_name, source_name, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      free(source_name);
+      goto error_exit;
     }
   }
 
   return true;
+ error_exit:
+  free(program_name);
+  exit(rc);
+}
+
+static void
+_log_handler (cdio_log_level_t level, const char message[])
+{
+  if (level == CDIO_LOG_ERROR) {
+    // print an error like default, but *don't* exit.
+    fprintf (stderr, "**ERROR: %s\n", message);
+    fflush (stderr);
+    return;
+  }
+  gl_default_cdio_log_handler (level, message);
+}
+
+static void
+init(const char *argv0)
+{
+  gl_default_cdio_log_handler = cdio_log_set_handler (_log_handler);
+  program_name = strrchr(argv0,'/');
+  program_name = program_name ? strdup(program_name+1) : strdup(argv0);
 }
 
 static void
@@ -431,7 +441,8 @@ main(int argc, char *argv[])
 
   if (NULL == p_cdio) {
     printf("Couldn't find CD\n");
-    return 1;
+    rc = 1;
+    goto exit;
   }
 
   for (i=0; i < last_op; i++) {
@@ -521,7 +532,9 @@ main(int argc, char *argv[])
     }
   }
 
+ exit:
   free(source_name);
+  free(program_name);
   cdio_destroy(p_cdio);
 
   return rc;

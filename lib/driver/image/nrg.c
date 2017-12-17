@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003-2006, 2008-2009, 2011-2012, 2014
+  Copyright (C) 2003-2006, 2008-2009, 2011-2012, 2014, 2017
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2001, 2003 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -1107,7 +1107,7 @@ _free_nrg (void *p_user_data)
 
   if (NULL == p_env) return;
   if (NULL != p_env->mapping)
-    _cdio_list_free (p_env->mapping, true);
+    _cdio_list_free (p_env->mapping, true, free);
 
   /* The remaining part of the image is like the other image drivers,
      so free that in the same way. */
@@ -1275,6 +1275,7 @@ cdio_is_nrg(const char *psz_nrg)
 
   if (!(p_env->gen.data_source = cdio_stdio_new (psz_nrg))) {
     cdio_warn ("can't open nrg image file %s for reading", psz_nrg);
+    free(p_env);
     return false;
   }
 

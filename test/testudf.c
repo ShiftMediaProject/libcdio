@@ -56,8 +56,9 @@ main(int argc, const char *argv[])
   char const *psz_fname = UDF_IMAGE;
   char volume_id[192];         /* 3*64 to account for UTF-8 */
   udf_t* p_udf = NULL;
-  udf_dirent_t *p_udf_root, *p_udf_file;
+  udf_dirent_t *p_udf_root = NULL, *p_udf_file = NULL;
   int64_t file_length;
+  int rc=0;
 
   p_udf = udf_open(psz_fname);
 
@@ -70,29 +71,39 @@ main(int argc, const char *argv[])
   p_udf_root = udf_get_root(p_udf, true, 0);
   if (NULL == p_udf_root) {
     fprintf(stderr, "Could not locate UDF root directory\n");
-    return 2;
+    rc=2;
+    goto exit;
   }
 
   if ( (udf_get_logical_volume_id(p_udf, volume_id, sizeof(volume_id)) <= 0)
     || (strcmp(EXPECTED_NAME, volume_id) != 0) ) {
     fprintf(stderr, "Unexpected UDF logical volume ID\n");
-    return 3;
+    rc=3;
+    goto exit;
   }
   printf("-- Good! Volume id matches expected UTF-8 data\n");
 
   p_udf_file = udf_fopen(p_udf_root, EXPECTED_NAME);
   if (!p_udf_file) {
     fprintf(stderr, "Could not locate expected file in UDF image\n");
-    return 4;
+    rc=4;
+    goto exit;
   }
   printf("-- Good! File name matches expected UTF-8 data\n");
 
   file_length = udf_get_file_length(p_udf_file);
   if (file_length != EXPECTED_LENGTH) {
     fprintf(stderr, "Unexpected UDF file length\n");
-    return 5;
+    rc=5;
+    goto exit;
   }
   printf("-- Good! File length matches expected length\n");
 
-  return 0;
+ exit:
+  if (p_udf_root != NULL)
+    udf_dirent_free(p_udf_root);
+  if (p_udf_file != NULL)
+    udf_dirent_free(p_udf_file);
+  udf_close(p_udf);
+  return rc;
 }

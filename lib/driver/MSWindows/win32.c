@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2010, 2011, 2012, 2014
+  Copyright (C) 2003-2006, 2008, 2010-2012, 2014, 2017
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -1036,7 +1036,9 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_win32();
-    if (NULL == psz_source) return NULL;
+    if (NULL == psz_source) {
+      goto error_exit;
+    }
     set_arg_win32(_data, "source", psz_source);
     free(psz_source);
   } else {
@@ -1046,21 +1048,23 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
       /* The below would be okay as an info message if all device
 	 drivers worked this way. */
       cdio_debug ("source %s is a not a device", psz_orig_source);
-      free(_data);
-      return NULL;
+      goto error_exit;
     }
   }
 
   ret = cdio_new ((void *)_data, &_funcs);
-  if (ret == NULL) return NULL;
-
-  if (init_win32(_data))
-    return ret;
-  else {
-    free_win32 (_data);
-    return NULL;
+  if (ret == NULL) {
+    goto error_exit;
   }
 
+  if (init_win32(_data)) {
+    return ret;
+  }
+  
+
+ error_exit:
+  free_win32(_data);
+  return(NULL);
 #else
   return NULL;
 #endif /* HAVE_WIN32_CDROM */

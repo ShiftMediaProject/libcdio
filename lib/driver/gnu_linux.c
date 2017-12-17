@@ -805,6 +805,8 @@ dvd_discmode_linux (_img_private_t *p_env)
   /* See if this is a DVD. */
   cdio_dvd_struct_t dvd;  /* DVD READ STRUCT for layer 0. */
 
+  memset(&dvd, 0, sizeof(dvd));
+
   dvd.physical.type = CDIO_DVD_STRUCT_PHYSICAL;
   dvd.physical.layer_num = 0;
   if (0 == ioctl (p_env->gen.fd, DVD_READ_STRUCT, &dvd)) {
@@ -1278,11 +1280,13 @@ run_mmc_cmd_linux(void *p_user_data,
   _img_private_t *p_env = p_user_data;
   struct cdrom_generic_command cgc;
   cdio_mmc_request_sense_t sense;
-  unsigned char *u_sense = (unsigned char *) &sense;
 
   p_env->gen.scsi_mmc_sense_valid = 0;
-  memset (&cgc, 0, sizeof (struct cdrom_generic_command));
+
+  memset(&cgc, 0, sizeof (struct cdrom_generic_command));
+  memset(&sense, 0, sizeof (struct cdio_mmc_request_sense));
   memcpy(&cgc.cmd, p_cdb, i_cdb);
+
   cgc.buflen = i_buf;
   cgc.buffer = p_buf;
   cgc.sense  = (struct request_sense *) &sense;
@@ -1295,7 +1299,6 @@ run_mmc_cmd_linux(void *p_user_data,
   cgc.timeout = i_timeout_ms;
 #endif
 
-  memset(u_sense, 0, sizeof(sense));
   {
     int i_rc = ioctl (p_env->gen.fd, CDROM_SEND_PACKET, &cgc);
 
@@ -1772,8 +1775,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_linux();
     if (NULL == psz_source) {
-      free(_data);
-      return NULL;
+      goto err_exit;
     }
 
     set_arg_linux(_data, "source", psz_source);
@@ -1786,13 +1788,14 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
 #if 0
       cdio_info ("source %s is not a device", psz_orig_source);
 #endif
-      free(_data);
-      return NULL;
+      goto err_exit;
     }
   }
 
   ret = cdio_new ((void *)_data, &_funcs);
-  if (ret == NULL) return NULL;
+  if (ret == NULL) {
+    goto err_exit;
+  }
 
   ret->driver_id = DRIVER_LINUX;
 
@@ -1806,11 +1809,12 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   if (cdio_generic_init(_data, open_access_mode)) {
     set_scsi_tuple_linux(_data);
     return ret;
-  } else {
-    cdio_generic_free (_data);
-    free(ret);
-    return NULL;
   }
+  free(ret);
+
+ err_exit:
+    cdio_generic_free(_data);
+    return NULL;
 
 #else
   return NULL;

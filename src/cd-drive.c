@@ -56,6 +56,7 @@ static bool
 parse_options (int argc, char *argv[])
 {
   int opt;
+  int rc = EXIT_FAILURE;
 
   static const char helpText[] =
     "Usage: %s [OPTION...]\n"
@@ -122,15 +123,13 @@ parse_options (int argc, char *argv[])
 
     case '?':
       fprintf(stdout, helpText, program_name);
-      free(program_name);
-      exit(EXIT_INFO);
-      break;
+      rc = EXIT_INFO;
+      goto error_exit;
 
     case OP_USAGE:
       fprintf(stderr, usageText, program_name);
-      free(program_name);
-      exit(EXIT_FAILURE);
-      break;
+      rc = EXIT_INFO;
+      goto error_exit;
 
     case OP_HANDLED:
       break;
@@ -148,8 +147,7 @@ parse_options (int argc, char *argv[])
     if (source_name != NULL) {
       report( stderr, "%s: Source specified in option %s and as %s\n",
 	      program_name, source_name, remaining_arg);
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
 
     if (opts.source_image == (source_image_t) DRIVER_DEVICE)
@@ -160,12 +158,17 @@ parse_options (int argc, char *argv[])
     if (optind < argc) {
       report( stderr, "%s: Source specified in previously %s and %s\n",
 	      program_name, source_name, remaining_arg);
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
   }
-
   return true;
+ error_exit:
+  if (source_name != NULL) {
+    free(source_name);
+  }
+  free(program_name);
+  exit(rc);
+
 }
 
 /* CDIO logging routines */

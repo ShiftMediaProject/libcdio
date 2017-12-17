@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2012 Pete Batard <pete@akeo.ie>
-  Based on samples copyright (c) 2003-2011 Rocky Bernstein <rocky@gnu.org>
+  Based on samples copyright (c) 2003-2011, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -171,9 +171,9 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
   char psz_fullpath[4096], *psz_basename;
   const char *psz_iso_name = &psz_fullpath[strlen(psz_extract_dir)];
   unsigned char buf[ISO_BLOCKSIZE];
-  CdioListNode_t* p_entnode;
+  CdioListNode_t *p_entnode;
   iso9660_stat_t *p_statbuf;
-  CdioList_t* p_entlist;
+  CdioISO9660FileList_t* p_entlist;
   size_t i;
   lsn_t lsn;
   int64_t i_file_length;
@@ -236,7 +236,7 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
 out:
   if (fd != NULL)
     fclose(fd);
-  _cdio_list_free(p_entlist, true);
+  iso9660_filelist_free(p_entlist);
   return r;
 }
 

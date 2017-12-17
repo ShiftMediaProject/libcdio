@@ -68,6 +68,10 @@
 #include <errno.h>
 #endif
 
+#ifdef HAVE_ALLOCA_H
+#include <alloca.h>
+#endif
+
 #define STRONG "__________________________________\n"
 #define NORMAL ""
 
@@ -180,6 +184,7 @@ static bool
 parse_options (int argc, char *argv[])
 {
   int opt; /* used for argument parsing */
+  int rc = EXIT_FAILURE;
 
   static const char helpText[] =
     "Usage: %s [OPTION...]\n"
@@ -334,15 +339,13 @@ parse_options (int argc, char *argv[])
 
     case '?':
       fprintf(stdout, helpText, program_name);
-      free(program_name);
-      exit(EXIT_INFO);
-      break;
+      rc = EXIT_INFO;
+      goto error_exit;
 
     case OP_USAGE:
       fprintf(stderr, usageText, program_name);
-      free(program_name);
-      exit(EXIT_FAILURE);
-      break;
+      rc = EXIT_INFO;
+      goto error_exit;
 
     case OP_HANDLED:
       break;
@@ -356,8 +359,7 @@ parse_options (int argc, char *argv[])
       report(stderr, "%s: Source '%s' given as an argument of an option and as "
              "unnamed option '%s'\n",
              program_name, source_name, remaining_arg);
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
 
     if (opts.source_image == INPUT_DEVICE)
@@ -368,12 +370,15 @@ parse_options (int argc, char *argv[])
     if (optind < argc) {
       report(stderr, "%s: Source specified in previously %s and %s\n",
              program_name, source_name, remaining_arg);
-      free(program_name);
-      exit (EXIT_FAILURE);
+      free(source_name);
+      goto error_exit;
     }
   }
 
   return true;
+ error_exit:
+  free(program_name);
+  exit(rc);
 }
 
 /* CDIO logging routines */
@@ -540,25 +545,24 @@ static void
 print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
                        cdio_fs_anal_t fs)
 {
-  CdioList_t *p_entlist;
-  CdioList_t *p_dirlist =  _cdio_list_new ();
+  CdioISO9660FileList_t *p_entlist;
+  CdioISO9660DirList_t *p_dirlist = iso9660_dirlist_new();
   CdioListNode_t *entnode;
   uint8_t i_joliet_level;
-  char *translated_name = (char *) malloc(4096);
+  char *translated_name = (char *) alloca(4096);
   size_t translated_name_size = 4096;
 
   i_joliet_level = (opts.no_joliet)
     ? 0
     : cdio_get_joliet_level(p_cdio);
 
-  p_entlist = iso9660_fs_readdir (p_cdio, pathname, false);
+  p_entlist = iso9660_fs_readdir(p_cdio, pathname);
 
   printf ("%s:\n", pathname);
 
   if (NULL == p_entlist) {
     report( stderr, "Error getting above directory information\n" );
-    free(translated_name);
-    free(p_dirlist);
+    iso9660_dirlist_free(p_dirlist);
     return;
   }
 
@@ -571,12 +575,9 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       char _fullname[4096] = { 0, };
        if (strlen(psz_iso_name) >= translated_name_size) {
          translated_name_size = strlen(psz_iso_name)+1;
-         free(translated_name);
-         translated_name = (char *) malloc(translated_name_size);
          if (!translated_name) {
            report( stderr, "Error allocating memory\n" );
-	   _cdio_list_free (p_dirlist, true);
-	   _cdio_list_free (p_entlist, true);
+	   iso9660_dirlist_free(p_dirlist);
            return;
          }
        }
@@ -604,9 +605,8 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
         p_statbuf->rr.i_symlink = 0;
       }
     }
-    free (translated_name);
 
-  _cdio_list_free (p_entlist, true);
+  iso9660_filelist_free(p_entlist);
 
   printf ("\n");
 
@@ -619,7 +619,7 @@ print_iso9660_recurse (CdIo_t *p_cdio, const char pathname[],
       print_iso9660_recurse (p_cdio, _fullname, fs);
     }
 
-  _cdio_list_free (p_dirlist, true);
+  iso9660_dirlist_free(p_dirlist);
 }
 
 static void

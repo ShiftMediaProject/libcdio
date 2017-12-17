@@ -1,7 +1,7 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2011 Rocky Bernstein 
+  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2011 Rocky Bernstein
   <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -102,7 +102,7 @@ static struct arguments
   int            debug_level;
   int            hexdump;     /* Show output as a hexdump */
   int            nohexdump;   /* Don't output as a hexdump. I don't know
-				 how to get popt to combine these as 
+				 how to get popt to combine these as
 				 one variable.
 			       */
   int            just_hex;    /* Don't try to print "printable" characters
@@ -116,7 +116,7 @@ static struct arguments
   lsn_t          end_lsn;
   int            num_sectors;
 } opts;
-     
+
 static void
 hexdump (FILE *stream,  uint8_t * buffer, unsigned int len,
 	 int just_hex)
@@ -131,7 +131,7 @@ hexdump (FILE *stream,  uint8_t * buffer, unsigned int len,
 	fprintf (stream, " ");
       if (i % 16 == 15) {
 	if (!just_hex) {
-	  uint8_t *p; 
+	  uint8_t *p;
 	  fprintf (stream, "  ");
 	  for (p=buffer-15; p <= buffer; p++) {
 	    fprintf(stream, "%c", isprint(*p) ?  *p : '.');
@@ -146,23 +146,23 @@ hexdump (FILE *stream,  uint8_t * buffer, unsigned int len,
 
 /* Comparison function called by bearch() to find sub-option record. */
 static int
-compare_subopts(const void *key1, const void *key2) 
+compare_subopts(const void *key1, const void *key2)
 {
   subopt_entry_t *a = (subopt_entry_t *) key1;
   subopt_entry_t *b = (subopt_entry_t *) key2;
   return (strncmp(a->name, b->name, 30));
 }
 
-/* Do processing of a --mode sub option. 
+/* Do processing of a --mode sub option.
    Basically we find the option in the array, set it's corresponding
-   flag variable to true as well as the "show.all" false. 
+   flag variable to true as well as the "show.all" false.
 */
 static void
 process_suboption(const char *subopt, const subopt_entry_t *sublist, const int num,
-                  const char *subopt_name) 
+                  const char *subopt_name)
 {
-  subopt_entry_t *subopt_rec = 
-    bsearch(subopt, sublist, num, sizeof(subopt_entry_t), 
+  subopt_entry_t *subopt_rec =
+    bsearch(subopt, sublist, num, sizeof(subopt_entry_t),
             &compare_subopts);
   if (subopt_rec != NULL) {
     opts.read_mode = subopt_rec->read_mode;
@@ -171,10 +171,10 @@ process_suboption(const char *subopt, const subopt_entry_t *sublist, const int n
     unsigned int i;
     bool is_help=strcmp(subopt, "help")==0;
     if (is_help) {
-      report( stderr, "The list of sub options for \"%s\" are:\n", 
+      report( stderr, "The list of sub options for \"%s\" are:\n",
 	      subopt_name );
     } else {
-      report( stderr, "Invalid option following \"%s\": %s.\n", 
+      report( stderr, "Invalid option following \"%s\": %s.\n",
 	      subopt_name, subopt );
       report( stderr, "Should be one of: " );
     }
@@ -200,34 +200,34 @@ parse_source(int opt)
   */
 
   if (opts.source_image != INPUT_UNKNOWN) {
-    report( stderr, "%s: another source type option given before.\n", 
+    report( stderr, "%s: another source type option given before.\n",
 	    program_name );
-    report( stderr, "%s: give only one source type option.\n", 
+    report( stderr, "%s: give only one source type option.\n",
 	    program_name );
     return;
-  } 
-  
+  }
+
   /* For all input sources which are not a DEVICE, we need to make
      a copy of the string; for a DEVICE the fill-out routine makes
      the copy.
   */
-  if (OP_SOURCE_DEVICE != opt) 
+  if (OP_SOURCE_DEVICE != opt)
     if (optarg != NULL) source_name = strdup(optarg);
-  
+
   switch (opt) {
-  case OP_SOURCE_BIN: 
+  case OP_SOURCE_BIN:
     opts.source_image  = INPUT_BIN;
     break;
-  case OP_SOURCE_CUE: 
+  case OP_SOURCE_CUE:
     opts.source_image  = INPUT_CUE;
     break;
-  case OP_SOURCE_NRG: 
+  case OP_SOURCE_NRG:
     opts.source_image  = INPUT_NRG;
     break;
   case OP_SOURCE_AUTO:
     opts.source_image  = INPUT_AUTO;
     break;
-  case OP_SOURCE_DEVICE: 
+  case OP_SOURCE_DEVICE:
     opts.source_image  = INPUT_DEVICE;
     if (optarg != NULL) source_name = fillout_device_name(optarg);
     break;
@@ -240,6 +240,7 @@ static bool
 parse_options (int argc, char *argv[])
 {
   int opt;
+  int rc = EXIT_FAILURE;
 
   static const char helpText[] =
     "Usage: %s [OPTION...]\n"
@@ -273,7 +274,7 @@ parse_options (int argc, char *argv[])
     "Help options:\n"
     "  -?, --help                      Show this help message\n"
     "  --usage                         Display brief usage message\n";
-  
+
   static const char usageText[] =
     "Usage: %s [-a|--access-mode STRING] [-m|--mode MODE-TYPE]\n"
     "        [-d|--debug INT] [-x|--hexdump] [--no-header] [--no-hexdump]\n"
@@ -281,11 +282,11 @@ parse_options (int argc, char *argv[])
     "        [-c|--cue-file FILE] [-i|--input FILE] [-C|--cdrom-device DEVICE]\n"
     "        [-N|--nrg-file FILE] [-t|--toc-file FILE] [-o|--output-file FILE]\n"
     "        [-V|--version] [-?|--help] [--usage]\n";
-  
+
   /* Command-line options */
   static const char optionsString[] = "a:m:d:xjs:e:n:b::c::i::C::N::t::o:V?";
   static const struct option optionsTable[] = {
-  
+
     {"access-mode", required_argument, NULL, 'a'},
     {"mode", required_argument, NULL, 'm'},
     {"debug", required_argument, NULL, 'd'},
@@ -304,12 +305,12 @@ parse_options (int argc, char *argv[])
     {"toc-file", optional_argument, NULL, 't'},
     {"output-file", required_argument, NULL, 'o'},
     {"version", no_argument, NULL, 'V'},
-   
+
     {"help", no_argument, NULL, '?' },
     {"usage", no_argument, NULL, OP_USAGE },
     { NULL, 0, NULL, 0 }
   };
-  
+
   program_name = strrchr(argv[0],'/');
   program_name = program_name ? strdup(program_name+1) : strdup(argv[0]);
 
@@ -329,7 +330,7 @@ parse_options (int argc, char *argv[])
       case 'N': parse_source(OP_SOURCE_NRG); break;
       case 't': parse_source(OP_SOURCE_CDRDAO); break;
       case 'o': opts.output_file = strdup(optarg); break;
-     
+
       case 'm':
 	process_suboption(optarg, modes_sublist,
 			  sizeof(modes_sublist) / sizeof(subopt_entry_t),
@@ -338,21 +339,17 @@ parse_options (int argc, char *argv[])
 
       case 'V':
         print_version(program_name, VERSION, 0, true);
-	free(program_name);
-        exit (EXIT_SUCCESS);
-        break;
+	rc = EXIT_SUCCESS;
+	goto error_exit;
 
       case '?':
 	fprintf(stdout, helpText, program_name);
-	free(program_name);
-	exit(EXIT_INFO);
-	break;
-	
+	rc = EXIT_INFO;
+	goto error_exit;
+
       case OP_USAGE:
 	fprintf(stderr, usageText, program_name);
-	free(program_name);
-	exit(EXIT_FAILURE);
-	break;
+	goto error_exit;
 
       case OP_HANDLED:
 	break;
@@ -365,25 +362,23 @@ parse_options (int argc, char *argv[])
        rendered the subsequent source_image test useless.
     */
     if (source_name != NULL) {
-      report( stderr, "%s: Source specified in option %s and as %s\n", 
+      report( stderr, "%s: Source specified in option %s and as %s\n",
 	      program_name, source_name, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
 
     if (opts.source_image == INPUT_DEVICE)
       source_name = fillout_device_name(remaining_arg);
-    else 
+    else
       source_name = strdup(remaining_arg);
-      
+
     if (optind < argc) {
-      report( stderr, "%s: Source specified in previously %s and %s\n", 
+      report( stderr, "%s: Source specified in previously %s and %s\n",
 	      program_name, source_name, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
   }
-  
+
   if (opts.debug_level == 3) {
     cdio_loglevel_default = CDIO_LOG_INFO;
   } else if (opts.debug_level >= 4) {
@@ -391,25 +386,26 @@ parse_options (int argc, char *argv[])
   }
 
   if (opts.read_mode == READ_MODE_UNINIT) {
-    report( stderr, 
+    report( stderr,
 	    "%s: Need to give a read mode "
 	    "(audio, m1f1, m1f2, m2f1, m2f2, or auto)\n",
 	    program_name );
-    free(program_name);
-    exit(10);
+    rc = 10;
+    goto error_exit;
   }
 
   /* Check consistency between start_lsn, end_lsn and num_sectors. */
 
   if (opts.nohexdump && opts.hexdump != 2) {
-    report( stderr, 
+    report( stderr,
 	    "%s: don't give both --hexdump and --no-hexdump together\n",
 	    program_name );
-    exit(13);
+    rc = 11;
+    goto error_exit;
   }
 
   if (opts.nohexdump) opts.hexdump = 0;
-  
+
   if (opts.start_lsn == CDIO_INVALID_LSN) {
     /* Maybe we derive the start from the end and num sectors. */
     if (opts.end_lsn == CDIO_INVALID_LSN) {
@@ -420,9 +416,10 @@ parse_options (int argc, char *argv[])
       if (opts.end_lsn <= opts.num_sectors) {
 	report( stderr, "%s: end LSN (%lu) needs to be greater than "
 		" the sector to read (%lu)\n",
-		program_name, (unsigned long) opts.end_lsn, 
+		program_name, (unsigned long) opts.end_lsn,
 		(unsigned long) opts.num_sectors );
-	exit(12);
+	rc = 12;
+	goto error_exit;
       }
       opts.start_lsn = opts.end_lsn - opts.num_sectors + 1;
     }
@@ -436,30 +433,33 @@ parse_options (int argc, char *argv[])
   } else {
     /* We were given an end lsn. */
     if (opts.end_lsn < opts.start_lsn) {
-      report( stderr, 
+      report( stderr,
 	      "%s: end LSN (%lu) needs to be grater than start LSN (%lu)\n",
-	      program_name, (unsigned long) opts.start_lsn, 
+	      program_name, (unsigned long) opts.start_lsn,
 	      (unsigned long) opts.end_lsn );
-      free(program_name);
-      exit(13);
+      rc = 13;
+      goto error_exit;
     }
     if (opts.num_sectors != opts.end_lsn - opts.start_lsn + 1)
       if (opts.num_sectors != 0) {
-	 report( stderr, 
+	 report( stderr,
 		 "%s: inconsistency between start LSN (%lu), end (%lu), "
 		 "and count (%d)\n",
-		 program_name, (unsigned long) opts.start_lsn, 
+		 program_name, (unsigned long) opts.start_lsn,
 		 (unsigned long) opts.end_lsn, opts.num_sectors );
-	 free(program_name);
-	 exit(14);
+	 rc = 14;
+	 goto error_exit;
 	}
     opts.num_sectors = opts.end_lsn - opts.start_lsn + 1;
   }
-  
+
   return true;
+ error_exit:
+  free(program_name);
+  exit(rc);
 }
 
-static void 
+static void
 log_handler (cdio_log_level_t level, const char message[])
 {
   if (level == CDIO_LOG_DEBUG && opts.debug_level < 2)
@@ -467,16 +467,16 @@ log_handler (cdio_log_level_t level, const char message[])
 
   if (level == CDIO_LOG_INFO  && opts.debug_level < 1)
     return;
-  
+
   if (level == CDIO_LOG_WARN  && opts.debug_level < 0)
     return;
-  
+
   gl_default_cdio_log_handler (level, message);
 }
 
 
-static void 
-init(void) 
+static void
+init(void)
 {
   opts.debug_level   = 0;
   opts.start_lsn     = CDIO_INVALID_LSN;
@@ -497,20 +497,20 @@ main(int argc, char *argv[])
   CdIo *p_cdio=NULL;
   int output_fd=-1;
   FILE *output_stream;
-  
+
   init();
 
   /* Parse our arguments; every option seen by `parse_opt' will
      be reflected in `arguments'. */
   parse_options(argc, argv);
-     
+
   print_version(program_name, VERSION, opts.no_header, opts.version_only);
 
   p_cdio = open_input(source_name, opts.source_image, opts.access_mode);
 
   if (opts.output_file!=NULL) {
-    
-    /* If hexdump not explicitly set, then don't produce hexdump 
+
+    /* If hexdump not explicitly set, then don't produce hexdump
        when writing to a file.
      */
     if (opts.hexdump == 2) opts.hexdump = 0;
@@ -521,8 +521,8 @@ main(int argc, char *argv[])
 	       opts.output_file, strerror(errno));
 
     }
-  } else 
-    /* If we are writing to stdout, then the default is to produce 
+  } else
+    /* If we are writing to stdout, then the default is to produce
        a hexdump.
      */
     if (opts.hexdump == 2) opts.hexdump = 1;
@@ -535,11 +535,11 @@ main(int argc, char *argv[])
     case READ_M1F2:
     case READ_M2F1:
     case READ_M2F2:
-      if (DRIVER_OP_SUCCESS != 
-	  cdio_read_sector(p_cdio, &buffer, 
-			   opts.start_lsn, 
+      if (DRIVER_OP_SUCCESS !=
+	  cdio_read_sector(p_cdio, &buffer,
+			   opts.start_lsn,
 			   (cdio_read_mode_t) opts.read_mode)) {
-	report( stderr, "error reading block %u\n", 
+	report( stderr, "error reading block %u\n",
 		(unsigned int) opts.start_lsn );
 	blocklen = 0;
       } else {
@@ -565,10 +565,10 @@ main(int argc, char *argv[])
       {
 	driver_id_t driver_id = cdio_get_driver_id(p_cdio);
 	if (cdio_is_device(source_name, driver_id)) {
-	  if (DRIVER_OP_SUCCESS != 
-	      mmc_read_sectors(p_cdio, &buffer, 
+	  if (DRIVER_OP_SUCCESS !=
+	      mmc_read_sectors(p_cdio, &buffer,
 			       opts.start_lsn, CDIO_MMC_READ_TYPE_ANY, 1)) {
-	    report( stderr, "error reading block %u\n", 
+	    report( stderr, "error reading block %u\n",
 		    (unsigned int) opts.start_lsn );
 	    blocklen = 0;
 	  }
@@ -579,7 +579,7 @@ main(int argc, char *argv[])
       }
       break;
 
-      case READ_MODE_UNINIT: 
+      case READ_MODE_UNINIT:
       err_exit("%s: Reading mode not set\n", program_name);
       break;
     }
@@ -589,7 +589,7 @@ main(int argc, char *argv[])
     } else {
       output_stream = fdopen(output_fd, "w");
     }
-    
+
     if (opts.hexdump)
       hexdump(output_stream, buffer, blocklen, opts.just_hex);
     else if (opts.output_file) {
@@ -600,7 +600,7 @@ main(int argc, char *argv[])
       unsigned int i;
       for (i=0; i<blocklen; i++) printf("%c", buffer[i]);
     }
-    
+
   }
 
   if (opts.output_file) close(output_fd);

@@ -256,7 +256,7 @@ sigwinch(int dummy)
 
 /* Signal handler - Ctrl-C and others. */
 static void
-ctrlc(int signal)
+ctrlc(int signal_num)
 {
   b_sig = true;
 }
@@ -531,8 +531,8 @@ static void
 get_cddb_disc_info(CdIo_t *p_cdio)
 {
 #ifdef HAVE_CDDB
-  b_db = init_cddb(p_cdio, &p_conn, &p_cddb_disc, xperror, i_first_track,
-                   i_tracks, &i_cddb_matches);
+  b_db = init_cddb(p_cdio, &p_conn, &p_cddb_disc, xperror, i_first_track_global,
+                   i_tracks_global, &i_cddb_matches);
   if (b_db) {
     int i_year;
     i_year = atoi(year);
@@ -831,7 +831,7 @@ get_cddb_track_info(track_t i_track)
 {
 #ifdef HAVE_CDDB
   cddb_track_t *t = cddb_disc_get_track(p_cddb_disc,
-                                        i_track - i_first_track);
+                                        i_track - i_first_track_global);
   if (t) {
     cddb_track_set_title(t, title);
     cddb_track_set_artist(t, artist);

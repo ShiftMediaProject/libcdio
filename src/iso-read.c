@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2013 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2013, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -66,6 +66,7 @@ parse_options (int argc, char *argv[])
 {
 
   int opt;
+  int rc = EXIT_FAILURE;
 
   /* Configuration option codes */
   enum {
@@ -128,21 +129,18 @@ parse_options (int argc, char *argv[])
 
       case 'V':
         print_version(program_name, CDIO_VERSION, 0, true);
-        free(program_name);
-        exit (EXIT_SUCCESS);
-        break;
+	rc = EXIT_SUCCESS;
+	goto error_exit;
 
       case '?':
         fprintf(stdout, helpText, program_name);
-        free(program_name);
-        exit(EXIT_INFO);
-        break;
+	rc = EXIT_INFO;
+	goto error_exit;
 
       case OP_USAGE:
         fprintf(stderr, usageText, program_name);
-        free(program_name);
-        exit(EXIT_FAILURE);
-        break;
+	rc = EXIT_INFO;
+	goto error_exit;
 
       case OP_HANDLED:
         break;
@@ -153,8 +151,7 @@ parse_options (int argc, char *argv[])
     if (opts.iso9660_image != NULL) {
       report( stderr, "%s: Source specified as --image %s and as %s\n",
               program_name, opts.iso9660_image, remaining_arg );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
 
     opts.iso9660_image = strdup(remaining_arg);
@@ -164,8 +161,7 @@ parse_options (int argc, char *argv[])
               "%s: use only one unnamed argument for the ISO 9660 "
               "image name\n",
               program_name );
-      free(program_name);
-      exit (EXIT_FAILURE);
+      goto error_exit;
     }
   }
 
@@ -174,7 +170,7 @@ parse_options (int argc, char *argv[])
             program_name );
     report( stderr, "%s: Use option --image or try --help.\n",
             program_name );
-    exit (EXIT_FAILURE);
+    goto error_exit;
   }
 
   if (NULL == opts.file_name) {
@@ -182,7 +178,7 @@ parse_options (int argc, char *argv[])
             program_name );
     report( stderr, "%s: Use option --extract or try --help.\n",
             program_name );
-    exit (EXIT_FAILURE);
+    goto error_exit;
   }
 
   if (NULL == opts.output_file) {
@@ -191,10 +187,13 @@ parse_options (int argc, char *argv[])
              program_name );
     report( stderr, "%s: Use option --output-file or try --help.\n",
             program_name );
-    exit (EXIT_FAILURE);
+    goto error_exit;
   }
 
   return true;
+ error_exit:
+  free(program_name);
+  exit(rc);
 }
 
 static void
