@@ -1,13 +1,18 @@
 2017-12-10 version 1.1.0 Dr. Gecko
 
+This is an API breaking change.
+
+Caveats:
+pycdio and Deveice::Perl will be broken but that'll be fixed later
+
 - Remove many remaining memory leaks, invalid
   reads, writes (as per valgrind) in library,
   test and demo code
 - Types CdioISO9660{Dir,File}List_t,  have been added
   and iso9660_{dir,file}list_{new,free} have been added.
+- cdio_list_free() now takes an additional parameter: a function to
+  free list itmes
 
-Caveats:
-pycdio and Deveice::Perl will be broken but that'll be fixed later
 
 More work is needed on MacOS and other OS's where I don't have
 valgrind accessible.
@@ -15,8 +20,10 @@ valgrind accessible.
 AIX is left untouched - that is probably heading for removal in the
 future.
 
-version 1.0.0
-2017-11-21  Thanksgiving
+
+2017-11-21 version 1.0.0 Thanksgiving
+
+This is an API breaking change
 
 - Remove deprecated items:
    * OS/2 driver (never really was supported)
