@@ -90,7 +90,7 @@ $(man_MANS): %.1: %$(EXEEXT) %.help2man
 endif
 MAINTAINERCLEANFILES = $(man_MANS)
 
-MOSTLYCLEANFILES = *.orig *.rej *.dSYM .libs *.1
+MOSTLYCLEANFILES = *.orig *.rej *.dSYM .libs
 
 mostlyclean-generic:
 	-test -z "$(MOSTLYCLEANFILES)" || rm -fr $(MOSTLYCLEANFILES)

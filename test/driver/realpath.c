@@ -1,5 +1,5 @@
 /* -*- C -*-
-  Copyright (C) 2010-2012, 2015 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010-2012, 2015, 2017 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 */
 
 /*
-   Unit test for lib/driver/gnu_linux.c
+   Unit test for lib/driver/realpath.c
 */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -58,7 +58,11 @@
 
 #include <cdio/util.h>
 
+#ifdef MINGW32
+#define MY_DIR_SEPARATOR '\\'
+#else
 #define MY_DIR_SEPARATOR '/'
+#endif
 
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -98,18 +102,19 @@ main(int argc, const char *argv[])
     char tmp_subdir[PATH_MAX+1] = {0};
     char psz_file_check[PATH_MAX+1];
     char *psz_last_slash;
-    unsigned int i_last_slash;
+    int i_last_slash;
     char *psz_symlink_file = NULL;
+    int rc = 0;
 
     psz_tmp_subdir = get_temporary_name(NULL, "temporary directory");
     if (NULL == psz_tmp_subdir) {
-        free(psz_tmp_subdir);
-        exit(77);
+      rc = 77;
+      goto err_exit1;
     }
     if (-1 == check_rc(_mkdir(psz_tmp_subdir),
                        "mkdir", psz_tmp_subdir)) {
-        free(psz_tmp_subdir);
-        exit(77);
+      rc = 77;
+      goto err_exit1;
     }
 
     cdio_realpath(psz_tmp_subdir, tmp_subdir);
@@ -117,11 +122,17 @@ main(int argc, const char *argv[])
     if (0 == strlen(tmp_subdir)) {
       fprintf(stderr, "cdio_realpath on temp directory %s failed\n",
               psz_tmp_subdir);
-      free(psz_tmp_subdir);
-      exit(1);
+      rc = 1;
+      goto err_exit1;
     }
 
     psz_last_slash = strrchr(tmp_subdir, MY_DIR_SEPARATOR);
+    if (psz_last_slash == NULL) {
+      printf("Can't find %c in %s\n", MY_DIR_SEPARATOR, tmp_subdir);
+      rc = 2;
+      goto err_exit1;
+    }
+
     i_last_slash = psz_last_slash - tmp_subdir + 1;
     memcpy(tmp_dir, tmp_subdir, i_last_slash);
     tmp_dir[i_last_slash] = '\0';
@@ -131,7 +142,6 @@ main(int argc, const char *argv[])
     if (NULL != psz_orig_file) {
         FILE *fp = fopen(psz_orig_file, "w");
         char orig_file[PATH_MAX+1] = {0};
-        int rc;
         char symlink_file[PATH_MAX+1] = {0};
 
         fprintf(fp, "testing\n");
@@ -140,7 +150,8 @@ main(int argc, const char *argv[])
         if (0 == strlen(orig_file)) {
           fprintf(stderr, "cdio_realpath on temp file %s failed\n",
                   psz_orig_file);
-          exit(2);
+	  rc = 3;
+	  goto err_exit;
         }
 
         psz_symlink_file = get_temporary_name(NULL, "symlink file");
@@ -153,8 +164,8 @@ main(int argc, const char *argv[])
             if (0 != strncmp(psz_file_check, orig_file, PATH_MAX)) {
                 fprintf(stderr, "simple cdio_realpath failed: %s vs %s\n",
                         psz_file_check, orig_file);
-		free(psz_symlink_file);
-                exit(3);
+		rc = 4;
+		goto err_exit;
             }
             check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
         }
@@ -168,8 +179,8 @@ main(int argc, const char *argv[])
             if (0 != strncmp(psz_file_check, symlink_file, PATH_MAX)) {
                 fprintf(stderr, "direct cdio_realpath cycle test failed. %s vs %s\n",
                         psz_file_check, symlink_file);
-		free(psz_symlink_file);
-                exit(4);
+		rc = 5;
+		goto err_exit;
             }
             check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
         }
@@ -179,8 +190,10 @@ main(int argc, const char *argv[])
     check_rc(unlink(psz_orig_file), "unlink", psz_orig_file);
     check_rc(rmdir(psz_tmp_subdir), "rmdir", psz_tmp_subdir);
 		free(psz_symlink_file);
-    free(psz_tmp_subdir);
+ err_exit:
     free(psz_orig_file);
+ err_exit1:
+    free(psz_tmp_subdir);
 
-    return 0;
+    return rc;
 }
