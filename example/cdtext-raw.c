@@ -1,7 +1,7 @@
 /* -*- C -*-
-  Copyright (C) 2004, 2006, 2008, 2010, 2011, 2012
+  Copyright (C) 2004, 2006, 2008, 2010, 2011, 2012, 2017
   Rocky Bernstein <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -85,14 +85,14 @@ print_cdtext_info(cdtext_t *p_cdtext) {
     }
 }
 
-static cdtext_t * 
+static cdtext_t *
 read_cdtext(const char *path) {
   FILE *fp;
   size_t size;
   uint8_t cdt_data[CDTEXT_LEN_BINARY_MAX+4];
   cdtext_t *cdt;
 
-  fp = fopen(path, "r");
+  fp = fopen(path, "rb");
   if (NULL == fp) {
     fprintf(stderr, "could not open file `%s'\n", path);
     exit(3);
