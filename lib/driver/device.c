@@ -64,6 +64,8 @@ const driver_id_t cdio_os_driver = DRIVER_AIX;
 const driver_id_t cdio_os_driver = DRIVER_FREEBSD;
 #elif  defined(HAVE_LINUX_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_LINUX;
+#elif  defined(HAVE_NETBSD_CDROM)
+const driver_id_t cdio_os_driver = DRIVER_NETBSD;
 #elif  defined(HAVE_DARWIN_CDROM)
 const driver_id_t cdio_os_driver = DRIVER_OSX;
 #elif  defined(HAVE_SOLARIS_CDROM)
