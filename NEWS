@@ -1,8 +1,10 @@
 2017-12-xx version 2.0.0
 
-This release bump slibrary version numbers and bumps the
+This release bumps library version numbers and bumps the
 major release number. We should have gone from 1.0.0 to 2.0.0
-since there is an API incompatability.
+in the last release since there is an API incompatability.
+
+In addition...
 
 - Add NetBSD drive detection; correct drive detection in cd-info.c
   Patches from Onno van der Linden
