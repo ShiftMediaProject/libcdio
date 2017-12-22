@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2006, 2008, 2011, 2013
+#   Copyright (C) 2003, 2004, 2006, 2008, 2011, 2013, 2017
 #    Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libudf_la_CURRENT = 3
+libudf_la_CURRENT = 4
 libudf_la_REVISION = 0
 libudf_la_AGE = 0
 

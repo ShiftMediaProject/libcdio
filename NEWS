@@ -1,6 +1,15 @@
-2017-12-10 version 1.1.0 Dr. Gecko
+2017-12-10 version 2.0.0
 
-This is an API breaking change.
+This release is to bump library version numbers and bumps the
+major release number caused by the 1.1.0 incompatiblity with
+1.0.0
+
+- Add NetBSD drive detection; correct drive detection in cd-info.c
+  Patches from Onno van der Linden
+- Fix some MinGW and Windows portability issues
+- Remove some memory leaks in some tests
+
+2017-12-10 version 1.1.0 Dr. Gecko
 
 Caveats:
 pycdio and Deveice::Perl will be broken but that'll be fixed later
@@ -11,8 +20,7 @@ pycdio and Deveice::Perl will be broken but that'll be fixed later
 - Types CdioISO9660{Dir,File}List_t,  have been added
   and iso9660_{dir,file}list_{new,free} have been added.
 - cdio_list_free() now takes an additional parameter: a function to
-  free list itmes
-
+  free list items. This is not compatible with 1.0.0
 
 More work is needed on MacOS and other OS's where I don't have
 valgrind accessible.
