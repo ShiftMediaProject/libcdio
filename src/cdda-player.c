@@ -1499,6 +1499,7 @@ main(int argc, char *argv[])
                                                  CDIO_FS_AUDIO, false);
     if (!ppsz_cdda_drives || !ppsz_cdda_drives[0]) {
       fprintf(stderr, "Can't find a CD-ROM drive with a CD-DA in it\n");
+      cdio_free_device_list(ppsz_all_cd_drives);
       exit(3);
     }
     psz_device_global = strdup(ppsz_cdda_drives[0]);
