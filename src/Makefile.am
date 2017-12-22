@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2006, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2003, 2004, 2006, 2008, 2012, 2017 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -88,4 +88,12 @@ if MAINTAINER_MODE
 $(man_MANS): %.1: %$(EXEEXT) %.help2man
 	-$(HELP2MAN) --opt-include=$(srcdir)/$(<:.exe=).help2man --no-info --libtool -o $@ ./$<
 endif
-MAINTAINERCLEANFILES = $(man_MANS) *.rej *.orig
+MAINTAINERCLEANFILES = $(man_MANS)
+
+MOSTLYCLEANFILES = *.orig *.rej *.dSYM .libs
+
+mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -fr $(MOSTLYCLEANFILES)
+	-test -z "$(TEST_LOGS)" || rm -f $(TEST_LOGS)
+	-test -z "$(TEST_LOGS:.log=.trs)" || rm -f $(TEST_LOGS:.log=.trs)
+	-test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)

@@ -51,6 +51,8 @@
 #define DATA_DIR "./data"
 #endif
 
+#ifndef __MINGW32__
+
 static void
 log_handler (cdio_log_level_t level, const char message[])
 {
@@ -63,7 +65,7 @@ log_handler (cdio_log_level_t level, const char message[])
   }
 }
 
-#ifndef __MINGW32__
+
 static bool
 is_in(char **file_list, const char *file)
 {
