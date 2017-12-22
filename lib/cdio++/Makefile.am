@@ -43,8 +43,8 @@
 
 lib_LTLIBRARIES    = libiso9660++.la libcdio++.la
 
-libcdiopp_la_CURRENT = 0
-libcdiopp_la_REVISION = 2
+libcdiopp_la_CURRENT = 1
+libcdiopp_la_REVISION = 0
 libcdiopp_la_AGE = 0
 
 libcdiopp_sources = cdio.cpp devices.cpp
