@@ -34,7 +34,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])],
 
 # FIXME: write a m4 macro to convert x.y.zjunk to x*10000 + y*100 + z
 # LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1 | tr -d a-z`
-LIBCDIO_VERSION_NUM=10100
+LIBCDIO_VERSION_NUM=20000
 AC_SUBST(LIBCDIO_VERSION_NUM)
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
