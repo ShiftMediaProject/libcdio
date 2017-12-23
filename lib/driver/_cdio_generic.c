@@ -296,7 +296,7 @@ get_cdtext_generic (void *p_user_data)
 
       if(len <= 0 || 0 != cdtext_data_init (p_env->cdtext, &p_cdtext_data[4], len)) {
         p_env->b_cdtext_error = true;
-        free(p_env->cdtext);
+        cdtext_destroy (p_env->cdtext);
         p_env->cdtext = NULL;
       }
 
