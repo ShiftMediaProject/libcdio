@@ -269,7 +269,6 @@ select_wait(int sec)
   fd_set          se;
 
   FD_ZERO(&se);
-  FD_SET(0,&se);
   tv.tv_sec = sec;
   tv.tv_usec = 0;
   return select(1,&se,NULL,NULL,&tv);
@@ -288,7 +287,7 @@ action(const char *psz_action)
   }
 
   if (!psz_action)
-    psz_action = psz_action_line;
+    ;
   else if (psz_action && strlen(psz_action))
     snprintf(psz_action_line, sizeof(psz_action_line), "action : %s",
              psz_action);

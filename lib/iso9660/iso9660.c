@@ -786,7 +786,8 @@ iso9660_dir_add_entry_su(void *dir,
                              ? strlen(filename) : 1); /* working hack! */
 
   memcpy(&idr->filename.str[1], filename, from_711(idr->filename.len));
-  memcpy(&dir8[offset] + su_offset, su_data, su_size);
+  if (su_size > 0 && su_data)
+    memcpy(&dir8[offset] + su_offset, su_data, su_size);
 }
 
 void
