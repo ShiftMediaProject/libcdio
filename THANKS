@@ -4,6 +4,9 @@ Burkhard Plaum <plaum@ipf.uni-stuttgart.de>
 Carlo Bramini
   fixes for Mingw+MSYS and DLL support
 
+Chris Clayton
+  2.0.0 testing
+
 Christophe Fergeau
   Add UDF reading to iso-read and iso-info
 

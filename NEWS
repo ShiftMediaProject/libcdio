@@ -1,4 +1,4 @@
-2017-12-xx version 2.0.0
+2017-12-31 version 2.0.0
 
 This release bumps library version numbers and bumps the
 major release number. We should have gone from 1.0.0 to 2.0.0
@@ -10,6 +10,15 @@ In addition...
   Patches from Onno van der Linden
 - Fix some MinGW and Windows portability issues
 - Remove some memory leaks in some tests
+- Lint (a little) with clang static analyzer
+
+There are some programs and bindings that will need to be updated
+if you want to use them with this library. Specifically:
+
+- Device::Cdio (2.0.0 or greater)
+- vcdimager (2.0.0 or greater)
+- pycdio (2.0.0 or greater)
+- rbcdio (2.0.0 or greater)
 
 2017-12-10 version 1.1.0 Dr. Gecko
 
