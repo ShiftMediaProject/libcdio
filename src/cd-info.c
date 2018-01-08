@@ -926,7 +926,7 @@ main(int argc, char *argv[])
     printf("list of devices found:\n");
     if (NULL != d) {
       for ( ; *d != NULL ; d++ ) {
-        CdIo_t *p_cdio_d = cdio_open(source_name, driver_id);
+        CdIo_t *p_cdio_d = cdio_open(*d, driver_id);
         cdio_hwinfo_t hwinfo;
         printf("Drive %s\n", *d);
         if (mmc_get_hwinfo(p_cdio_d, &hwinfo)) {

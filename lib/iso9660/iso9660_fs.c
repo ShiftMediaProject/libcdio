@@ -1141,7 +1141,10 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
     }
 
   ret = iso9660_iso_seek_read (p_iso, _dirbuf, _root->lsn, _root->secsize);
-  if (ret!=ISO_BLOCKSIZE*_root->secsize) return NULL;
+  if (ret!=ISO_BLOCKSIZE*_root->secsize) {
+    free(_dirbuf);
+    return NULL;
+  }
 
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {
@@ -1384,12 +1387,14 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
     if (!_dirbuf)
       {
       cdio_warn("Couldn't calloc(1, %d)", p_stat->secsize * ISO_BLOCKSIZE);
+      iso9660_stat_free(p_stat);
       iso9660_dirlist_free(retval);
       return NULL;
       }
 
     if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn,
 				ISO_BLOCKSIZE, p_stat->secsize)) {
+      iso9660_stat_free(p_stat);
       iso9660_dirlist_free(retval);
       return NULL;
     }
@@ -1748,7 +1753,10 @@ iso_have_rr_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
     }
 
   ret = iso9660_iso_seek_read (p_iso, _dirbuf, _root->lsn, _root->secsize);
-  if (ret!=ISO_BLOCKSIZE*_root->secsize) return false;
+  if (ret!=ISO_BLOCKSIZE*_root->secsize) {
+    free(_dirbuf);
+    return false;
+  }
 
   while (offset < (_root->secsize * ISO_BLOCKSIZE))
     {

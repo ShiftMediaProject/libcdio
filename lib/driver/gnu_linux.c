@@ -1581,7 +1581,6 @@ close_tray_linux (const char *psz_device)
       cdio_info ("CDROM_DRIVE_STATUS failed: %s, trying anyway",
                  strerror(errno));
     try_anyway:
-      i_rc = DRIVER_OP_SUCCESS;
       if((i_rc = ioctl(fd, CDROMCLOSETRAY)) != 0) {
         cdio_warn ("ioctl CDROMCLOSETRAY failed: %s\n", strerror(errno));
         i_rc = DRIVER_OP_ERROR;

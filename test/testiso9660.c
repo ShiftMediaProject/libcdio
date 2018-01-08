@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2006, 2007, 2008, 2009, 2011
+  Copyright (C) 2003, 2006-2009, 2011, 2017
    Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -173,12 +173,12 @@ main (int argc, const char *argv[])
    * Test iso9660_strncpy_pad
    *********************************************/
 
-  dst_p = iso9660_strncpy_pad(dst, "1_3", 5, ISO9660_DCHARS);
+  iso9660_strncpy_pad(dst, "1_3", 5, ISO9660_DCHARS);
   if ( 0 != strncmp(dst, "1_3  ", 5) ) {
     printf("Failed iso9660_strncpy_pad DCHARS\n");
     return 31;
   }
-  dst_p = iso9660_strncpy_pad(dst, "ABC!123", 2, ISO9660_ACHARS);
+  iso9660_strncpy_pad(dst, "ABC!123", 2, ISO9660_ACHARS);
   if ( 0 != strncmp(dst, "AB", 2) ) {
     printf("Failed iso9660_strncpy_pad ACHARS truncation\n");
     return 32;

@@ -269,7 +269,6 @@ select_wait(int sec)
   fd_set          se;
 
   FD_ZERO(&se);
-  FD_SET(0,&se);
   tv.tv_sec = sec;
   tv.tv_usec = 0;
   return select(1,&se,NULL,NULL,&tv);
@@ -288,7 +287,7 @@ action(const char *psz_action)
   }
 
   if (!psz_action)
-    psz_action = psz_action_line;
+    ;
   else if (psz_action && strlen(psz_action))
     snprintf(psz_action_line, sizeof(psz_action_line), "action : %s",
              psz_action);
@@ -1499,6 +1498,7 @@ main(int argc, char *argv[])
                                                  CDIO_FS_AUDIO, false);
     if (!ppsz_cdda_drives || !ppsz_cdda_drives[0]) {
       fprintf(stderr, "Can't find a CD-ROM drive with a CD-DA in it\n");
+      cdio_free_device_list(ppsz_all_cd_drives);
       exit(3);
     }
     psz_device_global = strdup(ppsz_cdda_drives[0]);

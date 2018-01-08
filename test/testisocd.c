@@ -147,8 +147,6 @@ main(int argc, const char *argv[])
 	  rc=7;
 	}
     exit:
-      if (psz_path != NULL)
-	free(psz_path);
       iso9660_stat_free(p_statbuf);
       iso9660_stat_free(p_statbuf2);
       iso9660_stat_free(p_statbuf3);

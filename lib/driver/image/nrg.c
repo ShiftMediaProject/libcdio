@@ -247,15 +247,14 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 	  entries /= sizeof (_cuex_array_t);
 
 	  if (CUES_ID == opcode) {
-	    lsn_t lsn = UINT32_FROM_BE (_entries[0].lsn);
 	    unsigned int idx;
 	    unsigned int i = 0;
-
-	    cdio_debug ("CUES type image detected" );
-
+	    lsn_t lsn; /* = UINT32_FROM_BE (_entries[0].lsn); */
 	    /* CUES LSN has 150 pregap include at beginning? -/
 	       cdio_assert (lsn == 0?);
 	    */
+
+	    cdio_debug ("CUES type image detected" );
 
 	    p_env->is_cues           = true; /* HACK alert. */
 	    p_env->gen.i_tracks      = 0;
@@ -1271,12 +1270,15 @@ cdio_is_nrg(const char *psz_nrg)
   _img_private_t *p_env  = calloc(1, sizeof (_img_private_t));
   bool is_nrg = false;
 
-  if (psz_nrg == NULL) return false;
+  if (psz_nrg == NULL) {
+    is_nrg = false;
+    goto exit;
+  }
 
   if (!(p_env->gen.data_source = cdio_stdio_new (psz_nrg))) {
     cdio_warn ("can't open nrg image file %s for reading", psz_nrg);
-    free(p_env);
-    return false;
+    is_nrg = false;
+    goto exit;
   }
 
   if (parse_nrg(p_env, psz_nrg, CDIO_LOG_INFO)) {
@@ -1285,11 +1287,15 @@ cdio_is_nrg(const char *psz_nrg)
     size_t psz_len;
     psz_len = strlen(psz_nrg);
     /* At least 4 characters needed for .nrg extension */
-    if ( psz_len < 4 ) return false;
+    if ( psz_len < 4 ) {
+      is_nrg = false;
+      goto exit;
+    }
 
     is_nrg = strncasecmp( psz_nrg+(psz_len-3), "nrg", 3 ) == 0;
 #endif
   }
+ exit:
   _free_nrg(p_env);
   return is_nrg;
 }

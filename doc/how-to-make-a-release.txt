@@ -26,7 +26,7 @@
 
 - ./autogen.sh && make && make check
 
-  export LIBCDIO_VERSION=1.1.1 # adjust
+  export LIBCDIO_VERSION=2.0.0 # adjust
 - git commit -m"Get ready for release ${LIBCDIO_VERSION}" .
 
 - make ChangeLog
@@ -42,7 +42,7 @@
 
    gnupload from the automake distribution.
    locate gnupload
-   /src/build/automake-1.12.4/lib/gnupload --to ftp.gnu.org:libcdio libcdio-#{LIBCDIO_VERSION}.tar.*  # (Use "is" password)
+   /src/external-vcs/coreutils/build-aux/gnupload --to ftp.gnu.org:libcdio libcdio-${LIBCDIO_VERSION}.tar.*  # (Use "is" password)
 
 - copy doxygen html to web pages:
   cd ../libcdio-www/doxygen
@@ -61,13 +61,13 @@
        cvs add `cat /tmp/libcdio-new.txt`
 
 
-  cvs commit .
+  cvs -m"Update for $LIBCDIO_VERSION release" commit .
 
 - copy libcdio manual to web page:
      cd libcdio-www
      (cd ../libcdio/doc && make libcdio.html)
      cp ../libcdio/doc/libcdio.html .
-     cvs commit libcdio.html
+     cvs commit -m"Update for $LIBCDIO_VERSION release" libcdio.html
 
 - Bump version in configure.ac and add "git". See place above in
   removal.

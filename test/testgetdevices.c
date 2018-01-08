@@ -51,6 +51,8 @@
 #define DATA_DIR "./data"
 #endif
 
+#ifndef __MINGW32__
+
 static void
 log_handler (cdio_log_level_t level, const char message[])
 {
@@ -63,7 +65,7 @@ log_handler (cdio_log_level_t level, const char message[])
   }
 }
 
-#ifndef __MINGW32__
+
 static bool
 is_in(char **file_list, const char *file)
 {
@@ -172,32 +174,34 @@ main(int argc, const char *argv[])
   if (ret != 0) return ret;
 
   if (0 == chdir(DATA_DIR)) {
-     nrg_images = cdio_get_devices(DRIVER_NRG);
+    int invalid_images = 0;
+    nrg_images = cdio_get_devices(DRIVER_NRG);
 
-     for (imgs=nrg_images; *imgs != NULL; imgs++) {
-       printf("-- NRG image %s\n", *imgs);
-     }
+    for (imgs=nrg_images; *imgs != NULL; imgs++) {
+      printf("-- NRG image %s\n", *imgs);
+    }
 
-     if (!is_in(nrg_images, nrg_files[0])) {
-       cdio_free_device_list(nrg_images);
-       return 10;
-     }
+    if (!is_in(nrg_images, nrg_files[0])) {
+      cdio_free_device_list(nrg_images);
+      return 10;
+    }
 
-     for (i=0; i<2; i++) {
-       if (is_in(bincue_images, cue_files[i])) {
-	   printf("-- %s parses as a CDRWIN BIN/CUE csheet.\n",
-		  cue_files[i]);
-       } else {
-         printf("-- %s doesn't parse as a CDRWIN BIN/CUE csheet.\n",
-		cue_files[i]);
-         ret = i+1;
-       }
-     }
-
+    for (i=0; i<2; i++) {
+      if (is_in(bincue_images, cue_files[i])) {
+	printf("-- %s parses as a CDRWIN BIN/CUE csheet.\n",
+	       cue_files[i]);
+      } else {
+	printf("-- %s doesn't parse as a CDRWIN BIN/CUE csheet.\n",
+	       cue_files[i]);
+	invalid_images += 1;
+      }
+    }
+    printf("invaid images is %d\n", invalid_images);
+    ret = invalid_images != 2;
   }
 
   cdio_free_device_list(nrg_images);
   cdio_free_device_list(bincue_images);
-  return 0;
+  return ret;
 #endif
 }

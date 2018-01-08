@@ -306,7 +306,7 @@ wait_for_drive(CdIo_t *p_cdio, unsigned int i_max_tries, bool b_verbose)
 static int
 test_read(char *psz_drive_path, unsigned int i_flag)
 {
-    int sense_avail = 0, i_ret, i_sense_valid, i_size, alloc_len = 10;
+    int sense_avail = 0, i_ret = 0, i_sense_valid, i_size, alloc_len = 10;
     bool b_verbose = !!(i_flag & 1);
     int old_log_level = cdio_loglevel_default;
     cdio_mmc_request_sense_t sense_reply;
@@ -329,7 +329,7 @@ test_read(char *psz_drive_path, unsigned int i_flag)
     scsi_tuple = cdio_get_arg(p_cdio, "scsi-tuple");
     if (scsi_tuple == NULL) {
 	fprintf(stderr, "Error: cdio_get_arg(\"scsi-tuple\") returns NULL.\n");
-	i_ret = 6; goto ex;
+	i_ret += 6; goto ex;
     } else if (i_flag & 1)
 	printf("Drive '%s' has cdio_get_arg(\"scsi-tuple\") = '%s'\n",
 	       psz_drive_path, scsi_tuple);
@@ -342,11 +342,11 @@ test_read(char *psz_drive_path, unsigned int i_flag)
 	fprintf(stderr,
 		"Error: Drive not ready. Only %d sense bytes. Expected >= 18.\n",
 		sense_avail);
-	i_ret = 2; goto ex;
+	i_ret += 2; goto ex;
     }
 
     /* Cause sense reply failure by requesting inappropriate mode page 3Eh */
-    i_ret = mode_sense(p_cdio, &sense_avail, &sense_reply,
+    i_ret += mode_sense(p_cdio, &sense_avail, &sense_reply,
 			    0x3e, 0, alloc_len, buf, &i_size, b_verbose);
     if (i_ret != 0 && sense_avail < 18) {
 
@@ -455,7 +455,7 @@ main(int argc, const char *argv[])
 		printf("Got status %d back from get_disc_erasable(%s)\n",
 		       i_status, psz_source);
 	    }
-	    i_status = get_disctype(p_cdio, b_verbose);
+	    get_disctype(p_cdio, b_verbose);
 
 	    if ( psz_have_mmc
 		 && 0 == strncmp("true", psz_have_mmc, sizeof("true")) ) {

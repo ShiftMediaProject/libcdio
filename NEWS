@@ -1,13 +1,37 @@
+2017-12-31 version 2.0.0
+
+This release bumps library version numbers and bumps the
+major release number. We should have gone from 1.0.0 to 2.0.0
+in the last release since there is an API incompatability.
+
+In addition...
+
+- Add NetBSD drive detection; correct drive detection in cd-info.c
+  Patches from Onno van der Linden
+- Fix some MinGW and Windows portability issues
+- Remove some memory leaks in some tests
+- Lint (a little) with clang static analyzer
+
+There are some programs and bindings that will need to be updated
+if you want to use them with this library. Specifically:
+
+- Device::Cdio (2.0.0 or greater)
+- vcdimager (2.0.0 or greater)
+- pycdio (2.0.0 or greater)
+- rbcdio (2.0.0 or greater)
+
 2017-12-10 version 1.1.0 Dr. Gecko
+
+Caveats:
+pycdio and Deveice::Perl will be broken but that'll be fixed later
 
 - Remove many remaining memory leaks, invalid
   reads, writes (as per valgrind) in library,
   test and demo code
 - Types CdioISO9660{Dir,File}List_t,  have been added
   and iso9660_{dir,file}list_{new,free} have been added.
-
-Caveats:
-pycdio and Deveice::Perl will be broken but that'll be fixed later
+- cdio_list_free() now takes an additional parameter: a function to
+  free list items. This is not compatible with 1.0.0
 
 More work is needed on MacOS and other OS's where I don't have
 valgrind accessible.
@@ -15,8 +39,10 @@ valgrind accessible.
 AIX is left untouched - that is probably heading for removal in the
 future.
 
-version 1.0.0
-2017-11-21  Thanksgiving
+
+2017-11-21 version 1.0.0 Thanksgiving
+
+This is an API breaking change
 
 - Remove deprecated items:
    * OS/2 driver (never really was supported)

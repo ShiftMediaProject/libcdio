@@ -77,6 +77,7 @@
 #include <sys/ioctl.h>
 #include <sys/cdio.h>
 #include <sys/scsiio.h>
+#include <sys/sysctl.h>
 
 #define TOTAL_TRACKS (_obj->tochdr.ending_track \
                       - _obj->tochdr.starting_track + 1)
@@ -542,7 +543,50 @@ cdio_get_devices_netbsd (void)
 #ifndef HAVE_NETBSD_CDROM
   return NULL;
 #else
-  return NULL;
+  char drive[40];
+  char **drives = NULL;
+  unsigned int num_drives=0;
+  int mib[2];
+  size_t len;
+  char *p, *pp, *data;
+
+  mib[0] = CTL_HW;
+  mib[1] = HW_DISKNAMES;
+
+  /* Determine how much space to allocate. */
+  if (sysctl(mib, 2, NULL, &len, NULL, 0) == -1)
+     return NULL;
+
+  if ((data = (char *)malloc(len)) == NULL)
+     return NULL;
+
+  if (sysctl(mib, 2, data, &len, NULL, 0) == -1) {
+     free(data);
+     return NULL;
+  }
+  if (sizeof DEFAULT_CDIO_DEVICE > sizeof drive) {
+     free(data);
+     return NULL;
+  }
+  strcpy(drive,DEFAULT_CDIO_DEVICE);
+  p = data;
+  while ((pp = strchr(p, ' ')) != NULL) {
+     *pp = '\0';
+     if (p[0] == 'c' && p[1] == 'd' && p[2] >= '0' && p[2] <= '9' &&
+         p[3] == '\0') {
+        drive[sizeof DEFAULT_CDIO_DEVICE - 3] = p[2];
+        cdio_add_device_list(&drives, drive, &num_drives);
+     }
+     p = ++pp;
+  }
+  if (p[0] == 'c' && p[1] == 'd' && p[2] >= '0' && p[2] <= '9' &&
+      p[3] == '\0') {
+     drive[sizeof DEFAULT_CDIO_DEVICE - 3] = p[2];
+     cdio_add_device_list(&drives, drive, &num_drives);
+  }
+  cdio_add_device_list(&drives, NULL, &num_drives);
+  free(data);
+  return drives;
 #endif /* HAVE_NETBSD_CDROM */
 }
 

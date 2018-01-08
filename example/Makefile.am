@@ -1,4 +1,4 @@
-#   Copyright (C) 2003-2006, 2008-2009, 2012-13
+#   Copyright (C) 2003-2006, 2008-2009, 2012-2013, 2017
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -137,5 +137,10 @@ udffile_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 TESTS               = $(check_PROGRAMS)
 
-# iso programs create file "copying"
-MOSTLYCLEANFILES = copying *.wav *.log *.trs *.orig *.rej
+MOSTLYCLEANFILES = copying *.wav *.log *.trs *.orig *.rej *.dSYM
+
+mostlyclean-generic:
+	-test -z "$(MOSTLYCLEANFILES)" || rm -fr $(MOSTLYCLEANFILES)
+	-test -z "$(TEST_LOGS)" || rm -f $(TEST_LOGS)
+	-test -z "$(TEST_LOGS:.log=.trs)" || rm -f $(TEST_LOGS:.log=.trs)
+	-test -z "$(TEST_SUITE_LOG)" || rm -f $(TEST_SUITE_LOG)

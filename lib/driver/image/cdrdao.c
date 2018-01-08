@@ -219,7 +219,7 @@ _read_cdrdao (void *user_data, void *data, size_t size)
     final_size += this_size;
     memcpy (p, buf, this_size);
     p += this_size;
-    this_size = cdio_stream_read(this_track->data_source, buf, rem, 1);
+    cdio_stream_read(this_track->data_source, buf, rem, 1);
 
     /* Skip over stuff at end of this sector and the beginning of the next.
      */
