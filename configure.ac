@@ -85,7 +85,6 @@ AM_CONDITIONAL(BUILD_EXAMPLES, test "x$enable_example_progs" != "xno")
 
 dnl We use C
 AC_PROG_CC
-AM_PROG_CC_C_O
 
 if test "x$enable_cxx" != "xno" ; then
   AC_PROG_CXX
@@ -98,7 +97,6 @@ dnl For iso_read test
 AC_CHECK_PROGS(ISO_MAKING_COMMAND, genisoimage mkisofs)
 
 dnl Checks for programs.
-AC_AIX
 
 cd_drivers='cdrdao, BIN/CUE, NRG'
 
