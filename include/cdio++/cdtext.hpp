@@ -90,11 +90,31 @@ bool selectLanguage(cdtext_lang_t lang)
 }
 
 /*!
- returns a list of available languages
+  selects a language by index rather than language code
+*/
+bool setLanguageIndex(int idx)
+{
+  return cdtext_set_language_index(p_cdtext, idx);
+}
+
+/*!
+
+  *** Deprecated. Use listLanguagesV2(), see cdio/cdtext.h ***
+
+  returns a list of available languages (which has various problems)
 */
 cdtext_lang_t *listLanguages()
 {
   return cdtext_list_languages(p_cdtext);
+}
+
+/*!
+  returns a pointer to an array with 8 elements which indicate available
+  languages
+*/
+cdtext_lang_t *listLanguagesV2()
+{
+  return cdtext_list_languages_v2(p_cdtext);
 }
 
 

@@ -126,6 +126,7 @@ struct cdtext_block_s {
  */
 struct cdtext_s {
   struct cdtext_block_s block[CDTEXT_NUM_BLOCKS_MAX]; /**< CD-TEXT for block 0..7 */
+  cdtext_lang_t languages[CDTEXT_NUM_BLOCKS_MAX];     /**< return value of cdtext_list_languages_v2() */
   uint8_t  block_i;                                   /**< index of active block  */
 };
 

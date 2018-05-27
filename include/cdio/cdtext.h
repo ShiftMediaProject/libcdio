@@ -192,7 +192,16 @@ typedef enum {
   CDTEXT_LANGUAGE_ASSAMESE    = 0x7C,
   CDTEXT_LANGUAGE_ARMENIAN    = 0x7D,
   CDTEXT_LANGUAGE_ARABIC      = 0x7E,
-  CDTEXT_LANGUAGE_AMHARIC     = 0x7F
+  CDTEXT_LANGUAGE_AMHARIC     = 0x7F,
+
+  /* libcdio-internal pseudo codes: */
+
+  /* Language code was not one of the above */
+  CDTEXT_LANGUAGE_INVALID     = 0x100,
+
+  /* A block which is characterized by this language code must be ignored */
+  CDTEXT_LANGUAGE_BLOCK_UNUSED = 0x101
+
 } cdtext_lang_t;
 
 /*!
@@ -300,14 +309,58 @@ track_t cdtext_get_last_track(const cdtext_t *p_cdtext);
 */
 bool cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t language);
 
-/*
+/*!
+
+  *** Deprecated. Use cdtext_list_languages_v2() ***
+
   Returns a list of available languages or NULL.
+
+  WARNING: The indice in the returned array _ do not _ match the indexing
+           as expected by cdtext_set_language_index().
+           Use cdtext_select_language() with the values of array elements.
 
   Internally the list is stored in a static array.
 
   @param p_cdtext the CD-TEXT object
+  @return NULL if p_cdtext is NULL.
+          Else an array of 8 cdtext_lang_t elements:
+          CDTEXT_LANGUAGE_UNKNOWN not only marks language code 0x00
+          but also invalid language codes and invalid language blocks.
 */
 cdtext_lang_t *cdtext_list_languages (const cdtext_t *p_cdtext);
+
+/*!
+  Returns an array of available languages or NULL.
+  The index of an array element may be used to select the corresponding
+  language block by call cdtext_set_language_index().
+
+  The return value is a pointer into the memory range of *p_cdtext.
+  Do not use it after having freed that memory range.
+
+  @param p_cdtext the CD-TEXT object
+  @return NULL if p_cdtext is NULL.
+          Else an array of 8 cdtext_lang_t elements:
+          CDTEXT_LANGUAGE_UNKNOWN to CDTEXT_LANGUAGE_AMHARIC mark valid
+          language blocks with valid language codes.
+          CDTEXT_LANGUAGE_INVALID marks valid language blocks with invalid
+          language codes.
+          CDTEXT_LANGUAGE_BLOCK_UNUSED marks invalid language blocks which do
+          not exist on CD or could not be read for some reason.
+*/
+cdtext_lang_t *cdtext_list_languages_v2(cdtext_t *p_cdtext); 
+
+/*!
+  Select the given language by block index. See cdtext_list_languages_v2().
+  If the index is bad, or no language block with that index was read:
+  select the default language at index 0 and return false.
+
+  @param p_cdtext the CD-TEXT object
+  @param idx      the desired index: 0 to 7.
+  
+  @return true on success, false if no language block is associated to idx
+*/
+bool 
+cdtext_set_language_index(cdtext_t *p_cdtext, int idx);
 
 /*! 
   Sets the given field at the given track to the given value.

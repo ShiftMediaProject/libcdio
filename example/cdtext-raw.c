@@ -62,10 +62,12 @@ print_cdtext_info(cdtext_t *p_cdtext) {
 
   int i, j;
 
-  languages = cdtext_list_languages(p_cdtext);
+  languages = cdtext_list_languages_v2(p_cdtext);
+  if (NULL == languages)
+    return;
   for(i=0; i<8; i++)
-    if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i]
-         && cdtext_select_language(p_cdtext, languages[i]))
+    if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i]
+         && cdtext_set_language_index(p_cdtext, i))
     {
       printf("\nLanguage %d '%s':\n", i, cdtext_lang2str(languages[i]));
 

@@ -69,9 +69,10 @@ print_disc_info(CdioDevice *device)
 
     printf("CD-Text available in: ");
 
-    languages = cdtext->listLanguages();
+    languages = cdtext->listLanguagesV2();
+    /* The API promises that non-NULL p_cdtext yields non-NULL languages */
     for(i=0; i<8; i++)
-      if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i])
+      if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i])
           printf("%s ", cdtext->lang2str(languages[i]));
     printf("\n");
   }
