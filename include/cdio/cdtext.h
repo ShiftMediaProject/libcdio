@@ -220,6 +220,18 @@ const char *cdtext_genre2str (cdtext_genre_t i);
 const char *cdtext_lang2str (cdtext_lang_t i);
 
 /*!
+  Return the language code of a given language string representation.
+  This is the inverse of cdtext_lang2str().
+
+  @param lang language to look up
+
+  @return if lang is among the possible results of cdtext_lang2str():
+          the cdtext_lang_t which is associated.
+          else: CDTEXT_LANGUAGE_INVALID
+*/
+cdtext_lang_t cdtext_str2lang (const char *lang);
+
+/*!
   Return string representation of given field type.
 */
 const char *cdtext_field2str (cdtext_field_t i);

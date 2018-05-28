@@ -138,13 +138,6 @@ int cdtext_read_pack (cdtext_pack_t *pack, const uint8_t *data);
 */
 cdtext_field_t cdtext_is_field (const char *field);
 
-/*!
-  returns enum of language if lang is a valid language,
-  returns CDTEXT_LANGUAGE_UNKNOWN otherwise.
-*/
-cdtext_lang_t cdtext_is_language (const char *lang);
-
-
 #endif /* CDIO_DRIVER_CDTEXT_PRIVATE_H_ */
 
 /*

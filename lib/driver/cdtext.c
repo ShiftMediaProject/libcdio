@@ -521,23 +521,18 @@ cdtext_is_field (const char *key)
   return CDTEXT_FIELD_INVALID;
 }
 
-#ifdef NIX
-
 /*!
-  Returns associated cdtext_lang_t if argument is a supported language.
+  Return the language code of a given language string representation.
+  This is the inverse of cdtext_lang2str().
 
-  Internal function.
+  @param lang language to look up
 
-  >>> Seems to have no caller.
-  >>> Actually "supported" should rather be "listed in specs".
-  >>> ??? Shall we throw it out as long as we still can ?
-
-  @param lang language to test
-
-  @return CDTEXT_LANGUAGE_INVALID if language is not supported
+  @return if lang is among the possible results of cdtext_lang2str():
+          the cdtext_lang_t which is associated.
+          else: CDTEXT_LANGUAGE_INVALID 
 */
 cdtext_lang_t
-cdtext_is_language(const char *lang)
+cdtext_str2lang (const char *lang)
 {
   unsigned int i;
 
@@ -547,8 +542,6 @@ cdtext_is_language(const char *lang)
     }
   return CDTEXT_LANGUAGE_INVALID;
 }
-
-#endif /* NIX */
 
 /*!
   Sets the given field at the given track to the given value.
