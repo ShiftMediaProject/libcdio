@@ -85,7 +85,7 @@ const char *cdtext_genre[MAX_CDTEXT_GENRE_CODE] =
   "World Music"
 };
 
-const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
+const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE + 1] =
 {
   "Unknown",
   "Albanian",
@@ -131,6 +131,9 @@ const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
   "Turkish",
   "Flemish",
   "Wallon",
+  "", "", "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", "", "", "",
+  "", "", "", "", "",
   "Zulu",
   "Vietnamese",
   "Uzbek",
@@ -148,7 +151,6 @@ const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
   "Shona",
   "Serbo-croat",
   "Ruthenian",
-  "Russian",
   "Russian",
   "Quechua",
   "Pushtu",
@@ -223,9 +225,11 @@ cdtext_genre2str(cdtext_genre_t i)
 const char *
 cdtext_lang2str(cdtext_lang_t i)
 {
-  if (i >= MAX_CDTEXT_LANGUAGE_CODE)
-    return "INVALID";
-  else
+  if (i <= CDTEXT_LANGUAGE_WALLON)
+    return cdtext_language[i];
+  else if (i >= CDTEXT_LANGUAGE_ZULU && i <= CDTEXT_LANGUAGE_AMHARIC)
+    return cdtext_language[i];
+  return "INVALID";
     return cdtext_language[i];
 }
 
@@ -536,7 +540,10 @@ cdtext_str2lang (const char *lang)
 {
   unsigned int i;
 
-  for (i = 0; i < MAX_CDTEXT_LANGUAGE_CODE; i++)
+  if(0 == lang[0]) /* The empty texts in cdtext_language[] are invalid */
+    return CDTEXT_LANGUAGE_INVALID;
+
+  for (i = 0; i <= MAX_CDTEXT_LANGUAGE_CODE; i++)
     if (0 == strcmp(cdtext_language[i], lang)) {
       return i;
     }
@@ -687,13 +694,16 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
       }
 
       if(blocksize.i_packs[15] == 3) {
+        cdtext_lang_t lcode;
         /* if there were 3 BLOCKSIZE packs */
         /* set copyright */
         p_cdtext->block[i_block].copyright = (0x03 == (blocksize.copyright & 0x03));
 
         /* set Language */
-        if(blocksize.langcode[i_block] <= 0x7f)
-          p_cdtext->block[i_block].language_code = blocksize.langcode[i_block];
+        lcode = blocksize.langcode[i_block];
+        if(lcode <= CDTEXT_LANGUAGE_WALLON ||
+          (lcode >= CDTEXT_LANGUAGE_ZULU && lcode <= CDTEXT_LANGUAGE_AMHARIC) )
+          p_cdtext->block[i_block].language_code = lcode;
         else
           p_cdtext->block[i_block].language_code = CDTEXT_LANGUAGE_INVALID;
 
