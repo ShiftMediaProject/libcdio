@@ -230,7 +230,6 @@ cdtext_lang2str(cdtext_lang_t i)
   else if (i >= CDTEXT_LANGUAGE_ZULU && i <= CDTEXT_LANGUAGE_AMHARIC)
     return cdtext_language[i];
   return "INVALID";
-    return cdtext_language[i];
 }
 
 /*!
