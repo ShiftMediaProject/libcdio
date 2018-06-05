@@ -989,7 +989,7 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
 }
 
 #if !defined(HAVE_GLOB_H) && defined(_WIN32)
-static inline void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
+static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
 {
   char szPath[MAX_PATH];
   WIN32_FIND_DATAA ffd;
