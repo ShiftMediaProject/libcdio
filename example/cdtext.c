@@ -1,7 +1,8 @@
 /*
+  Copyright (C) 2018 Thomas Schmitt
   Copyright (C) 2004, 2005, 2006, 2008, 2009, 2011, 2012
   Rocky Bernstein <rocky@gnu.org>
-  
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -33,20 +34,20 @@
 
 #include <cdio/cdio.h>
 
-static void 
+static void
 print_cdtext_track_info(cdtext_t *cdtext, track_t i_track) {
     cdtext_field_t i;
-    
+
     for (i=0; i < MAX_CDTEXT_FIELDS; i++) {
         if (cdtext_get_const(cdtext, i, i_track)) {
             printf("-- \t%s: %s\n", cdtext_field2str(i),
                    cdtext_get_const(cdtext, i, i_track));
         }
     }
-    
+
 }
 
-static void 
+static void
 print_disc_info(CdIo_t *p_cdio) {
     track_t i_first_track = cdio_get_first_track_num (p_cdio);
     track_t i_tracks = cdio_get_num_tracks (p_cdio);
@@ -54,9 +55,9 @@ print_disc_info(CdIo_t *p_cdio) {
     discmode_t cd_discmode = cdio_get_discmode (p_cdio);
     cdtext_t *cdtext = cdio_get_cdtext (p_cdio);
     int i;
-    
+
     printf("-- Discmode: %s\n\n", discmode2str[cd_discmode]);
-    
+
     if (NULL == cdtext)
     {
         printf("-- No CD-Text found on Disc.\n");
@@ -70,7 +71,9 @@ print_disc_info(CdIo_t *p_cdio) {
         printf("-- CD-Text available in: ");
 
         languages = cdtext_list_languages_v2(cdtext);
-        /* The API promises that non-NULL p_cdtext yields non-NULL languages */
+	/* Since cdtext is not NULL, cdtext_list_languages_v2()
+           returns a list of up to 8 language blocks which we process
+           below. */
         for(i=0; i<8; i++)
             if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i])
                 printf("%s ", cdtext_lang2str(languages[i]));
@@ -99,17 +102,17 @@ int
 main(int argc, const char *argv[])
 {
     CdIo_t *p_cdio;
-    
+
     /* read CD-Text from a bin/cue (CDRWIN) image */
     p_cdio = cdio_open(EXAMPLE_CUE_FILE, DRIVER_BINCUE);
     if (NULL == p_cdio) {
-        printf("Couldn't open %s with BIN/CUE driver.\n", 
+        printf("Couldn't open %s with BIN/CUE driver.\n",
                EXAMPLE_CUE_FILE);
     } else {
         print_disc_info(p_cdio);
         cdio_destroy(p_cdio);
     }
-    
+
     /* read CD-Text from default device */
     p_cdio = cdio_open (NULL, DRIVER_DEVICE);
     if (NULL == p_cdio) {
@@ -119,6 +122,6 @@ main(int argc, const char *argv[])
         print_disc_info(p_cdio);
         cdio_destroy(p_cdio);
     }
-    
+
     return 0;
 }
