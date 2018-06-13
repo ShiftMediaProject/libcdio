@@ -450,10 +450,11 @@ print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
     return;
   }
 
-  languages = cdtext_list_languages(p_cdtext);
+  languages = cdtext_list_languages_v2(p_cdtext);
+  /* The API promises that non-NULL p_cdtext yields non-NULL languages */
   for(i=0; i<8; i++)
-    if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i]
-         && cdtext_select_language(p_cdtext, languages[i]))
+    if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i]
+         && cdtext_set_language_index(p_cdtext, i))
     {
       printf("\nLanguage %d '%s':\n", i, cdtext_lang2str(languages[i]));
 

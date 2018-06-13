@@ -32,6 +32,9 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 
 #include <cdio/cdio.h>
 
@@ -62,10 +65,12 @@ print_cdtext_info(cdtext_t *p_cdtext) {
 
   int i, j;
 
-  languages = cdtext_list_languages(p_cdtext);
+  languages = cdtext_list_languages_v2(p_cdtext);
+  if (NULL == languages)
+    return;
   for(i=0; i<8; i++)
-    if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i]
-         && cdtext_select_language(p_cdtext, languages[i]))
+    if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i]
+         && cdtext_set_language_index(p_cdtext, i))
     {
       printf("\nLanguage %d '%s':\n", i, cdtext_lang2str(languages[i]));
 
@@ -126,6 +131,57 @@ read_cdtext(const char *path) {
   return cdt;
 }
 
+static void
+language_code_tests(void) {
+  cdtext_lang_t num, re_num;
+  char *text;
+  int i;
+  static cdtext_lang_t spot_codes[] = {
+    CDTEXT_LANGUAGE_ENGLISH, CDTEXT_LANGUAGE_WALLON , CDTEXT_LANGUAGE_ZULU,
+    CDTEXT_LANGUAGE_MALAGASAY, CDTEXT_LANGUAGE_AMHARIC
+  };
+  static const char *spot_names[] = {
+    "English", "Wallon", "Zulu", "Malagasay", "Amharic"
+  };
+  static int spots = 5;
+
+  for (i = 0; i < spots; i++) {
+    if (0 != strcmp(cdtext_lang2str(spot_codes[i]), spot_names[i])) {
+      fprintf(stderr,
+  "cdtext_lang2str() test: idx %d , code 0x%2.2X : expected '%s' , got '%s'\n",
+              i, (unsigned int) spot_codes[i], spot_names[i],
+              cdtext_lang2str(spot_codes[i]));
+    }
+  }
+
+  for (i = 0; i <= 0xFF; i++) {
+    num = i;
+    text = (char *) cdtext_lang2str(num);
+    re_num = cdtext_str2lang(text);
+    if ((i > CDTEXT_LANGUAGE_WALLON && i < CDTEXT_LANGUAGE_ZULU)
+        || i > CDTEXT_LANGUAGE_AMHARIC) {
+      if (0 != strcmp(text, "INVALID")) {
+        fprintf(stderr,
+                "cdtext_lang2str() test: invalid code 0x%2.2X yields '%s'\n",
+                (unsigned int) i, text);
+      }
+      if (CDTEXT_LANGUAGE_INVALID != re_num) {
+        fprintf(stderr,
+                "cdtext_str2lang(cdtext_lang2str()) test: invalid code 0x%2.2X yields 0x%2.2X, expected 0x%2.2X\n",
+                (unsigned int) i, (unsigned int) re_num,
+                (unsigned int) CDTEXT_LANGUAGE_INVALID);
+      }
+    } else {
+      if (re_num != num) {
+        fprintf(stderr,
+                "cdtext_str2lang(cdtext_lang2str()) test: code 0x%2.2X yields '%s' yields 0x%2.2X\n",
+                (unsigned int) i, text, (unsigned int) re_num);
+      }
+    }
+  }
+
+}
+
 int
 main(int argc, const char *argv[]) {
   cdtext_t *cdt;
@@ -141,6 +197,7 @@ main(int argc, const char *argv[]) {
 
   cdt = read_cdtext(cdt_path);
   print_cdtext_info(cdt);
+  language_code_tests();
   free(cdt);
 
   return 0;

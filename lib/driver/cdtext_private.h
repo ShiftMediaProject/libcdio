@@ -126,6 +126,7 @@ struct cdtext_block_s {
  */
 struct cdtext_s {
   struct cdtext_block_s block[CDTEXT_NUM_BLOCKS_MAX]; /**< CD-TEXT for block 0..7 */
+  cdtext_lang_t languages[CDTEXT_NUM_BLOCKS_MAX];     /**< return value of cdtext_list_languages_v2() */
   uint8_t  block_i;                                   /**< index of active block  */
 };
 
@@ -136,13 +137,6 @@ int cdtext_read_pack (cdtext_pack_t *pack, const uint8_t *data);
   returns CDTEXT_FIELD_INVALID otherwise.
 */
 cdtext_field_t cdtext_is_field (const char *field);
-
-/*!
-  returns enum of language if lang is a valid language,
-  returns CDTEXT_LANGUAGE_UNKNOWN otherwise.
-*/
-cdtext_lang_t cdtext_is_language (const char *lang);
-
 
 #endif /* CDIO_DRIVER_CDTEXT_PRIVATE_H_ */
 
