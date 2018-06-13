@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2018 Thomas Schmitt
     Copyright (C) 2005, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -21,38 +22,38 @@
  */
 
 /*! Return string representation of the enum values above */
-const char *field2str (cdtext_field_t i) 
+const char *field2str (cdtext_field_t i)
 {
   return cdtext_field2str (i);
 }
 
-const char *genre2str (cdtext_genre_t i) 
+const char *genre2str (cdtext_genre_t i)
 {
   return cdtext_genre2str (i);
 }
 
-const char *lang2str (cdtext_lang_t i) 
+const char *lang2str (cdtext_lang_t i)
 {
   return cdtext_lang2str (i);
 }
 
 /*! returns an allocated string associated with the given field.  NULL is
   returned if key is CDTEXT_INVALID or the field is not set.
-  
+
   The user needs to free the string using cdio_free() when done with it.
 
   @see getConst to retrieve a constant string that doesn't
   have to be freed.
-  
+
 */
-char *get (cdtext_field_t key, track_t i_track) 
+char *get (cdtext_field_t key, track_t i_track)
 {
   return cdtext_get (p_cdtext, key, i_track);
 }
 
 /*! returns a const string associated with the given field.  NULL is
   returned if key is CDTEXT_INVALID or the field is not set.
-  
+
   Don't use the string when the cdtext object (i.e. the CdIo_t object
   you got it from) is no longer valid.
 
@@ -60,15 +61,15 @@ char *get (cdtext_field_t key, track_t i_track)
   cdtext object.
 
 */
-const char *getConst (cdtext_field_t key, track_t i_track) 
+const char *getConst (cdtext_field_t key, track_t i_track)
 {
   return cdtext_get_const (p_cdtext, key, i_track);
 }
 
-/*! 
-  sets cdtext's keyword entry to field 
+/*!
+  sets cdtext's keyword entry to field
 */
-void set (cdtext_field_t key, track_t i_track, const uint8_t *value, const char *charset) 
+void set (cdtext_field_t key, track_t i_track, const uint8_t *value, const char *charset)
 {
   cdtext_set (p_cdtext, key, value, i_track, charset);
 }
@@ -99,7 +100,7 @@ bool setLanguageIndex(int idx)
 
 /*!
 
-  *** Deprecated. Use listLanguagesV2(), see cdio/cdtext.h ***
+  @deprecated. Use listLanguagesV2(), see cdio/cdtext.h
 
   returns a list of available languages (which has various problems)
 */
@@ -118,7 +119,7 @@ cdtext_lang_t *listLanguagesV2()
 }
 
 
-/* 
+/*
  * Local variables:
  *  c-file-style: "gnu"
  *  tab-width: 8

@@ -1,4 +1,5 @@
 /*
+  Copyright (C) 2018 Thomas Schmitt
   Copyright (C) 2004-2005, 2008, 2011, 2012, 2013 Rocky Bernstein <rocky@gnu.org>
   toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
@@ -348,11 +349,11 @@ cdtext_get_last_track(const cdtext_t *p_cdtext)
 }
 
 /*!
-  *** Deprecated. Use cdtext_list_languages_v2() ***
+  @deprecated Use cdtext_list_languages_v2()
 
   Returns a list of available languages or NULL.
 
-  WARNING: The indice in the returned array _ do not _ match the indexing
+  __WARNING__: The indices in the returned array _do not_ match the indexing
            as expected by cdtext_set_language_index().
            Use cdtext_select_language with the values of array elements.
 
@@ -394,14 +395,17 @@ cdtext_lang_t
   Do not use it after having freed that memory range.
 
   @param p_cdtext the CD-TEXT object
-  @return NULL if p_cdtext is NULL.
-          Else an array of 8 cdtext_lang_t elements:
-          CDTEXT_LANGUAGE_UNKNOWN to CDTEXT_LANGUAGE_AMHARIC mark valid
-          language blocks with valid language codes.
-          CDTEXT_LANGUAGE_INVALID marks valid language blocks with invalid
-          language codes.
-          CDTEXT_LANGUAGE_BLOCK_UNUSED marks invalid language blocks which do
-          not exist on CD or could not be read for some reason.
+  @return NULL if p_cdtext is NULL, or an array of 8 cdtext_lang_t elements.
+
+  If an enumeration is CDTEXT_LANGUAGE_INVALID, then the language block has an invalid
+  language code.
+
+  If an enumeration is CDTEXT_LANGUAGE_BLOCK_UNUSED, then the block does not
+  exist on CD or could not be read in CD-TEXT for some reason.
+
+  Otherwise, the enumeration of element will be a value in
+  CDTEXT_LANGUAGE_UNKNOWN to CDTEXT_LANGUAGE_AMHARIC, and is a block
+  in that language.
 */
 cdtext_lang_t
 *cdtext_list_languages_v2(cdtext_t *p_cdtext)
@@ -532,7 +536,7 @@ cdtext_is_field (const char *key)
 
   @return if lang is among the possible results of cdtext_lang2str():
           the cdtext_lang_t which is associated.
-          else: CDTEXT_LANGUAGE_INVALID 
+          else: CDTEXT_LANGUAGE_INVALID
 */
 cdtext_lang_t
 cdtext_str2lang (const char *lang)
