@@ -131,6 +131,11 @@ read_cdtext(const char *path) {
   return cdt;
 }
 
+/*
+  This function performs regression tests concerning:
+    * the association of numerical language codes and language names, and
+    * the handling of all language codes, valid and invalid 
+*/
 static void
 language_code_tests(void) {
   cdtext_lang_t num, re_num;
