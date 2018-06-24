@@ -253,7 +253,25 @@ const char *cdtext_field2str (cdtext_field_t i);
 cdtext_t *cdtext_init (void);
 
 /*!
-  Read a binary CD-TEXT and fill a cdtext struct.
+  Fill a cdtext_t object with text pack bytes as they were handed out by the
+  CD drive, but without the 4-byte header which the drive prepended.
+
+  The text pack data can be obtained by the calls
+    cdio_get_cdtext_raw()
+    mmc_read_cdtext()
+    mmc_read_toc_cdtext()
+  With each of them, the reply begins by the 4-byte header, which thus needs
+  to be skipped:
+    #include <cdio/mmc_ll_cmds.h>
+    if (DRIVER_OP_SUCCESS == mmc_read_toc_cdtext (p_cdio, &i_length, p_buf, 0)
+        && 4 < i_length)
+        cdtext_data_init(p_cdtext, p_buf + 4, (size_t) i_length - 4);
+
+  An alternative to cdtext_data_init() on a separate cdtext_t object is to call
+    cdio_get_cdtext()
+  which returns a pointer to the cdtext_t object that is attached to the
+  inquired CdIo_t object. This cdtext_t object gets created and filled if
+  none is yet attached to the inquired CdIo_t object.
 
   @param p_cdtext the CD-TEXT object
   @param wdata the data
