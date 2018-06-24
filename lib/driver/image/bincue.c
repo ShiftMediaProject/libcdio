@@ -390,7 +390,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
           free(psz_filename);
           free(dirname);
           free(cdt_data);
-	  free(source);
+          cdio_stdio_destroy (source);
           goto err_exit;
         }
 
