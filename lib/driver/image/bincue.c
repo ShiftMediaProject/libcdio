@@ -357,17 +357,28 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   } else if (0 == strcmp ("CDTEXTFILE", psz_keyword)) {
     if(NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
       if (cd) {
-        uint8_t cdt_data[CDTEXT_LEN_BINARY_MAX+4];
+        uint8_t *cdt_data = NULL;
         int size;
         CdioDataSource_t *source;
         char *dirname = cdio_dirname(psz_cue_name);
         char *psz_filename = cdio_abspath(dirname, psz_field);
+
+        cdt_data = calloc(CDTEXT_LEN_BINARY_MAX + 4, 1);
+        if (NULL == cdt_data) {
+          cdio_log(log_level,
+                  "%s line %d: cannot allocate memory for CD-TEXT data buffer",
+                  psz_cue_name, i_line);
+          free(psz_filename);
+          free(dirname);
+          goto err_exit;
+        }
 
         if(NULL == (source = cdio_stdio_new(psz_filename))) {
           cdio_log(log_level, "%s line %d: can't open file `%s' for reading",
 		   psz_cue_name, i_line, psz_field);
           free(psz_filename);
           free(dirname);
+          free(cdt_data);
           goto err_exit;
         }
         size = cdio_stream_read(source, cdt_data, CDTEXT_LEN_BINARY_MAX, 1);
@@ -378,6 +389,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                    psz_cue_name, i_line, psz_filename);
           free(psz_filename);
           free(dirname);
+          free(cdt_data);
 	  free(source);
           goto err_exit;
         }
@@ -402,6 +414,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         cdio_stdio_destroy (source);
         free(psz_filename);
         free(dirname);
+        free(cdt_data);
       }
     } else {
       goto format_error;

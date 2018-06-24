@@ -38,7 +38,8 @@
 
 #include <cdio/cdio.h>
 
-#define CDTEXT_LEN_BINARY_MAX 9216
+/* Maximum CD-TEXT payload: 8 text blocks with 256 packs of 18 bytes each */
+#define CDTEXT_LEN_BINARY_MAX (8 * 256 * 18)
 
 static void
 print_cdtext_track_info(cdtext_t *p_cdtext, track_t i_track, const char *psz_msg) {
@@ -94,16 +95,21 @@ static cdtext_t *
 read_cdtext(const char *path) {
   FILE *fp;
   size_t size;
-  uint8_t cdt_data[CDTEXT_LEN_BINARY_MAX+4];
+  uint8_t *cdt_data = NULL;
   cdtext_t *cdt;
 
+  cdt_data = calloc(CDTEXT_LEN_BINARY_MAX + 4, 1);
+  if (NULL == cdt_data) {
+    fprintf(stderr, "could not allocate memory for cdt_data buffer\n");
+    exit(4);
+  }
   fp = fopen(path, "rb");
   if (NULL == fp) {
     fprintf(stderr, "could not open file `%s'\n", path);
     exit(3);
   }
 
-  size = fread(cdt_data, sizeof(uint8_t), sizeof(cdt_data), fp);
+  size = fread(cdt_data, 1, CDTEXT_LEN_BINARY_MAX + 4, fp);
   fclose(fp);
 
   if (size < 5) {
@@ -128,6 +134,7 @@ read_cdtext(const char *path) {
     exit(2);
   }
 
+  free(cdt_data);
   return cdt;
 }
 
