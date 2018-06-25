@@ -37,6 +37,7 @@
 #endif
 
 #include <cdio/cdio.h>
+#include <cdio/mmc.h>
 
 /* Maximum CD-TEXT payload: 8 text blocks with 256 packs of 18 bytes each */
 #define CDTEXT_LEN_BINARY_MAX (8 * 256 * 18)
@@ -95,8 +96,9 @@ static cdtext_t *
 read_cdtext(const char *path) {
   FILE *fp;
   size_t size;
-  uint8_t *cdt_data = NULL;
+  uint8_t *cdt_data = NULL, *cdt_packs;
   cdtext_t *cdt;
+  int mmc_len;
 
   cdt_data = calloc(CDTEXT_LEN_BINARY_MAX + 4, 1);
   if (NULL == cdt_data) {
@@ -117,9 +119,20 @@ read_cdtext(const char *path) {
     exit(1);
   }
 
-  /* Truncate header when it is too large. The standard is ambiguous here*/
-  if (cdt_data[0] > 0x80) {
-    size -= 4;
+  /* Check whether obviously a MMC header is prepended and if so, skip it.
+     cdtext_data_init() wants to see only the text pack bytes.
+  */
+  cdt_packs = cdt_data;
+  if (cdt_data[0] < 0x80) {
+    /* This cannot be a text pack start */
+    mmc_len = CDIO_MMC_GET_LEN16(cdt_data) + 2;
+    if ((size == mmc_len || size == mmc_len + 1) && mmc_len % 18 == 4 &&
+        cdt_data[4] >= 0x80 && cdt_data[4] <= 0x8f) {
+      /* It looks much like a MMC header followed by a text pack start */
+      size -= 4;
+      cdt_packs = cdt_data + 4;
+      fprintf(stderr, "NOTE: Skipped 4 bytes of apparent MMC header.\n");
+    }
   }
 
   /* ignore trailing 0 */
@@ -128,7 +141,7 @@ read_cdtext(const char *path) {
 
   /* init cdtext */
   cdt = cdtext_init ();
-  if(0 != cdtext_data_init(cdt, cdt_data, size)) {
+  if(0 != cdtext_data_init(cdt, cdt_packs, size)) {
     fprintf(stderr, "failed to parse CD-Text file `%s'\n", path);
     free(cdt);
     exit(2);
