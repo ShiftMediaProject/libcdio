@@ -357,8 +357,8 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
   } else if (0 == strcmp ("CDTEXTFILE", psz_keyword)) {
     if(NULL != (psz_field = strtok (NULL, "\"\t\n\r"))) {
       if (cd) {
-        uint8_t *cdt_data = NULL;
-        int size;
+        uint8_t *cdt_data = NULL, *cdt_packs;
+        int size, mmc_len;
         CdioDataSource_t *source;
         char *dirname = cdio_dirname(psz_cue_name);
         char *psz_filename = cdio_abspath(dirname, psz_field);
@@ -394,9 +394,22 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
           goto err_exit;
         }
 
-        /* Truncate header when it is too large. */
-        if (cdt_data[0] > 0x80) {
-          size -= 4;
+        /* Check whether obviously a MMC header is prepended and if so,skip it.
+           cdtext_data_init() wants to see only the text pack bytes.
+        */
+        cdt_packs = cdt_data;
+        if (cdt_data[0] < 0x80) {
+          /* This cannot be a text pack start */
+          mmc_len = CDIO_MMC_GET_LEN16(cdt_data) + 2;
+          if ((size == mmc_len || size == mmc_len + 1) && mmc_len % 18 == 4 &&
+              cdt_data[4] >= 0x80 && cdt_data[4] <= 0x8f) {
+            /* It looks much like a MMC header followed by a text pack start */
+            size -= 4;
+            cdt_packs = cdt_data + 4;
+            cdio_log (CDIO_LOG_INFO,
+                      "%s line %d: skipped 4 bytes of apparent MMC header in CD-TEXT file `%s'\n",
+                      psz_cue_name, i_line, psz_filename);
+          }
         }
 
         /* ignore trailing 0 */
@@ -408,7 +421,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
           cd->gen.cdtext = cdtext_init ();
         }
 
-        if(0 != cdtext_data_init(cd->gen.cdtext, cdt_data, size))
+        if(0 != cdtext_data_init(cd->gen.cdtext, cdt_packs, size))
           cdio_log (log_level, "%s line %d: failed to parse CD-TEXT file `%s'", psz_cue_name, i_line, psz_filename);
 
         cdio_stdio_destroy (source);
