@@ -1,4 +1,5 @@
 /*
+    Copyright (C) 2018 Thomas Schmitt
     Copyright (C) 2010, 2012, 2016 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
@@ -387,6 +388,26 @@ mmc_read_subchannel ( const CdIo_t *p_cdio,
 
 /**
    Issue a READ TOC/PMA/ATIP command to read the CD-TEXT from R-W sub-channel.
+
+   In case of success this command returns a header of 4 bytes and the bytes
+   of the text packs. See MMC-5, table 495.
+   The first two bytes of the header tell as big-endian number the number of
+   bytes to follow. This count includes the next two header bytes which are
+   supposed to bear the value 0.
+
+   So the number of bytes in the text packs is told by
+     #include <cdio/mmc.h>
+     CDIO_MMC_GET_LEN16(p_buf) - 2
+   and start of the text packs is at
+     p_buf + 4
+
+   The number of valid reply bytes is further restricted by the submitted
+   value of *i_length, which should tell the byte capacity of p_buf.
+   Maximum size according to specs is 4 + 8 * 256 * 18 = 36864 bytes.
+   Alternatively consider to first obtain only the header bytes in a small
+   p_buf, then to re-allocate p_buf with CDIO_MMC_GET_LEN16(p_buf) + 2 bytes,
+   and then to call mmc_read_toc_cdtext() again with *i_length set to the
+   allocated size.
 
    @param p_cdio  the CD object to be acted upon.
    @param i_length pointer to number of bytes to request.

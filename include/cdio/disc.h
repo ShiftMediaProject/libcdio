@@ -1,5 +1,6 @@
 /* -*- c -*-
 
+    Copyright (C) 2018 Thomas Schmitt
     Copyright (C) 2004, 2005, 2006, 2008, 2010, 2012, 2014
     Rocky Bernstein <rocky@gnu.org>
 
@@ -58,21 +59,28 @@ extern "C" {
   extern const char *discmode2str[];
 
   /**
-    Get binary CD-Text information from a CdIo_t object.
+    Read cdtext information for a cdtext_t object.
+    About format and usage of these data see the documentation of call
+    mmc_read_cdtext() in include file <cdio/mmc.h>.
+
 
     @param p_cdio the CD object that may contain CD-Text information.
-    @return malloc'd pointer to raw CD-Text data as stored on the disc or
-    NULL if p_cdio is NULL or CD-Text information does not exist. Return
-    value must be freed with cdio_free() when done with it and not NULL.
+    @return malloc'd pointer to raw CD-Text data as replied by the drive
+            or NULL if problems occur or CD-Text information does not exist.
+            A non-NULL return value must be freed with cdio_free() when done.
   */
   uint8_t * cdio_get_cdtext_raw (CdIo_t *p_cdio);
 
   /**
-    Get CD-Text information for a CdIo_t object.
+    Return a pointer to the cdtext_t object which is attached to a CdIo_t
+    object. If no such cdtext_t is attached yet, then try to read CD-TEXT
+    information and use it to create and initialise the cdtext_t object.
+
+    For usage of cdtext_t see include file <cdio/cdtext.h>.
 
     @param p_cdio the CD object that may contain CD-Text information.
-    @return the CD-Text object or NULL if p_cdio is NULL
-    or CD-Text information does not exist.
+    @return a pointer to the attached cdtext_t object or NULL if problems
+            occur or if CD-Text information does not exist.
   */
   cdtext_t *cdio_get_cdtext (CdIo_t *p_cdio);
 

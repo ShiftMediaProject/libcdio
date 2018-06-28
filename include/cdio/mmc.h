@@ -694,10 +694,26 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
   char * mmc_get_track_isrc(const CdIo_t *p_cdio, track_t i_track);
 
   /**
-    Read cdtext information for a CdIo_t object .
+    Read cdtext information for a cdtext_t object.
 
-    @return pointer to data on success, NULL on error or CD-Text information does
-    not exist.
+    This is the raw SCSI/MMC reply as retrieved by mmc_read_toc_cdtext().
+    It consists of 4 header bytes and a variable number of text packs.
+    The first two bytes of the header tell as big-endian number the number of
+    bytes to follow. This count includes the next two header bytes which are
+    supposed to bear the value 0.
+    For full detail see include file <cdio/mmc_ll_cmds.h>.
+ 
+    To parse the text packs into a cdtext_t object do:
+      #include <cdio/mmc.h>
+      #include <cdio/cdtext.h>
+
+      reply = mmc_read_cdtext(p_cdio);
+      if (NULL != reply)
+          cdtext_data_init(p_cdtext, reply + 4,
+                           (size_t) CDIO_MMC_GET_LEN16(reply) - 2);
+
+    @return pointer to data on success, NULL on error or if CD-Text
+            information does not exist.
 
     Note: the caller must free the returned memory
 
