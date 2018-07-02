@@ -30,6 +30,9 @@ cdda_LDADD       = $(LIBCDIO_LIBS) $(LTLIBICONV)
 cdrdao_SOURCES   = helper.c cdrdao.c
 cdrdao_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
+cdtext_SOURCES   = cdtext.c
+cdtext_LDADD     = $(LIBCDIO_LIBS) $(LTLIBICONV)
+
 freebsd_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 realpath_LDADD   = $(LIBCDIO_LIBS) $(LTLIBICONV)
@@ -56,7 +59,7 @@ solaris_LDADD    = $(LIBCDIO_LIBS) $(LTLIBICONV)
 win32_LDADD      = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 check_PROGRAMS   = \
-	abs_path bincue cdda cdrdao freebsd gnu_linux \
+	abs_path bincue cdda cdrdao cdtext freebsd gnu_linux \
 	logger mmc_read mmc_write nrg \
 	osx realpath solaris track win32
 
@@ -67,6 +70,7 @@ EXTRA_DIST = \
 	helper.c    \
 	helper.h    \
 	cdrdao.c \
+	cdtext.c \
 	nrg.c    \
 	track.c
 
