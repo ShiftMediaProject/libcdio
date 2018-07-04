@@ -664,25 +664,13 @@ if test "x$enable_cdda_player" = "xyes"; then
 						      ])])
 fi
 
-AC_DEFINE(HAVE_KEYPAD, [], [Define this if your libcurses has keypad])
 if test "x$enable_cdda_player" = "xyes"; then
-    if test "x$have_ncurses_h" = "xyes"; then
-      AC_CHECK_LIB(ncurses, mvprintw,
-        [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
-        AC_CHECK_LIB(curses, mvprintw,
-                     [LIBCURSES=curses;
-                       CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
-                     [AC_MSG_WARN([Will not build cdda-player - did not find libncurses or libcurses])
-                     enable_cdda_player=no]))
-    else
-        AC_CHECK_LIB(curses, mvprintw,
-                     [LIBCURSES=curses;
-                     CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
-                     [AC_MSG_WARN([Will not build cdda-player - did not find libcurses])])
-    fi
-    if test "x$enable_cdda_player" = "xyes"; then
-      AC_CHECK_LIB($LIBCURSES, keypad, [HAVE_KEYPAD=yes])
-    fi
+  PKG_CHECK_MODULES(CDDA_PLAYER, ncurses,
+                    [AC_DEFINE(HAVE_KEYPAD, [1], [Define this if your libcurses has keypad])],
+                    [AC_CHECK_LIB(curses, keypad,
+                                  [CDDA_PLAYER_LIBS="-lcurses"],
+                                  [AC_MSG_WARN([Will not build cdda-player - did not find libncurses or libcurses])
+                                    enable_cdda_player=no])])
 fi
 
 AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xyes")
