@@ -199,8 +199,8 @@ read_audio_sectors_netbsd(void *user_data, void *data, lsn_t lsn,
    from lsn. Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
-                          bool b_form2)
+_read_mode1_sector_netbsd (void *p_user_data, void *p_data, lsn_t lsn,
+                           bool b_form2)
 {
 
   return cdio_generic_read_form1_sector(p_user_data, p_data, lsn);
@@ -212,8 +212,8 @@ _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
    Returns 0 if no error.
  */
 static driver_return_code_t
-_read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn,
-                           bool b_form2, uint32_t i_blocks)
+_read_mode1_sectors_netbsd (void *p_user_data, void *p_data, lsn_t lsn,
+                            bool b_form2, uint32_t i_blocks)
 {
   _img_private_t *p_env = p_user_data;
   unsigned int i;
@@ -221,9 +221,9 @@ _read_mode1_sectors_linux (void *p_user_data, void *p_data, lsn_t lsn,
   unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
 
   for (i = 0; i < i_blocks; i++) {
-    if ( (retval = _read_mode1_sector_linux (p_env,
-                                            ((char *)p_data) + (blocksize*i),
-                                            lsn + i, b_form2)) )
+    if ( (retval = _read_mode1_sector_netbsd (p_env,
+                                              ((char *)p_data) + (blocksize*i),
+                                              lsn + i, b_form2)) )
       return retval;
   }
   return DRIVER_OP_SUCCESS;
@@ -731,8 +731,8 @@ static cdio_funcs_t _funcs = {
   .read                  = cdio_generic_read,
   .read_audio_sectors    = read_audio_sectors_netbsd,
   .read_data_sectors     = read_data_sectors_generic,
-  .read_mode1_sector     = _read_mode1_sector_linux,
-  .read_mode1_sectors    = _read_mode1_sectors_linux,
+  .read_mode1_sector     = _read_mode1_sector_netbsd,
+  .read_mode1_sectors    = _read_mode1_sectors_netbsd,
   .read_mode2_sector     = read_mode2_sector_netbsd,
   .read_mode2_sectors    = read_mode2_sectors_netbsd,
   .read_toc              = read_toc_netbsd,
