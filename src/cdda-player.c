@@ -1545,6 +1545,7 @@ main(int argc, char *argv[])
     if (EJECT_CD == cd_op) {
       i_rc = cd_eject() ? 0 : 1;
     } else if (STOP_PLAYING == cd_op) {
+      b_cd = true;
       i_rc = cd_stop(p_cdio_global) ? 0 : 1;
       goto done;
     } else {
