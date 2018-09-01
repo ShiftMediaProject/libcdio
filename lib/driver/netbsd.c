@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2008, 2010-2012, 2017 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2008, 2010-2012, 2017, 2018 Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2014 Robert Kausch <robert.kausch@freac.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -83,15 +83,27 @@
                       - _obj->tochdr.starting_track + 1)
 #define FIRST_TRACK_NUM (_obj->tochdr.starting_track)
 
+typedef enum {
+  _AM_NONE,
+  _AM_IOCTL,
+  _AM_READ_CD,
+  _AM_MMC_RDWR,
+  _AM_MMC_RDWR_EXCL,
+} access_mode_t;
+
 typedef struct {
-        generic_img_private_t gen;
+  /* Things common to all drivers like this.
+     This must be first. */
+  generic_img_private_t gen;
 
-        bool toc_valid;
-        struct ioc_toc_header tochdr;
-        struct cd_toc_entry tocent[100];
+  access_mode_t access_mode;
 
-        bool sessionformat_valid;
-        int sessionformat[100]; /* format of the session the track is in */
+  bool toc_valid;
+  struct ioc_toc_header tochdr;
+  struct cd_toc_entry tocent[100];
+
+  bool sessionformat_valid;
+  int sessionformat[100]; /* format of the session the track is in */
 } _img_private_t;
 
 static driver_return_code_t
@@ -121,6 +133,28 @@ run_scsi_cmd_netbsd(void *p_user_data, unsigned int i_timeout_ms,
         }
 
         return 0;
+}
+
+static access_mode_t
+str_to_access_mode_netbsd(const char *psz_access_mode)
+{
+  const access_mode_t default_access_mode = _AM_IOCTL;
+
+  if (NULL==psz_access_mode) return default_access_mode;
+
+  if (!strcmp(psz_access_mode, "IOCTL"))
+    return _AM_IOCTL;
+  else if (!strcmp(psz_access_mode, "READ_CD"))
+    return _AM_READ_CD;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR"))
+    return _AM_MMC_RDWR;
+  else if (!strcmp(psz_access_mode, "MMC_RDWR_EXCL"))
+    return _AM_MMC_RDWR_EXCL;
+  else {
+    cdio_warn ("unknown access type: %s. Default IOCTL used.",
+               psz_access_mode);
+    return default_access_mode;
+  }
 }
 
 static int
@@ -158,6 +192,41 @@ read_audio_sectors_netbsd(void *user_data, void *data, lsn_t lsn,
         }
 
         return 0;
+}
+
+/*!
+   Reads a single mode1 sector from cd device into data starting
+   from lsn. Returns 0 if no error.
+ */
+static driver_return_code_t
+_read_mode1_sector_netbsd (void *p_user_data, void *p_data, lsn_t lsn,
+                           bool b_form2)
+{
+
+  return cdio_generic_read_form1_sector(p_user_data, p_data, lsn);
+}
+
+/*!
+   Reads i_blocks of mode2 sectors from cd device into data starting
+   from lsn.
+   Returns 0 if no error.
+ */
+static driver_return_code_t
+_read_mode1_sectors_netbsd (void *p_user_data, void *p_data, lsn_t lsn,
+                            bool b_form2, uint32_t i_blocks)
+{
+  _img_private_t *p_env = p_user_data;
+  unsigned int i;
+  int retval;
+  unsigned int blocksize = b_form2 ? M2RAW_SECTOR_SIZE : CDIO_CD_FRAMESIZE;
+
+  for (i = 0; i < i_blocks; i++) {
+    if ( (retval = _read_mode1_sector_netbsd (p_env,
+                                              ((char *)p_data) + (blocksize*i),
+                                              lsn + i, b_form2)) )
+      return retval;
+  }
+  return DRIVER_OP_SUCCESS;
 }
 
 static int
@@ -223,23 +292,23 @@ read_mode2_sectors_netbsd(void *user_data, void *data, lsn_t lsn,
 }
 
 static int
-set_arg_netbsd(void *user_data, const char key[], const char value[])
+set_arg_netbsd(void *p_user_data, const char key[], const char value[])
 {
-        _img_private_t *_obj = user_data;
+  _img_private_t *p_env = p_user_data;
 
-        if (!strcmp(key, "source")) {
-                if (!value)
-                        return -2;
+  if (!strcmp (key, "source"))
+    {
+      if (!value) return DRIVER_OP_ERROR;
+      free (p_env->gen.source_name);
+      p_env->gen.source_name = strdup (value);
+    }
+  else if (!strcmp (key, "access-mode"))
+    {
+      p_env->access_mode = str_to_access_mode_netbsd(key);
+    }
+  else return DRIVER_OP_ERROR;
 
-                free(_obj->gen.source_name);
-                _obj->gen.source_name = strdup(value);
-        } else if (!strcmp(key, "access-mode")) {
-                if (strcmp(value, "READ_CD"))
-                        cdio_error("unknown access type: %s ignored.", value);
-        } else
-                return -1;
-
-        return 0;
+  return DRIVER_OP_SUCCESS;
 }
 
 static bool
@@ -367,23 +436,40 @@ eject_media_netbsd(void *user_data) {
         return ret;
 }
 
+static bool
+is_mmc_supported(void *user_data)
+{
+    _img_private_t *env = user_data;
+    return (_AM_NONE == env->access_mode) ? false : true;
+}
+
 /*!
   Return the value associated with the key "arg".
 */
 static const char *
-get_arg_netbsd(void *user_data, const char key[])
+get_arg_netbsd(void *env, const char key[])
 {
-        _img_private_t *_obj = user_data;
+  _img_private_t *_obj = env;
 
-        if (!strcmp(key, "source")) {
-                return _obj->gen.source_name;
-        } else if (!strcmp(key, "access-mode")) {
-                return "READ_CD";
-        } else if (!strcmp (key, "mmc-supported?")) {
-            return "true" ;
-        }
-
-        return NULL;
+  if (!strcmp(key, "source")) {
+    return _obj->gen.source_name;
+  } else if (!strcmp(key, "access-mode")) {
+    switch (_obj->access_mode) {
+    case _AM_IOCTL:
+      return "IOCTL";
+    case _AM_READ_CD:
+      return "READ_CD";
+    case _AM_MMC_RDWR:
+      return "MMC_RDWR";
+    case _AM_MMC_RDWR_EXCL:
+      return "MMC_RDWR_EXCL";
+    case _AM_NONE:
+      return "no access method";
+    }
+  } else if (!strcmp (key, "mmc-supported?")) {
+      return is_mmc_supported(env) ? "true" : "false";
+  }
+  return NULL;
 }
 
 static track_t
@@ -645,6 +731,8 @@ static cdio_funcs_t _funcs = {
   .read                  = cdio_generic_read,
   .read_audio_sectors    = read_audio_sectors_netbsd,
   .read_data_sectors     = read_data_sectors_generic,
+  .read_mode1_sector     = _read_mode1_sector_netbsd,
+  .read_mode1_sectors    = _read_mode1_sectors_netbsd,
   .read_mode2_sector     = read_mode2_sector_netbsd,
   .read_mode2_sectors    = read_mode2_sectors_netbsd,
   .read_toc              = read_toc_netbsd,
@@ -666,6 +754,7 @@ cdio_open_netbsd(const char *source_name)
 #ifdef HAVE_NETBSD_CDROM
     CdIo_t *ret;
     _img_private_t *_data;
+    int open_access_mode;  /* Access mode passed to cdio_generic_init. */
 
     _data = calloc(1, sizeof(_img_private_t));
 
@@ -688,12 +777,17 @@ cdio_open_netbsd(const char *source_name)
 
     ret->driver_id = DRIVER_NETBSD;
 
-    if (cdio_generic_init(_data, O_RDONLY)) {
-        return ret;
-    } else {
-        free(ret);
-        goto err_exit;
-    }
+  open_access_mode = O_NONBLOCK;
+  if (_AM_MMC_RDWR == _data->access_mode)
+    open_access_mode |= O_RDWR;
+  else if (_AM_MMC_RDWR_EXCL == _data->access_mode)
+    open_access_mode |= O_RDWR | O_EXCL;
+  else
+    open_access_mode |= O_RDONLY;
+  if (cdio_generic_init(_data, open_access_mode)) {
+    return ret;
+  }
+  free(ret);
 
  err_exit:
     cdio_generic_free(_data);
