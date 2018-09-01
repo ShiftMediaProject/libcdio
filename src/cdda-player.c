@@ -1543,6 +1543,9 @@ main(int argc, char *argv[])
     nostop=1;
     if (EJECT_CD == cd_op) {
       i_rc = cd_eject() ? 0 : 1;
+    } else if (STOP_PLAYING == cd_op) {
+      i_rc = cd_stop(p_cdio_global) ? 0 : 1;
+      goto done;
     } else {
       switch (cd_op) {
       case PS_LIST_TRACKS:
@@ -1752,6 +1755,7 @@ main(int argc, char *argv[])
   }
   if (!nostop) cd_stop(p_cdio_global);
   tty_restore();
+done:
   finish("bye", i_rc);
 
   return 0; /* keep compiler happy */
