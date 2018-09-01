@@ -269,6 +269,7 @@ select_wait(int sec)
   fd_set          se;
 
   FD_ZERO(&se);
+  FD_SET(STDIN_FILENO, &se);
   tv.tv_sec = sec;
   tv.tv_usec = 0;
   return select(1,&se,NULL,NULL,&tv);
