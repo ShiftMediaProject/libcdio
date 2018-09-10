@@ -319,7 +319,7 @@ _cdio_read_toc(_img_private_t *_obj)
 
         res = ioctl(_obj->gen.fd, CDIOREADTOCHEADER, &_obj->tochdr);
         if (res < 0) {
-                cdio_error("error in ioctl(CDIOREADTOCHEADER): %s\n",
+                cdio_warn("error in ioctl(CDIOREADTOCHEADER): %s\n",
                            strerror(errno));
                 return false;
         }
@@ -332,7 +332,7 @@ _cdio_read_toc(_img_private_t *_obj)
 
         res = ioctl(_obj->gen.fd, CDIOREADTOCENTRIES, &req);
         if (res < 0) {
-                cdio_error("error in ioctl(CDROMREADTOCENTRIES): %s\n",
+                cdio_warn("error in ioctl(CDROMREADTOCENTRIES): %s\n",
                            strerror(errno));
                 return false;
         }
@@ -421,13 +421,13 @@ eject_media_netbsd(void *user_data) {
 
         res = ioctl(fd, CDIOCALLOW);
         if (res < 0) {
-                cdio_error("ioctl(fd, CDIOCALLOW) failed: %s\n",
+                cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n",
                            strerror(errno));
                 /* go on... */
         }
         res = ioctl(fd, CDIOCEJECT);
         if (res < 0) {
-                cdio_error("ioctl(CDIOCEJECT) failed: %s\n",
+                cdio_warn("ioctl(CDIOCEJECT) failed: %s\n",
                            strerror(errno));
                 ret = 1;
         }
