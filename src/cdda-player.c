@@ -931,6 +931,7 @@ usage(char *prog)
             "  -h      print this help\n"
             "  -k      print key mapping\n"
             "  -a      start up in auto-mode\n"
+            "  -d      debug\n"
             "  -v      verbose\n"
             "\n"
             "for non-interactive use (only one) of these:\n"
@@ -1418,7 +1419,7 @@ main(int argc, char *argv[])
     case 'd':
       debug = 1;
       if (cdio_loglevel_default > CDIO_LOG_DEBUG)
-      cdio_loglevel_default = CDIO_LOG_DEBUG;
+        cdio_loglevel_default = CDIO_LOG_DEBUG;
       break;
     case 'a':
       auto_mode = 1;
