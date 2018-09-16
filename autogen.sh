@@ -11,4 +11,4 @@ fi
 
 ./configure --enable-maintainer-mode "$@"
 
-(cd doc && make stamp-vti)
+(cd doc && make)
