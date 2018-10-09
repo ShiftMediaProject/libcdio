@@ -200,6 +200,10 @@
 
 /* Define to 1 if you have the `snprintf' function. */
 #define HAVE_SNPRINTF 1
+#include <crtversion.h>
+#if _VC_CRT_MAJOR_VERSION < 14
+#define snprintf _snprintf
+#endif
 
 /* Define 1 if you have Solaris CD-ROM support */
 /* #undef HAVE_SOLARIS_CDROM */
@@ -278,7 +282,7 @@
 #define HAVE_TZSET 1
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#define HAVE_UNISTD_H 1
+/* #undef HAVE_UNISTD_H */
 
 /* Define to 1 if you have the `unsetenv' function. */
 /* #undef HAVE_UNSETENV */
@@ -293,7 +297,12 @@
 #define HAVE_VSNPRINTF 1
 
 /* Define 1 if you have MinGW CD-ROM support */
+#include <winapifamily.h>
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY==WINAPI_FAMILY_PC_APP || WINAPI_FAMILY==WINAPI_FAMILY_PHONE_APP)
+/* #undef HAVE_WIN32_CDROM */
+#else
 #define HAVE_WIN32_CDROM 1
+#endif
 
 /* Define to 1 if you have the <windows.h> header file. */
 #define HAVE_WINDOWS_H 1
