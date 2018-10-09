@@ -72,6 +72,9 @@ unsetenv(const char *envname)
 #endif
 
 #ifndef HAVE_TIMEGM
+#ifdef _MSC_VER
+#define timegm _mkgmtime
+#else
 static time_t
 timegm(struct tm *tm)
 {
@@ -89,6 +92,7 @@ timegm(struct tm *tm)
   tzset();
   return ret;
 }
+#endif
 #endif
 
 #ifndef HAVE_GMTIME_R

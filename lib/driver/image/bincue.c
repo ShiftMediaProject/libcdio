@@ -990,34 +990,36 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
 }
 
 #if !defined(HAVE_GLOB_H) && defined(_WIN32)
-static inline void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
+static inline void Win32Glob(LPCWSTR pattern, LPCWSTR szCurPath, char ***drives, unsigned int *num_files)
 {
   char szPath[MAX_PATH];
-  WIN32_FIND_DATAA ffd;
+  WCHAR wszPath[MAX_PATH];
+  WIN32_FIND_DATAW ffd;
   HANDLE hFind;
   BOOL bFound;
 
-  SetCurrentDirectoryA(szCurPath);
+  SetCurrentDirectoryW(szCurPath);
 
-  hFind = FindFirstFileA(pattern, &ffd);
+  hFind = FindFirstFileW(pattern, &ffd);
   bFound = (hFind != INVALID_HANDLE_VALUE);
   while (bFound) {
-    cdio_add_device_list(drives, ffd.cFileName, num_files);
-    bFound = FindNextFileA(hFind, &ffd);
+    if (WideCharToMultiByte(CP_ACP, 0, ffd.cFileName, -1, szPath, sizeof(szPath) / sizeof(szPath[0]), NULL, NULL) != 0)
+     cdio_add_device_list(drives, szPath, num_files);
+    bFound = FindNextFileW(hFind, &ffd);
   }
   if (hFind != INVALID_HANDLE_VALUE)
     FindClose(hFind);
 
-  hFind = FindFirstFileA("*", &ffd);
+  hFind = FindFirstFileW(L"*", &ffd);
   bFound = (hFind != INVALID_HANDLE_VALUE);
   while (bFound) {
     if ( (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) &&
-         (strcmp(ffd.cFileName, ".") != 0) && (strcmp(ffd.cFileName, "..") != 0) ) {
-      GetFullPathNameA(ffd.cFileName, sizeof(szPath), szPath, NULL);
-      Win32Glob(pattern, szPath, drives, num_files);
-      SetCurrentDirectoryA(szCurPath);
+         (wcscmp(ffd.cFileName, L".") != 0) && (wcscmp(ffd.cFileName, L"..") != 0) ) {
+      GetFullPathNameW(ffd.cFileName, sizeof(wszPath) / sizeof(wszPath[0]), wszPath, NULL);
+      Win32Glob(pattern, wszPath, drives, num_files);
+      SetCurrentDirectoryW(szCurPath);
     }
-    bFound = FindNextFileA(hFind, &ffd);
+    bFound = FindNextFileW(hFind, &ffd);
   }
   if (hFind != INVALID_HANDLE_VALUE)
     FindClose(hFind);
@@ -1042,9 +1044,9 @@ cdio_get_devices_bincue (void)
   }
   globfree(&globbuf);
 #elif defined(_WIN32)
-  char szStartDir[MAX_PATH];
-  GetCurrentDirectoryA(sizeof(szStartDir), szStartDir);
-  Win32Glob("*.cue", szStartDir, &drives, &num_files);
+  WCHAR szStartDir[MAX_PATH];
+  GetCurrentDirectoryW(sizeof(szStartDir) / sizeof(szStartDir[0]), szStartDir);
+  Win32Glob(L"*.cue", szStartDir, &drives, &num_files);
 #else
   cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
 #endif /*HAVE_GLOB_H*/
