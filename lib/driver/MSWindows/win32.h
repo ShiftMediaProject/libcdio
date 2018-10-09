@@ -134,21 +134,21 @@ driver_return_code_t close_tray_win32ioctl (const char *psz_win32_drive);
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
 */
-int read_audio_sectors_win32ioctl (_img_private_t *p_obj, void *p_data, lsn_t lsn,
-				   unsigned int nblocks);
+driver_return_code_t read_audio_sectors_win32ioctl (_img_private_t *p_obj,
+    void *p_data, lsn_t lsn, unsigned int nblocks);
 /*!
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data,
-				  lsn_t lsn, bool b_form2);
+driver_return_code_t read_mode2_sector_win32ioctl (_img_private_t *p_env,
+    void *p_data, lsn_t lsn, bool b_form2);
 
 /*!
    Reads a single mode1 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode1_sector_win32ioctl (_img_private_t *p_env, void *p_data,
-				  lsn_t lsn, bool b_form2);
+driver_return_code_t read_mode1_sector_win32ioctl (_img_private_t *p_env,
+    void *p_data, lsn_t lsn, bool b_form2);
 
 const char *is_cdrom_win32ioctl (const char drive_letter);
 
@@ -167,7 +167,7 @@ const char *is_cdrom_win32ioctl (const char drive_letter);
 
   Return 0 if command completed successfully.
  */
-int run_mmc_cmd_win32ioctl( void *p_user_data,
+driver_return_code_t run_mmc_cmd_win32ioctl( void *p_user_data,
 			    unsigned int i_timeout,
 			    unsigned int i_cdb,
 			    const mmc_cdb_t * p_cdb,

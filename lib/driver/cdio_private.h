@@ -370,8 +370,8 @@ extern "C" {
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error.
     */
-    int (*read_audio_sectors) ( void *p_env, void *p_buf, lsn_t i_lsn,
-                                unsigned int i_blocks );
+    driver_return_code_t (*read_audio_sectors) ( void *p_env, void *p_buf, 
+        lsn_t i_lsn, unsigned int i_blocks );
 
     /*!
       Read a data sector
@@ -398,7 +398,7 @@ extern "C" {
       Reads a single mode2 sector from cd device into buf starting
       from lsn. Returns 0 if no error.
     */
-    int (*read_mode2_sector)
+    driver_return_code_t (*read_mode2_sector)
          ( void *p_env, void *p_buf, lsn_t i_lsn, bool b_mode2_form2 );
 
     /*!
@@ -406,7 +406,7 @@ extern "C" {
       from lsn.
       Returns 0 if no error.
     */
-    int (*read_mode2_sectors)
+    driver_return_code_t (*read_mode2_sectors)
          ( void *p_env, void *p_buf, lsn_t i_lsn, bool b_mode2_form2,
            unsigned int i_blocks );
 
@@ -414,7 +414,7 @@ extern "C" {
       Reads a single mode1 sector from cd device into buf starting
       from lsn. Returns 0 if no error.
     */
-    int (*read_mode1_sector)
+    driver_return_code_t (*read_mode1_sector)
          ( void *p_env, void *p_buf, lsn_t i_lsn, bool mode1_form2 );
 
     /*!
@@ -422,7 +422,7 @@ extern "C" {
       from lsn.
       Returns 0 if no error.
     */
-    int (*read_mode1_sectors)
+    driver_return_code_t (*read_mode1_sectors)
          ( void *p_env, void *p_buf, lsn_t i_lsn, bool mode1_form2,
            unsigned int i_blocks );
 
@@ -449,7 +449,8 @@ extern "C" {
     /*!
       Set the arg "key" with "value" in the source device.
     */
-    int (*set_arg) ( void *p_env, const char key[], const char value[] );
+    driver_return_code_t (*set_arg)
+        ( void *p_env, const char key[], const char value[] );
 
     /*!
       Set the blocksize for subsequent reads.
@@ -463,7 +464,8 @@ extern "C" {
       @return 0 if everything went okay, -1 if we had an error. is -2
       returned if this is not implemented for the current driver.
     */
-    int (*set_speed) ( void *p_env, int i_speed );
+    driver_return_code_t (*set_speed)
+        ( void *p_env, int i_speed );
 
   } cdio_funcs_t;
 

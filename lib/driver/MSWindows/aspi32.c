@@ -41,7 +41,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#ifdef HAVE_UNISTD_H
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 
 #undef IN
@@ -137,7 +139,7 @@ mciSendCommand_aspi(int id, UINT msg, DWORD flags, void *arg)
   if ( mci_error ) {
     char error[256];
 
-    mciGetErrorString(mci_error, error, 256);
+    mciGetErrorStringA(mci_error, error, 256);
     cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
@@ -153,7 +155,7 @@ have_aspi( HMODULE *hASPI,
            long (**lpSendCommand)( void* ) )
 {
   /* check if aspi is available */
-  *hASPI = LoadLibrary( "wnaspi32.dll" );
+  *hASPI = LoadLibraryW( L"wnaspi32.dll" );
 
   if( *hASPI == NULL ) {
     cdio_warn("Unable to load ASPI DLL");
@@ -487,7 +489,7 @@ init_aspi (_img_private_t *env)
 
   We return 0 if command completed successfully.
  */
-int
+driver_return_code_t
 run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
                   unsigned int i_cdb, const mmc_cdb_t * p_cdb,
                   cdio_mmc_direction_t e_direction,
@@ -559,7 +561,7 @@ run_mmc_cmd_aspi( void *p_user_data, unsigned int i_timeout_ms,
    Reads nblocks sectors from cd device into data starting from lsn.
    Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
                    int sector_type, unsigned int nblocks)
 {
@@ -621,7 +623,7 @@ read_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
    Reads an audio device into data starting from lsn.
    Returns 0 if no error.
  */
-int
+driver_return_code_t
 read_audio_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
                          unsigned int i_blocks)
 {
@@ -636,7 +638,7 @@ read_audio_sectors_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error.
  */
-int
+driver_return_code_t
 read_mode2_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
                          bool b_form2)
 {
@@ -650,7 +652,7 @@ read_mode2_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error.
  */
-int
+driver_return_code_t
 read_mode1_sector_aspi (_img_private_t *p_env, void *data, lsn_t lsn,
                          bool b_form2)
 {
@@ -783,7 +785,7 @@ wnaspi32_eject_media (void *user_data) {
 track_format_t
 get_track_format_aspi(const _img_private_t *p_env, track_t track_num)
 {
-  MCI_OPEN_PARMS op;
+  MCI_OPEN_PARMSA op;
   MCI_STATUS_PARMS st;
   DWORD i_flags;
 

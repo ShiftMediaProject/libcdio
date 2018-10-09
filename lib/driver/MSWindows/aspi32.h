@@ -195,20 +195,20 @@ const char *is_cdrom_aspi(const char drive_letter);
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
  */
-int read_audio_sectors_aspi (_img_private_t *obj, void *data, lsn_t lsn, 
-			     unsigned int nblocks);
+driver_return_code_t read_audio_sectors_aspi (_img_private_t *obj,
+    void *data, lsn_t lsn, unsigned int nblocks);
 /*!
    Reads a single mode1 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int read_mode1_sector_aspi (_img_private_t *env, void *data, 
-			    lsn_t lsn, bool b_form2);
+driver_return_code_t read_mode1_sector_aspi (_img_private_t *env,
+    void *data, lsn_t lsn, bool b_form2);
 /*!
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error. 
  */
-int read_mode2_sector_aspi (_img_private_t *env, void *data, lsn_t lsn, 
-			    bool b_form2);
+driver_return_code_t read_mode2_sector_aspi (_img_private_t *env,
+    void *data, lsn_t lsn, bool b_form2);
 
 /*! 
   Read and cache the CD's Track Table of Contents and track info.
@@ -231,7 +231,7 @@ bool read_toc_aspi (_img_private_t *env);
 
   Return 0 if command completed successfully.
  */
-int run_mmc_cmd_aspi( void *p_user_data, 
+driver_return_code_t run_mmc_cmd_aspi( void *p_user_data,
 		      unsigned int i_timeout,
 		      unsigned int i_cdb, 
 		      const mmc_cdb_t * p_cdb,

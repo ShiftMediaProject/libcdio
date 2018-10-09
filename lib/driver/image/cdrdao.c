@@ -1059,7 +1059,7 @@ _read_mode1_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 _read_mode1_sectors_cdrdao (void *user_data, void *data, lsn_t lsn,
 			    bool b_form2, unsigned int nblocks)
 {

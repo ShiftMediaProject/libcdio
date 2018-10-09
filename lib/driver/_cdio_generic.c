@@ -51,15 +51,16 @@
 #include "_cdio_stdio.h"
 #include "filemode.h"
 
+#if defined(_MSC_VER)
+#include <io.h>
+#endif
+
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif
 
 /* If available and LFS is enabled, try to use lseek64 */
 #if defined(HAVE_LSEEK64) && defined(_FILE_OFFSET_BITS) && (_FILE_OFFSET_BITS == 64)
-#if defined(_MSC_VER)
-#include <io.h>
-#endif
 #define CDIO_LSEEK lseek64
 #else
 #define CDIO_LSEEK lseek

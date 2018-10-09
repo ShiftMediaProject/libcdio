@@ -78,7 +78,7 @@
 #define windows_error(loglevel,i_err) {                                 \
   char error_msg[80];                                                   \
   long int count;                                                       \
-  count = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                      \
+  count = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,                     \
                         NULL, i_err, MAKELANGID(LANG_NEUTRAL,            \
                                                 SUBLANG_DEFAULT),        \
                         error_msg, sizeof(error_msg), NULL);             \
@@ -377,7 +377,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
     dw_access_flags = GENERIC_READ|GENERIC_WRITE;  /* add gen write on W2k/XP */
   else dw_access_flags = GENERIC_READ;
 
-  h_device_handle = CreateFile( psz_win32_drive,
+  h_device_handle = CreateFileA( psz_win32_drive,
                                 dw_access_flags,
                                 FILE_SHARE_READ | FILE_SHARE_WRITE,
                                 NULL,
@@ -471,7 +471,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
   Return DRIVER_OP_SUCCESS if command completed successfully.
  */
 #ifdef USE_PASSTHROUGH_DIRECT
-int
+driver_return_code_t
 run_mmc_cmd_win32ioctl( void *p_user_data,
                         unsigned int u_timeout_ms,
                         unsigned int u_cdb, const mmc_cdb_t * p_cdb,
@@ -568,7 +568,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
   return rc;
 }
 #else
-int
+driver_return_code_t
 run_mmc_cmd_win32ioctl( void *p_user_data,
                         unsigned int u_timeout_ms,
                         unsigned int u_cdb, const mmc_cdb_t * p_cdb,
@@ -791,7 +791,7 @@ is_cdrom_win32ioctl(const char c_drive_letter)
   sz_win32_drive[2]='\\';
   sz_win32_drive[3]='\0';
 
-  uDriveType = GetDriveType(sz_win32_drive);
+  uDriveType = GetDriveTypeA(sz_win32_drive);
 
   switch(uDriveType) {
   case DRIVE_CDROM: {
@@ -839,7 +839,7 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
    Reads a single raw sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
 {
   mmc_cdb_t cdb = {{0, }};
@@ -861,7 +861,7 @@ read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int
+driver_return_code_t
 read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data,
                               lsn_t lsn, bool b_form2)
 {
@@ -882,7 +882,7 @@ read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data,
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
  */
-int
+driver_return_code_t
 read_mode1_sector_win32ioctl (_img_private_t *env, void *data,
                               lsn_t lsn, bool b_form2)
 {
@@ -962,7 +962,7 @@ init_win32ioctl (_img_private_t *env)
                                       "\\\\.\\%c:",
                                       env->gen.source_name[len-2] );
 
-    env->h_device_handle = CreateFile( psz_win32_drive,
+    env->h_device_handle = CreateFileA( psz_win32_drive,
                                        dw_access_flags,
                                        FILE_SHARE_READ | FILE_SHARE_WRITE,
                                        NULL,
@@ -974,7 +974,7 @@ init_win32ioctl (_img_private_t *env)
     {
           /* No good. try toggle write. */
           dw_access_flags ^= GENERIC_WRITE;
-          env->h_device_handle = CreateFile( psz_win32_drive,
+          env->h_device_handle = CreateFileA( psz_win32_drive,
                                              dw_access_flags,
                                              FILE_SHARE_READ,
                                              NULL,

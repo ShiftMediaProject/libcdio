@@ -72,6 +72,10 @@
 #include <sys/types.h>
 #endif
 
+#if defined(_MSC_VER)
+#include <io.h>
+#endif
+
 #if defined (_MSC_VER) || defined (_XBOX)
 #undef IN
 #endif
@@ -82,7 +86,11 @@
 #include <xtl.h>
 #define WIN_NT 1
 #else
+#if defined(_WIN32_WINNT) && (_WIN32_WINNT > 0x0400)
+#define WIN_NT 1
+#else
 #define WIN_NT               ( GetVersion() < 0x80000000 )
+#endif
 #endif
 
 /* mingw-w64 defines this to lseek64 when LFS is enabled */
@@ -209,7 +217,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
   if ( mci_error ) {
     char error[256];
 
-    mciGetErrorString(mci_error, error, 256);
+    mciGetErrorStringA(mci_error, error, 256);
     cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
@@ -291,7 +299,7 @@ is_cdrom_win32(const char drive_letter) {
 
   Return 0 if command completed successfully.
  */
-static int
+static driver_return_code_t
 run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
 		   unsigned int i_cdb, const mmc_cdb_t *p_cdb,
 		   cdio_mmc_direction_t e_direction,
@@ -382,7 +390,7 @@ free_win32 (void *p_user_data)
    Reads an audio device into data starting from lsn.
    Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
 		    unsigned int i_blocks)
 {
@@ -421,7 +429,7 @@ read_data_sectors_win32 (void *p_user_data, void *p_buf, lsn_t i_lsn,
    Reads a single mode1 sector from cd device into data starting from
    lsn. Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 			 bool b_form2)
 {
@@ -453,7 +461,7 @@ read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
    from lsn.
    Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
 			  bool b_form2, unsigned int nblocks)
 {
@@ -483,7 +491,7 @@ read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
    Reads a single mode2 sector from cd device into data starting
    from lsn. Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
 			 bool b_form2)
 {
@@ -523,7 +531,7 @@ read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
    from lsn.
    Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_mode2_sectors_win32 (void *p_user_data, void *data, lsn_t lsn,
 			  bool b_form2, unsigned int i_blocks)
 {
@@ -554,7 +562,7 @@ get_disc_last_lsn_win32 (void *p_user_data)
 /*!
   Set the key "arg" to "value" in source device.
 */
-static int
+static driver_return_code_t
 set_arg_win32 (void *p_user_data, const char key[], const char value[])
 {
   _img_private_t *p_env = p_user_data;
@@ -612,7 +620,7 @@ open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
 #ifdef _XBOX
   return DRIVER_OP_UNSUPPORTED;
 #else
-  MCI_OPEN_PARMS op;
+  MCI_OPEN_PARMSA op;
   DWORD i_flags;
   int ret;
 

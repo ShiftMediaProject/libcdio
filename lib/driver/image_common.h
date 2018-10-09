@@ -66,7 +66,7 @@ typedef struct {
  */
 void  _free_image (void *p_user_data);
 
-int _eject_media_image(void *p_user_data);
+driver_return_code_t _eject_media_image(void *p_user_data);
 
 /*!
   Return the value associated with the key "arg".
@@ -197,6 +197,7 @@ read_data_sectors_image ( void *p_user_data, void *p_buf,
 
   0 is returned if no error was found, and nonzero if there as an error.
 */
-int _set_arg_image (void *user_data, const char key[], const char value[]);
+driver_return_code_t
+_set_arg_image (void *user_data, const char key[], const char value[]);
 
 #endif /* CDIO_DRIVER_IMAGE_COMMON_H_ */
