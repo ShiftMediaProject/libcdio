@@ -508,6 +508,7 @@ int has_timeout=sizeof(test.timeout);],
                   [Define 1 if you have NetBSD CD-ROM support])
  	# LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, NetBSD "
+	enable_cdda_player="no"
 	;;
      os2*)
        AC_DEFINE([HAVE_OS2_CDROM], [1],
