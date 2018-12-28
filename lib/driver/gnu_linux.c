@@ -1126,7 +1126,7 @@ static bool
 read_toc_linux (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
-  int i;
+  int i, i_last_track;
   unsigned int u_tracks;
 
   /* read TOC header */
@@ -1137,9 +1137,10 @@ read_toc_linux (void *p_user_data)
   }
 
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
-  p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
+  i_last_track             = p_env->tochdr.cdth_trk1;
+  p_env->gen.i_tracks      = i_last_track - p_env->gen.i_first_track + 1;
 
-  u_tracks = p_env->gen.i_tracks - p_env->gen.i_first_track + 1;
+  u_tracks = p_env->gen.i_tracks;
 
   if (u_tracks > CDIO_CD_MAX_TRACKS) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
@@ -1149,7 +1150,7 @@ read_toc_linux (void *p_user_data)
 
 
   /* read individual tracks */
-  for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
+  for (i= p_env->gen.i_first_track; i <= i_last_track; i++) {
     struct cdrom_tocentry *p_toc =
       &(p_env->tocent[i-p_env->gen.i_first_track]);
 
