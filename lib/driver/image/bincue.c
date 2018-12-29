@@ -1142,10 +1142,11 @@ _get_lba_track_bincue(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->gen.i_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK)
+    i_track = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
   if (i_track <= p_env->gen.i_tracks + p_env->gen.i_first_track
-      && i_track != 0) {
+      && i_track >= p_env->gen.i_first_track) {
     return p_env->tocent[i_track-p_env->gen.i_first_track].start_lba;
   } else
     return CDIO_INVALID_LBA;
