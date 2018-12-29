@@ -432,6 +432,18 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                      "Expecting a track number, got %s", psz_field);
             goto err_exit;
           }
+          if (i_track < 1 || i_track > 99) {
+            cdio_warn("Track number out of range 1 to 99, got %s", psz_field);
+            goto err_exit;
+          }
+          if(cd) {
+            if (-1 == i) {
+              cd->gen.i_first_track = i_track;
+            } else if(cd->gen.i_first_track + i + 1 != i_track) {
+              cdio_warn("Track number out of sequence. Expected %d, got %d",
+                        cd->gen.i_first_track + i + 1, i_track);
+            }
+          }
         }
         if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
           track_info_t  *this_track=NULL;
@@ -748,7 +760,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
               cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
 #else
               track_info_t  *this_track=
-                &(cd->tocent[cd->gen.i_tracks - cd->gen.i_first_track]);
+                &(cd->tocent[cd->gen.i_tracks - 1]);
 
               switch (start_index) {
 
@@ -1090,7 +1102,8 @@ _get_track_format_bincue(void *p_user_data, track_t i_track)
 
   if (!p_env->gen.init) return TRACK_FORMAT_ERROR;
 
-  if (i_track > p_env->gen.i_tracks || i_track == 0)
+  if (i_track > p_env->gen.i_first_track + p_env->gen.i_tracks - 1
+      || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
 
   return p_env->tocent[i_track-p_env->gen.i_first_track].track_format;

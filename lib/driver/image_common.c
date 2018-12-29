@@ -218,9 +218,11 @@ _get_track_msf_image(void *p_user_data, track_t i_track, msf_t *msf)
 
   if (NULL == msf) return false;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->gen.i_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK)
+    i_track = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
-  if (i_track <= p_env->gen.i_tracks+1 && i_track != 0) {
+  if (i_track >= p_env->gen.i_first_track &&
+      i_track <= p_env->gen.i_tracks + p_env->gen.i_first_track) {
     *msf = p_env->tocent[i_track-p_env->gen.i_first_track].start_msf;
     return true;
   } else
