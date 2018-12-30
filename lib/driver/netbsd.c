@@ -42,6 +42,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/*
+ * NetBSD and OpenBSD support for libcdio.
+ */
+
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
@@ -55,11 +59,17 @@
 #include "cdio_assert.h"
 #include "cdio_private.h"
 
+#ifndef USE_MMC_SUBCHANNEL
+#define USE_MMC_SUBCHANNEL 0
+#endif
+
 #if defined(__NetBSD__) && (defined(__i386__) || defined(__amd64__))
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0d"
 #else
 #define DEFAULT_CDIO_DEVICE "/dev/rcd0c"
 #endif
+
+#define MAX_CD_DEVICES 64
 
 #ifdef HAVE_STRING_H
 #include <string.h>
@@ -78,6 +88,7 @@
 #include <sys/cdio.h>
 #include <sys/scsiio.h>
 #include <sys/sysctl.h>
+#include <sys/disklabel.h>
 
 #define TOTAL_TRACKS (_obj->tochdr.ending_track \
                       - _obj->tochdr.starting_track + 1)
@@ -319,7 +330,7 @@ _cdio_read_toc(_img_private_t *_obj)
 
         res = ioctl(_obj->gen.fd, CDIOREADTOCHEADER, &_obj->tochdr);
         if (res < 0) {
-                cdio_error("error in ioctl(CDIOREADTOCHEADER): %s\n",
+                cdio_warn("error in ioctl(CDIOREADTOCHEADER): %s\n",
                            strerror(errno));
                 return false;
         }
@@ -332,7 +343,7 @@ _cdio_read_toc(_img_private_t *_obj)
 
         res = ioctl(_obj->gen.fd, CDIOREADTOCENTRIES, &req);
         if (res < 0) {
-                cdio_error("error in ioctl(CDROMREADTOCENTRIES): %s\n",
+                cdio_warn("error in ioctl(CDROMREADTOCENTRIES): %s\n",
                            strerror(errno));
                 return false;
         }
@@ -421,13 +432,13 @@ eject_media_netbsd(void *user_data) {
 
         res = ioctl(fd, CDIOCALLOW);
         if (res < 0) {
-                cdio_error("ioctl(fd, CDIOCALLOW) failed: %s\n",
+                cdio_warn("ioctl(fd, CDIOCALLOW) failed: %s\n",
                            strerror(errno));
                 /* go on... */
         }
         res = ioctl(fd, CDIOCEJECT);
         if (res < 0) {
-                cdio_error("ioctl(CDIOCEJECT) failed: %s\n",
+                cdio_warn("ioctl(CDIOCEJECT) failed: %s\n",
                            strerror(errno));
                 ret = 1;
         }
@@ -516,6 +527,41 @@ get_track_isrc_netbsd (const void *p_user_data, track_t i_track) {
   return mmc_get_track_isrc( p_env->gen.cdio, i_track );
 }
 
+static driver_return_code_t
+audio_get_volume_netbsd(void *p_user_data, cdio_audio_volume_t *p_volume)
+{
+  const _img_private_t *p_env = p_user_data;
+  return (ioctl(p_env->gen.fd, CDIOCGETVOL, p_volume));
+}
+
+static driver_return_code_t
+audio_pause_netbsd(void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  return (ioctl(p_env->gen.fd, CDIOCPAUSE));
+}
+
+static driver_return_code_t
+audio_stop_netbsd(void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  return (ioctl(p_env->gen.fd, CDIOCSTOP));
+}
+
+static driver_return_code_t
+audio_resume_netbsd(void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+  return (ioctl(p_env->gen.fd, CDIOCRESUME));
+}
+
+static driver_return_code_t
+audio_set_volume_netbsd(void *p_user_data, cdio_audio_volume_t *p_volume)
+{
+  const _img_private_t *p_env = p_user_data;
+  return (ioctl(p_env->gen.fd, CDIOCSETVOL, p_volume));
+}
+
 /*!
   Get format of track.
 */
@@ -523,7 +569,7 @@ static track_format_t
 get_track_format_netbsd(void *user_data, track_t track_num)
 {
         _img_private_t *_obj = user_data;
-        int res;
+        int res, first_track = 0, track_idx = 0;
 
         if (!_obj->toc_valid) {
                 res = _cdio_read_toc(_obj);
@@ -531,19 +577,25 @@ get_track_format_netbsd(void *user_data, track_t track_num)
                         return TRACK_FORMAT_ERROR;
         }
 
-        if (track_num > TOTAL_TRACKS || track_num == 0)
-                return TRACK_FORMAT_ERROR;
+        first_track = _obj->gen.i_first_track;
 
-        if (_obj->tocent[track_num - 1].control & 0x04) {
+        if (!_obj->gen.toc_init ||
+            track_num > (first_track + _obj->gen.i_tracks) ||
+            track_num < first_track)
+            return (CDIO_INVALID_TRACK);
+
+        track_idx = track_num - first_track;
+
+        if (_obj->tocent[track_idx].control & 0x04) {
                 if (!_obj->sessionformat_valid) {
                         res = _cdio_read_discinfo(_obj);
                         if (res)
                                 return TRACK_FORMAT_ERROR;
                 }
 
-                if (_obj->sessionformat[track_num - 1] == 0x10)
+                if (_obj->sessionformat[track_idx] == 0x10)
                         return TRACK_FORMAT_CDI;
-                else if (_obj->sessionformat[track_num - 1] == 0x20)
+                else if (_obj->sessionformat[track_idx] == 0x20)
                         return TRACK_FORMAT_XA;
                 else
                         return TRACK_FORMAT_DATA;
@@ -572,15 +624,16 @@ get_track_green_netbsd(void *user_data, track_t track_num)
   track_num in obj.  Track numbers usually start at something
   greater than 0, usually 1.
 
-  The "leadout" track is specified either by
-  using i_track LEADOUT_TRACK or the total tracks+1.
+  The "leadout" track is specified by passing i_track as either
+  LEADOUT_TRACK or the track number of the last audio track plus one.
+
   False is returned if there is no track entry.
 */
 static bool
 get_track_msf_netbsd(void *user_data, track_t track_num, msf_t *msf)
 {
         _img_private_t *_obj = user_data;
-        int res;
+        int res, first_track = 0, track_idx = 0;
 
         if (!msf)
                 return false;
@@ -588,18 +641,23 @@ get_track_msf_netbsd(void *user_data, track_t track_num, msf_t *msf)
         if (!_obj->toc_valid) {
                 res = _cdio_read_toc(_obj);
                 if (!res)
-                        return CDIO_INVALID_TRACK;
+                        return false;
         }
 
         if (track_num == CDIO_CDROM_LEADOUT_TRACK)
-                track_num = TOTAL_TRACKS + 1;
+                track_num = _obj->gen.i_tracks + _obj->gen.i_first_track;
 
-        if (track_num > TOTAL_TRACKS + 1 || track_num == 0)
-                return false;
+        first_track = _obj->gen.i_first_track;
 
-        msf->m = cdio_to_bcd8(_obj->tocent[track_num - 1].addr.msf.minute);
-        msf->s = cdio_to_bcd8(_obj->tocent[track_num - 1].addr.msf.second);
-        msf->f = cdio_to_bcd8(_obj->tocent[track_num - 1].addr.msf.frame);
+        if (!_obj->gen.toc_init ||
+            track_num > (first_track + _obj->gen.i_tracks) ||
+            track_num < first_track)
+            return (CDIO_INVALID_TRACK);
+
+        track_idx = track_num - first_track;
+        msf->m = cdio_to_bcd8(_obj->tocent[track_idx].addr.msf.minute);
+        msf->s = cdio_to_bcd8(_obj->tocent[track_idx].addr.msf.second);
+        msf->f = cdio_to_bcd8(_obj->tocent[track_idx].addr.msf.frame);
 
         return true;
 }
@@ -621,6 +679,23 @@ get_disc_last_lsn_netbsd(void *user_data)
 
         return (((msf.m * 60) + msf.s) * CDIO_CD_FRAMES_PER_SEC + msf.f);
 }
+
+
+static driver_return_code_t
+get_last_session_netbsd(void *p_user_data, lsn_t *i_last_session)
+{
+  const _img_private_t *p_env = p_user_data;
+  int addr = 0;
+
+  if (ioctl(p_env->gen.fd, CDIOREADMSADDR, &addr) == 0) {
+    *i_last_session = addr;
+    return (DRIVER_OP_SUCCESS);
+  } else {
+    cdio_warn("ioctl CDIOREADMSADDR failed: %s\n",
+        strerror(errno));
+    return (DRIVER_OP_ERROR);
+  }
+}
 #endif /* HAVE_NETBSD_CDROM */
 
 char **
@@ -629,52 +704,86 @@ cdio_get_devices_netbsd (void)
 #ifndef HAVE_NETBSD_CDROM
   return NULL;
 #else
-  char drive[40];
+  char drive[16];
   char **drives = NULL;
-  unsigned int num_drives=0;
-  int mib[2];
-  size_t len;
-  char *p, *pp, *data;
+  unsigned int num_drives = 0;
+  int cdfd;
+  int n;
 
-  mib[0] = CTL_HW;
-  mib[1] = HW_DISKNAMES;
-
-  /* Determine how much space to allocate. */
-  if (sysctl(mib, 2, NULL, &len, NULL, 0) == -1)
-     return NULL;
-
-  if ((data = (char *)malloc(len)) == NULL)
-     return NULL;
-
-  if (sysctl(mib, 2, data, &len, NULL, 0) == -1) {
-     free(data);
-     return NULL;
-  }
-  if (sizeof DEFAULT_CDIO_DEVICE > sizeof drive) {
-     free(data);
-     return NULL;
-  }
-  strcpy(drive,DEFAULT_CDIO_DEVICE);
-  p = data;
-  while ((pp = strchr(p, ' ')) != NULL) {
-     *pp = '\0';
-     if (p[0] == 'c' && p[1] == 'd' && p[2] >= '0' && p[2] <= '9' &&
-         p[3] == '\0') {
-        drive[sizeof DEFAULT_CDIO_DEVICE - 3] = p[2];
-        cdio_add_device_list(&drives, drive, &num_drives);
-     }
-     p = ++pp;
-  }
-  if (p[0] == 'c' && p[1] == 'd' && p[2] >= '0' && p[2] <= '9' &&
-      p[3] == '\0') {
-     drive[sizeof DEFAULT_CDIO_DEVICE - 3] = p[2];
-     cdio_add_device_list(&drives, drive, &num_drives);
+  /* Search for open(2)able /dev/rcd* devices */
+  for (n = 0; n <= MAX_CD_DEVICES; n++) {
+    snprintf(drive, sizeof(drive), "/dev/rcd%d%c", n, 'a' + RAW_PART);
+    if (!cdio_is_device_quiet_generic(drive))
+      continue;
+    if ((cdfd = open(drive, O_RDONLY|O_NONBLOCK, 0)) == -1)
+      continue;
+    close(cdfd);
+    cdio_add_device_list(&drives, drive, &num_drives);
   }
   cdio_add_device_list(&drives, NULL, &num_drives);
-  free(data);
-  return drives;
+  return (drives);
 #endif /* HAVE_NETBSD_CDROM */
 }
+
+#ifdef HAVE_NETBSD_CDROM
+static driver_return_code_t
+audio_play_msf_netbsd(void *p_user_data, msf_t *p_start_msf, msf_t *p_end_msf)
+{
+  const _img_private_t *p_env = p_user_data;
+  struct ioc_play_msf a;
+
+  a.start_m = cdio_from_bcd8(p_start_msf->m);
+  a.start_s = cdio_from_bcd8(p_start_msf->s);
+  a.start_f = cdio_from_bcd8(p_start_msf->f);
+  a.end_m = cdio_from_bcd8(p_end_msf->m);
+  a.end_s = cdio_from_bcd8(p_end_msf->s);
+  a.end_f = cdio_from_bcd8(p_end_msf->f);
+
+  return (ioctl(p_env->gen.fd, CDIOCPLAYMSF, (char *)&a));
+}
+
+#if !USE_MMC_SUBCHANNEL
+static driver_return_code_t
+audio_read_subchannel_netbsd(void *p_user_data, cdio_subchannel_t *subchannel)
+{
+  const _img_private_t *p_env = p_user_data;
+  struct ioc_read_subchannel s;
+  struct cd_sub_channel_info data;
+
+  bzero(&s, sizeof(s));
+  s.data = &data;
+  s.data_len = sizeof(data);
+  s.address_format = CD_MSF_FORMAT;
+  s.data_format = CD_CURRENT_POSITION;
+
+  if (ioctl(p_env->gen.fd, CDIOCREADSUBCHANNEL, &s) != -1) {
+    subchannel->control = s.data->what.position.control;
+    subchannel->track = s.data->what.position.track_number;
+    subchannel->index = s.data->what.position.index_number;
+
+    subchannel->abs_addr.m =
+        cdio_to_bcd8(s.data->what.position.absaddr.msf.minute);
+    subchannel->abs_addr.s =
+        cdio_to_bcd8(s.data->what.position.absaddr.msf.second);
+    subchannel->abs_addr.f =
+        cdio_to_bcd8(s.data->what.position.absaddr.msf.frame);
+    subchannel->rel_addr.m =
+        cdio_to_bcd8(s.data->what.position.reladdr.msf.minute);
+    subchannel->rel_addr.s =
+        cdio_to_bcd8(s.data->what.position.reladdr.msf.second);
+    subchannel->rel_addr.f =
+        cdio_to_bcd8(s.data->what.position.reladdr.msf.frame);
+    subchannel->audio_status = s.data->header.audio_status;
+
+    return (DRIVER_OP_SUCCESS);
+  } else {
+    cdio_warn("ioctl CDIOCREADSUBCHANNEL failed: %s\n",
+        strerror(errno));
+    return (DRIVER_OP_ERROR);
+  }
+}
+#endif
+#endif /* HAVE_NETBSD_CDROM */
 
 /*!
   Return a string containing the default CD device.
@@ -703,7 +812,18 @@ close_tray_netbsd (const char *psz_device)
 
 #ifdef HAVE_NETBSD_CDROM
 static cdio_funcs_t _funcs = {
+  .audio_get_volume      = audio_get_volume_netbsd,
+  .audio_pause           = audio_pause_netbsd,
+  .audio_play_msf        = audio_play_msf_netbsd,
+  .audio_play_track_index= NULL,
+#if USE_MMC_SUBCHANNEL
   .audio_read_subchannel = audio_read_subchannel_mmc,
+#else
+  .audio_read_subchannel = audio_read_subchannel_netbsd,
+#endif
+  .audio_stop            = audio_stop_netbsd,
+  .audio_resume          = audio_resume_netbsd,
+  .audio_set_volume      = audio_set_volume_netbsd,
   .eject_media           = eject_media_netbsd,
   .free                  = cdio_generic_free,
   .get_arg               = get_arg_netbsd,
@@ -713,6 +833,8 @@ static cdio_funcs_t _funcs = {
   .get_default_device    = cdio_get_default_device_netbsd,
   .get_devices           = cdio_get_devices_netbsd,
   .get_disc_last_lsn     = get_disc_last_lsn_netbsd,
+  .get_last_session      = get_last_session_netbsd,
+  .get_media_changed     = get_media_changed_mmc,
   .get_discmode          = get_discmode_generic,
   .get_drive_cap         = get_drive_cap_mmc,
   .get_first_track_num   = get_first_track_num_netbsd,
@@ -723,7 +845,8 @@ static cdio_funcs_t _funcs = {
   .get_track_copy_permit = get_track_copy_permit_generic,
   .get_track_format      = get_track_format_netbsd,
   .get_track_green       = get_track_green_netbsd,
-  .get_track_lba         = NULL, /* This could be implemented if need be. */
+   /* Not because we can't talk LBA, but the driver assumes MSF throughout */
+  .get_track_lba         = NULL,
   .get_track_preemphasis = get_track_preemphasis_generic,
   .get_track_msf         = get_track_msf_netbsd,
   .get_track_isrc        = get_track_isrc_netbsd,
@@ -736,9 +859,7 @@ static cdio_funcs_t _funcs = {
   .read_mode2_sector     = read_mode2_sector_netbsd,
   .read_mode2_sectors    = read_mode2_sectors_netbsd,
   .read_toc              = read_toc_netbsd,
-#if 1
   .run_mmc_cmd           = run_scsi_cmd_netbsd,
-#endif
   .set_arg               = set_arg_netbsd,
 };
 #endif /*HAVE_NETBSD_CDROM*/

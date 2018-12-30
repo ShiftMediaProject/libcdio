@@ -971,7 +971,7 @@ main(int argc, char *argv[])
 
   if (!opts.no_tracks) {
     printf("CD-ROM Track List (%i - %i)\n" NORMAL,
-           i_first_track, i_tracks);
+           i_first_track, i_first_track + i_tracks - 1);
 
     printf("  #: MSF       LSN    Type   Green? Copy?");
     if ( CDIO_DISC_MODE_CD_DA == discmode
