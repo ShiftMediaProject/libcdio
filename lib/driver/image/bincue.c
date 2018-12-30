@@ -433,15 +433,17 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
             goto err_exit;
           }
           if (i_track < 1 || i_track > 99) {
-            cdio_warn("Track number out of range 1 to 99, got %s", psz_field);
+            cdio_log(log_level,
+                     "Track number out of range 1 to 99, got %s", psz_field);
             goto err_exit;
           }
           if(cd) {
             if (-1 == i) {
               cd->gen.i_first_track = i_track;
             } else if(cd->gen.i_first_track + i + 1 != i_track) {
-              cdio_warn("Track number out of sequence. Expected %d, got %d",
-                        cd->gen.i_first_track + i + 1, i_track);
+              cdio_log(log_level,
+                       "Track number out of sequence. Expected %d, got %d",
+                       cd->gen.i_first_track + i + 1, i_track);
             }
           }
         }
