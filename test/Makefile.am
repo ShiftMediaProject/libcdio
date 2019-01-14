@@ -63,7 +63,7 @@ check_PROGRAMS = $(hack)
 
 check_DATA = vcd_demo.right vcd_demo_vcdinfo.right \
 	     videocd.right \
-	     cdda.right \
+	     cdda.right cdda_4_5.right \
 	     isofs-m1.right isofs-m1-no-rr.right isofs-m1-test2.right \
 	     check_opts0.right check_opts1.right check_opts2.right \
              check_opts3.right check_opts4.right check_opts5.right \
