@@ -17,6 +17,7 @@ check_DATA = \
 	bad-msf-3.toc  \
 	cdda.bin       \
 	cdda.cue       \
+	cdda_4_5.bin   \
 	cdda_4_5.cue   \
 	copying-rr.iso \
 	copying.iso    \
