@@ -135,11 +135,11 @@ run_scsi_cmd_netbsd(void *p_user_data, unsigned int i_timeout_ms,
         req.flags = e_direction == SCSI_MMC_DATA_READ ? SCCMD_READ : SCCMD_WRITE;
 
         if (ioctl(_obj->gen.fd, SCIOCCOMMAND, &req) < 0) {
-                perror("SCIOCCOMMAND");
+                cdio_info("SCIOCCOMMAND: %s", strerror(errno));
                 return -1;
         }
         if (req.retsts != SCCMD_OK) {
-                fprintf(stderr, "SCIOCCOMMAND cmd 0x%02x sts %d\n", req.cmd[0], req.retsts);
+                cdio_info("SCIOCCOMMAND cmd 0x%02x sts %d\n", req.cmd[0], req.retsts);
                 return -1;
         }
 
@@ -194,11 +194,11 @@ read_audio_sectors_netbsd(void *user_data, void *data, lsn_t lsn,
         req.flags = SCCMD_READ;
 
         if (ioctl(_obj->gen.fd, SCIOCCOMMAND, &req) < 0) {
-                perror("SCIOCCOMMAND");
+                cdio_info("SCIOCCOMMAND: %s", strerror(errno));
                 return 1;
         }
         if (req.retsts != SCCMD_OK) {
-                fprintf(stderr, "SCIOCCOMMAND cmd 0xbe sts %d\n", req.retsts);
+                cdio_info("SCIOCCOMMAND cmd 0xbe sts %d\n", req.retsts);
                 return 1;
         }
 
@@ -267,11 +267,11 @@ read_mode2_sector_netbsd(void *user_data, void *data, lsn_t lsn,
         req.flags = SCCMD_READ;
 
         if (ioctl(_obj->gen.fd, SCIOCCOMMAND, &req) < 0) {
-                perror("SCIOCCOMMAND");
+                cdio_info("SCIOCCOMMAND: %s", strerror(errno));
                 return 1;
         }
         if (req.retsts != SCCMD_OK) {
-                fprintf(stderr, "SCIOCCOMMAND cmd 0xbe sts %d\n", req.retsts);
+                cdio_info("SCIOCCOMMAND cmd 0xbe sts %d\n", req.retsts);
                 return 1;
         }
 
@@ -389,11 +389,11 @@ _cdio_read_discinfo(_img_private_t *_obj)
         req.flags = SCCMD_READ;
 
         if (ioctl(_obj->gen.fd, SCIOCCOMMAND, &req) < 0) {
-                perror("SCIOCCOMMAND");
+                cdio_info("SCIOCCOMMAND: %s", strerror(errno));
                 return 1;
         }
         if (req.retsts != SCCMD_OK) {
-                fprintf(stderr, "SCIOCCOMMAND cmd 0x43 sts %d\n", req.retsts);
+                cdio_info("SCIOCCOMMAND cmd 0x43 sts %d\n", req.retsts);
                 return 1;
         }
 #if 1
