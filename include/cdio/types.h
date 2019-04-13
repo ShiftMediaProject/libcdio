@@ -151,7 +151,7 @@ typedef uint8_t ubyte;
 #define GNUC_PACKED
 #endif  /* !__GNUC__ */
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || __clang_major__ > 9
 #  define PRAGMA_BEGIN_PACKED _Pragma("pack(push)") \
                               _Pragma("pack(1)")
 #  define PRAGMA_END_PACKED   _Pragma("pack(pop)")
