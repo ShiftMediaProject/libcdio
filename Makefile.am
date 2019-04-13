@@ -1,4 +1,4 @@
-#   Copyright (C) 2003-2004, 2006, 2008, 2011-2013, 2016
+#   Copyright (C) 2003-2004, 2006, 2008, 2011-2013, 2016, 2019
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,7 @@ EXTRA_DIST = \
 	MSVC/libcdio.sln \
 	MSVC/libcdio.vcproj  \
 	README.libcdio \
+	NEWS.md \
 	THANKS \
 	example/README \
 	libcdio.pc.in \

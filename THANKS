@@ -17,6 +17,9 @@ Dagobert Michelsen
 Diego 'Flameeyes' Pettenò
   patches to FreeBSD and making Gentoo-friendly
 
+Edd Barrett
+  Current FreeBSD driver fixes
+
 Frank Endres
   mmc_get_disc_erasable
 
@@ -39,7 +42,7 @@ Justin F. Hallett <thesin at southofheaven.org>
   Fink packaging and matters OSX
 
 KO Myung-Hun <komh at chollian.net> <komh78 at gmail.com>
-  OS/2 Driver
+  OS/2 Driver (since removed - see him for older versions)
 
 Kris Verbeeck <airborne at advalvas.be>:
   CDDB library support from libcddb http://libcddb.sourceforge.net
