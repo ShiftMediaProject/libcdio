@@ -18,6 +18,8 @@
 ##   which configure then turns into a Makefile  ...
 ##     which make can then use to produce stuff. Isn't configuration simple?
 
+.PHONY: ChangeLog check-leaks check-short test
+
 AUTOMAKE_OPTIONS = dist-bzip2
 
 EXTRA_DIST = \
@@ -75,6 +77,11 @@ test: check
 check-short:
 	$(MAKE) check 2>&1  | ruby @abs_top_srcdir@/make-check-filter.rb
 
+#: run valgrind on C programs
+check-leaks:
+	$(MAKE) -C test/driver check-leaks && \
+	$(MAKE) -C example check-leaks
+
 #: Make documentation via Doxygen http://www.stack.nl/~dimitri/doxygen/
 doxygen:
 	-( cd ${top_srcdir}/doc/doxygen && /bin/sh ${srcdir}/run_doxygen )
@@ -126,8 +133,6 @@ check_iso.sh: $(top_builddir)/config.status check_iso.sh.in
 MAINTAINERCLEANFILES = ChangeLog *.rej *.orig
 
 if MAINTAINER_MODE
-
-.PHONY: ChangeLog
 
 GIT2CL ?= git2cl
 

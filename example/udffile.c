@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008-2011, 2017
+  Copyright (C) 2005-2006, 2008-2011, 2017, 2019
    Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -99,6 +99,7 @@ main(int argc, const char *argv[])
     if (NULL == p_udf_root) {
       fprintf(stderr, "Sorry, couldn't find / in %s\n",
 	      psz_udf_image);
+      udf_dirent_free(p_udf_file);
       udf_close(p_udf);
       return 1;
     }
@@ -107,6 +108,8 @@ main(int argc, const char *argv[])
     if (!p_udf_file) {
       fprintf(stderr, "Sorry, couldn't find %s in %s\n",
 	      psz_udf_fname, psz_udf_image);
+      udf_dirent_free(p_udf_root);
+      udf_dirent_free(p_udf_file);
       udf_close(p_udf);
       return 2;
 
