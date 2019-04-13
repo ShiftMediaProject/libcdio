@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2002, 2003, 2004, 2005, 2006, 2008, 2012, 2017
+    Copyright (C) 2002-2008, 2012, 2017 2019
                   Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -151,7 +151,7 @@ typedef uint8_t ubyte;
 #define GNUC_PACKED
 #endif  /* !__GNUC__ */
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || __clang_major__ > 9
 #  define PRAGMA_BEGIN_PACKED _Pragma("pack(push)") \
                               _Pragma("pack(1)")
 #  define PRAGMA_END_PACKED   _Pragma("pack(pop)")
