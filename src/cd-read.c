@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2003, 2004, 2005, 2006, 2008, 2011 Rocky Bernstein
+  Copyright (C) 2003-2006, 2008, 2011, 2019 Rocky Bernstein
   <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-/* Program to debug read routines audio, auto, mode1, mode2 forms 1 & 2. */
+/* Program to debug read routines audio, mode1, mode2 forms 1 & 2. */
 
 #include "util.h"
 #include <cdio/mmc.h>
@@ -245,7 +245,7 @@ parse_options (int argc, char *argv[])
   static const char helpText[] =
     "Usage: %s [OPTION...]\n"
     "  -a, --access-mode=STRING        Set CD control access mode\n"
-    "  -m, --mode=MODE-TYPE            set CD-ROM read mode (audio, auto, m1f1, m1f2,\n"
+    "  -m, --mode=MODE-TYPE            set CD-ROM read mode (audio, m1f1, m1f2,\n"
     "                                  m2mf1, m2f2)\n"
     "  -d, --debug=INT                 Set debugging to LEVEL\n"
     "  -x, --hexdump                   Show output as a hex dump. The default is a\n"

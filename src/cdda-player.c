@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011, 2012, 2017
+  Copyright (C) 2005-2012, 2017, 2019
   Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
@@ -68,6 +68,9 @@
 # endif
 #endif
 
+#include <term.h>
+extern TERMINAL *cur_term;
+
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>
 #include <cdio/util.h>
@@ -77,6 +80,7 @@
 #include "cddb.h"
 #include "getopt.h"
 
+static WINDOW * cur_window = NULL;
 static void action(const char *psz_action);
 static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks,
                            track_t i_first_track);
@@ -222,8 +226,8 @@ static void
 tty_raw(void)
 {
   if (!b_interactive) return;
+  if (!cur_window) cur_window = initscr();
 
-  initscr();
   cbreak();
   clear();
   noecho();
@@ -337,6 +341,9 @@ finish(const char *psz_msg, int rc)
     refresh();
   }
   tty_restore();
+  if (cur_term) del_curterm(cur_term);
+  cur_window = NULL;
+
 #ifdef HAVE_CDDB
   if (p_conn) cddb_destroy(p_conn);
   cddb_disc_destroy(p_cddb_disc);
