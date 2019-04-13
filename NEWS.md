@@ -5,12 +5,13 @@ version 2.1.0
 Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett
 
 - FreeBSD and NetBSD driver fixes. Switch from MSF addressing to LBA addressing in driver. (Edd Barrett and Jasper Lievisse Adriaanse)
-- Fix handling in libcdio-paranoia `cd-info` when starting track number is greater than 1 (Thomas Schmitt)
+- Fix handling in drivers,libcdio-paranoia and `cd-info` when starting track number is greater than 1. (Thomas Schmitt)
 - More tolerant of non-compliant ISOs such as openSUSE Leap 15.0
 - `cdda-player` fixes, such as adding a missing `-d` in cdd-player help (Thomas Schmitt and Edd Barrett)
-- `cdtext_list_languages_v2()` to be preferred over now deprecated `cdtext_list_languages()`. New API call `cdtext_set_language_index()`.
-
-- Some code cleanups
+- `cdtext_list_languages_v2()` to be preferred over now deprecated `cdtext_list_languages()`. New API call `cdtext_set_language_index()`. (Thomas Schmitt)
+- Add `read-disc-struct` example program to show how to use a MMC `DVD_READ_DISC_STRUCTURE`. (Thomas Schmitt)
+- Various errors in driver reading turned into warnings. (Thomas Schmitt)
+- Some code cleanups and documentation improvements
 - Bugs:
  * [Bug 53170: I/O leak when we can't read ISO file ](https://savannah.gnu.org/bugs/index.php?53170)
  * [Bug 53928: Cdtext not displayed in case of `CDTEXT_LANGUAGE_UNKNOWN`](https://savannah.gnu.org/bugs/index.php?3929)
