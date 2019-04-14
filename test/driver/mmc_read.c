@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 2010-2013, 2017 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010-2013, 2017, 2019 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -447,7 +447,7 @@ main(int argc, const char *argv[])
     i_ret = wait_for_drive(p_cdio, 30, b_verbose);
     if (0 >= i_ret) {
 	fprintf(stderr, "Wait for drive error\n");
-	exit(2);
+	exit(SKIP_TEST);
     } else {
 	if (1 == i_ret)  {
 	    i_status = get_disc_erasable(p_cdio, psz_source, b_verbose);

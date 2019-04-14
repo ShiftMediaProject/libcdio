@@ -18,7 +18,7 @@ Diego 'Flameeyes' Pettenò
   patches to FreeBSD and making Gentoo-friendly
 
 Edd Barrett
-  Current FreeBSD driver fixes
+  Current OpenBSD driver (based on NetBSD driver)
 
 Frank Endres
   mmc_get_disc_erasable

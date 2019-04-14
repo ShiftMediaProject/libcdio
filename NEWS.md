@@ -2,15 +2,15 @@ version 2.1.0
 =============
 2019-04-15
 
-Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett
+Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett. This release intoduces an OpenBSD driver, courtesy of Edd Barrett, based on the the NetBSD driver.
 
-- FreeBSD and NetBSD driver fixes. Switch from MSF addressing to LBA addressing in driver. (Edd Barrett and Jasper Lievisse Adriaanse)
-- Fix handling in drivers,libcdio-paranoia and `cd-info` when starting track number is greater than 1. (Thomas Schmitt)
+- NetBSD driver fixes. Switch from MSF addressing to LBA addressing in driver. (Edd Barrett and Jasper Lievisse Adriaanse)
+- Fix handling in drivers,libcdio-paranoia and `cd-info` when starting track number is greater than 1. (Edd Barrett and Thomas Schmitt)
 - More tolerant of non-compliant ISOs such as openSUSE Leap 15.0
-- `cdda-player` fixes, such as adding a missing `-d` in cdd-player help (Thomas Schmitt and Edd Barrett)
+- `cdda-player` fixes, such as adding a missing `-d` in cdda-player help (Thomas Schmitt and Edd Barrett)
 - `cdtext_list_languages_v2()` to be preferred over now deprecated `cdtext_list_languages()`. New API call `cdtext_set_language_index()`. (Thomas Schmitt)
 - Add `read-disc-struct` example program to show how to use a MMC `DVD_READ_DISC_STRUCTURE`. (Thomas Schmitt)
-- Various errors in driver reading turned into warnings. (Thomas Schmitt)
+- Various errors in driver reading turned into warnings. (Edd Barrett and Thomas Schmitt)
 - Some code cleanups and documentation improvements
 - Bugs:
  * [Bug 53170: I/O leak when we can't read ISO file ](https://savannah.gnu.org/bugs/index.php?53170)
@@ -384,7 +384,7 @@ version 0.74
 2005-05-13
 
 - `cd-paranoia` fixes
-- `cdda-playe`r fixes
+- `cdda-player` fixes
 - `cd-drive` shows MMC level
 - CD Text improvements/fixes
 - eject of empty CD-ROM drives on GNU/Linux
