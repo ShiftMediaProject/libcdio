@@ -2,7 +2,7 @@ version 2.1.0
 =============
 2019-04-15
 
-Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett. This release intoduces an OpenBSD driver, courtesy of Edd Barrett, based on the the NetBSD driver.
+Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett. This release introduces an OpenBSD driver, courtesy of Edd Barrett, based on the NetBSD driver.
 
 - NetBSD driver fixes. Switch from MSF addressing to LBA addressing in driver. (Edd Barrett and Jasper Lievisse Adriaanse)
 - Fix handling in drivers,libcdio-paranoia and `cd-info` when starting track number is greater than 1. (Edd Barrett and Thomas Schmitt)
@@ -22,7 +22,7 @@ version 2.0.0
 2017-12-31
 
 This release bumps library version numbers and bumps the major release number. We should have gone from 1.0.0 to 2.0.0 in the last release
-since there is an API incompatability.
+since there is an API incompatibility.
 
 In addition...
 
