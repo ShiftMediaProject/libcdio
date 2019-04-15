@@ -1,17 +1,17 @@
 version 2.1.0
 =============
-2019-04-15
+2019-04-15 Easter/Passover
 
 Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett. This release introduces an OpenBSD driver, courtesy of Edd Barrett, based on the NetBSD driver.
 
 - NetBSD driver fixes. Switch from MSF addressing to LBA addressing in driver. (Edd Barrett and Jasper Lievisse Adriaanse)
 - Fix handling in drivers,libcdio-paranoia and `cd-info` when starting track number is greater than 1. (Edd Barrett and Thomas Schmitt)
-- More tolerant of non-compliant ISOs such as openSUSE Leap 15.0
+- More tolerant of non-compliant ISOs such as openSUSE Leap 15.0.
 - `cdda-player` fixes, such as adding a missing `-d` in cdda-player help (Thomas Schmitt and Edd Barrett)
 - `cdtext_list_languages_v2()` to be preferred over now deprecated `cdtext_list_languages()`. New API call `cdtext_set_language_index()`. (Thomas Schmitt)
 - Add `read-disc-struct` example program to show how to use a MMC `DVD_READ_DISC_STRUCTURE`. (Thomas Schmitt)
 - Various errors in driver reading turned into warnings. (Edd Barrett and Thomas Schmitt)
-- Some code cleanups and documentation improvements
+- Some code cleanups and documentation improvements.
 - Bugs:
  * [Bug 53170: I/O leak when we can't read ISO file ](https://savannah.gnu.org/bugs/index.php?53170)
  * [Bug 53928: Cdtext not displayed in case of `CDTEXT_LANGUAGE_UNKNOWN`](https://savannah.gnu.org/bugs/index.php?3929)
@@ -73,7 +73,7 @@ This is an API breaking change
 - Apple Darwin OS X -> macOS
 - Subdir objects breaks symbol versioning. See https://savannah.gnu.org/bugs/?49907
 - Handle bad iso 9660 better. Fixes Savannah bug https://savannah.gnu.org/bugs/?52091
-- Apple (High) Sierra compatiablity
+- Apple (High) Sierra compatibility
 - NetBSD patches
 - Fixes for Rock Ridge SUSP (Thomas Schmitt)
 - Reduce MinGW compilation warnings
@@ -105,11 +105,11 @@ version 0.94
 - Eject fixes:
   * Fix disc eject for Cocoa apps and support ejecting CD-Extra discs
     on OS X.
-  * Make sure device is opend in read/write mode when trying to eject.
+  * Make sure device is opened in read/write mode when trying to eject.
 
 Bugs
-  * Add error eporting from_733_with_err. [Bug #45014](https://savannah.gnu.org/bugs/index.php?45014)
-  * Guard against malformed rockridge iso. [Bug #45015](https://savannah.gnu.org/bugs/index.php?45015)
+  * Add error reporting from_733_with_err. [Bug #45014](https://savannah.gnu.org/bugs/index.php?45014)
+  * Guard against malformed rock ridge iso. [Bug #45015](https://savannah.gnu.org/bugs/index.php?45015)
   * Malformed so crashes iso-info [Bug #45013:](https://savannah.gnu.org/bugs/index.php?45013:)
   * Guard against 0-size calloc [Bug #45016](https://savannah.gnu.org/bugs/index.php?45016)
   * Fix testudf segfaults/fails on big endian arches. [Bug #43995](https://savannah.gnu.org/bugs/index.php?43995).
@@ -137,7 +137,7 @@ Most of the changes except where noted are courtesy of Robert Kausch
 - Add mmc_get_track_isrc function.
 - Update OS versions we recognize
 - OSX, and MS Windows, ISO 9660 and other bug fixes
-- Remove Coverty scan warnins and errors
+- Remove Coverty scan warnings and errors
 - OS/2 driver performance update - KO Myung-Hun
 
 version 0.92 (late SF Release)
@@ -152,8 +152,8 @@ version 0.91 - don't use
 
 - Report Joliet level on iso-info, and an option to show whether
   Rock-Ridge extensions are present
-- More debug logging in reading lsn sectors
-- Document how logging works in libcdio
+- More debug logging in reading LSN sectors
+- Document how logging works in `libcdio`
 - Fixes for reading large ISO 9660 images
 - Enable Rock-Ridge handling in configuration by default
 - Be able to read an audio CD with exactly 100 tracks
@@ -229,7 +229,7 @@ version 0.81
 
   Thanks to Robert William Fuller on the above two items
 
-- Allow reading pregap of a track via get_track_pregap_lsn(). Add
+- Allow reading pregap of a track via `get_track_pregap_lsn()`. Add
   Section on "CD-DA pregap" in libcdio manual
 
 - Allow cross-compiling to mingw32. Patch from Peter Hartley.
@@ -275,7 +275,7 @@ version 0.79
                by Eric Shattow. Fix erroneous #defines when `DO_NO_WANT_PARANOIA_COMPATIBILITY` is set. Reported by David Stockwell.
 - Support for multisession CD-Extra Discs. Patch from Patrick Guimond
 
-- Add `iso9660_fs_find_lsn_with_path` and `iso9660_ifs_find_lsn_with_path` to report the full filename path of lsn.
+- Add `iso9660_fs_find_lsn_with_path` and `iso9660_ifs_find_lsn_with_path` to report the full filename path of LSN.
 
 - improve eject code for OSX
 
@@ -354,10 +354,10 @@ version 0.76
 
 - Better compatibility with C++
 - a better `eject()` routine for FreeBSD
-- Fix bug in not specifying a device name in libcio_cdda
+- Fix bug in not specifying a device name in `libcio_cdda`
 - Add `S_ISSOCK()` or `S_ISLNK()` macros for Rock-Ridge when environment doesn't have it, e.g. MSYS 1.0.10 with MinGW 3.4.2.
 - Allow building `cd-paranoia` if Perl is not installed.
-- More accurate library dependency tracking in linking and pkg-config
+- More accurate library dependency tracking in linking and `pkg-config`
 - Miscellaneous minor bug fixes.
 - `cdio/cdda.h` headers no longer depends on cdio/paranoia.h but vice versa
   is true. This may require an #include <cdio/cdda.h> in some applications that
@@ -375,7 +375,7 @@ version 0.75
   We now check that integer arguments are integers and are within
   range.
 - changes for `libcddb 1.1.0` API change
-- remove gcc 4.0 warnings
+- remove `gcc` 4.0 warnings
 - miscellaneous small bug fixes, removal of questionable idioms or
   memory leak fixes
 
@@ -406,7 +406,7 @@ version 0.73
 - remove even more memory leaks
 - Add enumerations and symbols to facilitate debugging
 - Break out C++ example programs into a separate directory. More C++ programs.
-- gcc 4 fixes
+- `gcc` 4 fixes
 
 version 0.72
 ============
@@ -414,10 +414,10 @@ version 0.72
 
 - `cdparanoia` included -  with regression tests and sample library programs
 - added setting/getting CD speed, finding the track containing an LSN.
-- improve cdrdao image reading
-- iso-info options more like cdrtools isoinfo.
-- cd-drive/cd-info show more reading capabilities and show that.
-- cd-info now shows the total disc size.
+- improve `cdrdao` image reading
+- `iso-info` options more like cdrtools isoinfo.
+- `cd-drive`/`cd-info` show more reading capabilities and show that.
+- `cd-info` now shows the total disc size.
 - Filesystem reorganization to better support growth and paranoia inclusion
 - FreeBSD 6 tolerated, CAM audio read mode works.
 - improve Win32 driver, e.g. audio read mode works better for ioctl.
