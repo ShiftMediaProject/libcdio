@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2018 Thomas Schmitt
-    Copyright (C) 2010, 2012, 2016 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2010, 2012, 2016, 2019 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,11 +43,13 @@ extern "C" {
 #endif /* __cplusplus */
 
   /**
-     Get drive capabilities via SCSI-MMC GET CONFIGURATION
+     Get drive capabilities via SCSI-MMC \p GET \p CONFIGURATION
      @param p_cdio the CD object to be acted upon.
 
      @param p_buf pointer to location to store mode sense information
+
      @param i_size number of bytes allocated to p_buf
+
      @param i_return_type value in range 0..2 giving what kind of configuration
      to return:
 
@@ -61,9 +63,9 @@ extern "C" {
      @param i_timeout_ms value in milliseconds to use on timeout. Setting
      to 0 uses the default time-out value stored in
      mmc_timeout_ms.
-q
-     @return DRIVER_OP_SUCCESS (0) if we got the status.
-     return codes are the same as driver_return_code_t
+
+     @return \p DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as \p driver_return_code_t
   */
     driver_return_code_t
     mmc_get_configuration(const CdIo_t *p_cdio, void *p_buf,
@@ -73,22 +75,22 @@ q
                           unsigned int i_timeout_ms);
 
   /**
-    Return results of media event status via SCSI-MMC GET EVENT STATUS
+    Return results of media event status via SCSI-MMC \p GET \p EVENT \p STATUS
 
     @param p_cdio the CD object to be acted upon.
 
     @param out_buf media status code from operation
 
-    @return DRIVER_OP_SUCCESS (0) if we got the status. Return codes
-    are the same as driver_return_code_t
+    @return \p DRIVER_OP_SUCCESS (0) if we got the status. Return codes
+    are the same as \p driver_return_code_t
    */
   driver_return_code_t mmc_get_event_status(const CdIo_t *p_cdio,
                                             uint8_t out_buf[2]);
 
 
    /**
-      Run a SCSI-MMC MODE SELECT (10-byte) command
-      and put the results in p_buf.
+      Run a SCSI-MMC \p MODE \p SELECT (10-byte) command
+      and put the results in \p p_buf.
 
       @param p_cdio the CD object to be acted upon.
 
@@ -102,14 +104,14 @@ q
              to 0 uses the default time-out value stored in
              mmc_timeout_ms.
 
-      @return DRIVER_OP_SUCCESS if we ran the command ok.
+      @return \p DRIVER_OP_SUCCESS if we ran the command ok.
    */
   driver_return_code_t mmc_mode_select_10(CdIo_t *p_cdio, /*out*/ void *p_buf,
                                           unsigned int i_size, int page,
                                           unsigned int i_timeout_ms);
   /**
-     Run a SCSI-MMC MODE SENSE command (10-byte version)
-     and put the results in p_buf
+     Run a SCSI-MMC \p MODE \p SENSE command (10-byte version)
+     and put the results in \p p_buf.
      @param p_cdio the CD object to be acted upon.
      @param p_buf pointer to location to store mode sense information
 
@@ -118,27 +120,27 @@ q
      @param i_page_code which "page" of the mode sense command we are
      interested in
 
-     @return DRIVER_OP_SUCCESS if we ran the command ok.
+     @return \p DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_mode_sense_10( CdIo_t *p_cdio, /*out*/ void *p_buf,
                                           unsigned int i_size,
                                           unsigned int i_page_code);
 
   /**
-      Run a SCSI-MMC MODE SENSE command (6-byte version)
-      and put the results in p_buf
+      Run a SCSI-MMC \p MODE \p SENSE command (6-byte version)
+      and put the results in \p p_buf.
       @param p_cdio the CD object to be acted upon.
       @param p_buf pointer to location to store mode sense information
       @param i_size number of bytes allocated to p_buf
       @param page which "page" of the mode sense command we are interested in
-      @return DRIVER_OP_SUCCESS if we ran the command ok.
+      @return \p DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t  mmc_mode_sense_6( CdIo_t *p_cdio, /*out*/ void *p_buf,
                                           unsigned int i_size, int page);
 
   /**
      Request preventing/allowing medium removal on a drive via
-     SCSI-MMC PREVENT/ALLOW MEDIUM REMOVAL.
+     SCSI-MMC \p PREVENT/ALLOW \p MEDIUM \p REMOVAL.
 
      @param p_cdio the CD object to be acted upon.
      @param b_persistent make b_prevent state persistent
@@ -148,8 +150,8 @@ q
             to 0 uses the default time-out value stored in
             mmc_timeout_ms.
 
-     @return DRIVER_OP_SUCCESS (0) if we got the status.
-     return codes are the same as driver_return_code_t
+     @return \p DRIVER_OP_SUCCESS (0) if we got the status.
+     return codes are the same as \p driver_return_code_t
   */
     driver_return_code_t
     mmc_prevent_allow_medium_removal(const CdIo_t *p_cdio,
@@ -159,12 +161,12 @@ q
   /**
       Issue a MMC READ_CD command.
 
-      @param p_cdio  object to read from
+      @param p_cdio object to read from
 
-      @param p_buf   Place to store data. The caller should ensure that
-      p_buf can hold at least i_blocksize * i_blocks  bytes.
+      @param p_buf  Place to store data. The caller should ensure that
+      \p p_buf can hold at least \p i_blocksize * \p i_blocks  bytes.
 
-      @param i_lsn   sector to read
+      @param i_lsn  sector to read
 
       @param expected_sector_type restricts reading to a specific CD
       sector type.  Only 3 bits with values 1-5 are used:
@@ -186,8 +188,8 @@ q
     mechanisms such as audio data mute and interpolate.
 
     b_sync_header return the sync header (which will probably have
-    the same value as CDIO_SECTOR_SYNC_HEADER of size
-    CDIO_CD_SYNC_SIZE).
+    the same value as \p CDIO_SECTOR_SYNC_HEADER of size
+    \p CDIO_CD_SYNC_SIZE).
 
     @param header_codes Header Codes refer to the sector header and
     the sub-header that is present in mode 2 formed sectors:
@@ -203,19 +205,19 @@ q
 
     @param b_user_data  Return user data if true.
 
-    For CD-DA, the User Data is CDIO_CD_FRAMESIZE_RAW bytes.
+    For CD-DA, the User Data is \p CDIO_CD_FRAMESIZE_RAW bytes.
 
-    For Mode 1, The User Data is ISO_BLOCKSIZE bytes beginning at
-    offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
+    For Mode 1, The User Data is \p ISO_BLOCKSIZE bytes beginning at
+    offset \p CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
 
     For Mode 2 formless, The User Data is M2RAW_SECTOR_SIZE bytes
-    beginning at offset CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
+    beginning at offset \p CDIO_CD_HEADER_SIZE+CDIO_CD_SUBHEADER_SIZE.
 
     For data Mode 2, form 1, User Data is ISO_BLOCKSIZE bytes beginning at
-    offset CDIO_CD_XA_SYNC_HEADER.
+    offset \p CDIO_CD_XA_SYNC_HEADER.
 
-    For data Mode 2, form 2, User Data is 2 324 bytes beginning at
-    offset CDIO_CD_XA_SYNC_HEADER.
+    For data Mode 2, form 2, User Data is 2 groups of 324 bytes beginning at
+    offset \p CDIO_CD_XA_SYNC_HEADER.
 
     @param b_sync
 
@@ -257,7 +259,7 @@ q
 
     @param i_blocks number of blocks expected to be returned.
 
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+    @return \p DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t
   mmc_read_cd(const CdIo_t *p_cdio, void *p_buf, lsn_t i_lsn,
@@ -337,7 +339,7 @@ q
            to 0 uses the default time-out value stored in
            mmc_timeout_ms.
 
-    @return DRIVER_OP_SUCCESS if we ran the command ok.
+    @return \p DRIVER_OP_SUCCESS if we ran the command ok.
 
     @see mmc_eject_media or mmc_close_tray
   */
@@ -347,34 +349,34 @@ q
                                            unsigned int i_timeout_ms);
 
     /**
-     Check if drive is ready using SCSI-MMC TEST UNIT READY command.
+     Check if drive is ready using SCSI-MMC \p TEST \p UNIT \p READY command.
 
      @param p_cdio  the CD object to be acted upon.
 
      @param i_timeout_ms value in milliseconds to use on timeout. Setting
             to 0 uses the default time-out value stored in
-            mmc_timeout_ms.
+            \p mmc_timeout_ms.
 
-     @return DRIVER_OP_SUCCESS if we ran the command ok.
+     @return \p DRIVER_OP_SUCCESS if we ran the command ok.
   */
   driver_return_code_t mmc_test_unit_ready(const CdIo_t *p_cdio,
                                            unsigned int i_timeout_ms);
 
 /**
-   Issue a READ SUB-CHANNEL command to read current position, ISRC or
-   MCN from subchannel Q.
-   Note: READ SUB-CHANNEL is deprecated as of MMC-5
-         but the alternative requires manual parsing of the subchannel.
+   Issue a \p READ \p SUB-CHANNEL command to read current position, \p ISRC or
+   \p MCN from subchannel Q.
+   Note: \p READ \p SUB-CHANNEL is deprecated as of MMC-5
+   but the alternative requires manual parsing of the subchannel.
 
    @param p_cdio  the CD object to be acted upon.
    @param i_track track number (only for ISRC)
-   @param sub_chan_param 1 for CD current position, 2 for MCN, 3 for ISRC
+   @param sub_chan_param 1 for CD current position, 2 for \p MCN, 3 for \p ISRC
    @param i_length pointer to number of bytes to request.
                    Will be overwritten by the number of bytes available.
    @param p_buf  pointer to the location for the returned data
    @param i_timeout_ms numober of milliseconds to wait for command completion
 
-   @return DRIVER_OP_SUCCESS on success
+   @return \p DRIVER_OP_SUCCESS on success
  */
 driver_return_code_t
 mmc_read_subchannel ( const CdIo_t *p_cdio,
@@ -387,27 +389,39 @@ mmc_read_subchannel ( const CdIo_t *p_cdio,
 
 
 /**
-   Issue a READ TOC/PMA/ATIP command to read the CD-TEXT from R-W sub-channel.
+   Issue a READ TOC/PMA/ATIP command to read the CD-TEXT from R-W
+   sub-channel.
 
-   In case of success this command returns a header of 4 bytes and the bytes
-   of the text packs. See MMC-5, table 495.
-   The first two bytes of the header tell as big-endian number the number of
-   bytes to follow. This count includes the next two header bytes which are
-   supposed to bear the value 0.
+   On a successful return (when \p DRIVER_OP_SUCCESS is returned), \p
+   pbuf contains the raw SCSI/MMC reply as retrieved by
+   mmc_read_toc_cdtext().
 
-   So the number of bytes in the text packs is told by
+   The first two bytes of the header, a Big-Endian number, specifies
+   the number of following bytes. The count also includes the next two
+   header bytes which should be 0. See also Table 495, of the MMC-5
+   specification.
+
+   Here is code that can be used to get the number of text packs:
+   @code
      #include <cdio/mmc.h>
      CDIO_MMC_GET_LEN16(p_buf) - 2
-   and start of the text packs is at
+   @endcode
+   and start of the text packs is at:
+   @code
      p_buf + 4
+   @endcode
 
-   The number of valid reply bytes is further restricted by the submitted
-   value of *i_length, which should tell the byte capacity of p_buf.
-   Maximum size according to specs is 4 + 8 * 256 * 18 = 36864 bytes.
-   Alternatively consider to first obtain only the header bytes in a small
-   p_buf, then to re-allocate p_buf with CDIO_MMC_GET_LEN16(p_buf) + 2 bytes,
-   and then to call mmc_read_toc_cdtext() again with *i_length set to the
-   allocated size.
+   The number of bytes returned is limited by the value in parameter
+   \p *i_length. which should tell the byte capacity of \p p_buf.  The
+   maximum size according to specification is 4 + 8 * 256 * 18 =
+   36,864 bytes.
+
+   Instead of retrieving everything in one go by allocating the
+   maximum possible value in the passed-in \p *p_buf, another approach
+   is to first get the header bytes in a small \p p_buf, then
+   re-allocate the buffer using the length given by \p
+   CDIO_MMC_GET_LEN16(p_buf) + 2 (bytes), and then to call
+   mmc_read_toc_cdtext() again with \p *i_length set to this size.
 
    @param p_cdio  the CD object to be acted upon.
    @param i_length pointer to number of bytes to request.
@@ -415,9 +429,9 @@ mmc_read_subchannel ( const CdIo_t *p_cdio,
    @param p_buf  pointer to the location for the returned data
    @param i_timeout_ms value in milliseconds to use on timeout. Setting
           to 0 uses the default time-out value stored in
-          mmc_timeout_ms.
+          \p mmc_timeout_ms.
 
-   @return DRIVER_OP_SUCCESS on success
+   @return \p DRIVER_OP_SUCCESS on success
  */
 driver_return_code_t
 mmc_read_toc_cdtext ( const CdIo_t *p_cdio, unsigned int *i_length,

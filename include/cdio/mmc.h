@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010, 2012
-                  2016 Rocky Bernstein <rocky@gnu.org>
+                  2016, 2019 Rocky Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -485,10 +485,11 @@ typedef struct mmc_cdb_s {
     SCSI_MMC_DATA_NONE
   } cdio_mmc_direction_t;
   /**
-     Indicate to applications that SCSI_MMC_DATA_NONE is available.
-     It has been added after version 0.82 and should be used with commands
-     that neither read nor write payload bytes. (At least on Linux such
-     commands did work with SCSI_MMC_DATA_READ or SCSI_MMC_DATA_WRITE, too.)
+     Indicate to applications that \p SCSI_MMC_DATA_NONE is available.
+     It has been added after version 0.82 and should be used with
+     commands that neither read nor write payload bytes. (On
+     Linux, at least, these work with \p SCSI_MMC_DATA_READ and \p
+     SCSI_MMC_DATA_WRITE, too.)
   */
 #define SCSI_MMC_HAS_DIR_NONE 1
 
@@ -552,11 +553,11 @@ typedef struct mmc_cdb_s {
 
 /**
    Get the output port volumes and port selections used on AUDIO PLAY
-   commands via a MMC MODE SENSE command using the CD Audio Control
+   commands via a MMC \p MODE \p SENSE command using the CD Audio Control
    Page.
    @param p_cdio the CD object to be acted upon.
    @param p_volume volume parameters retrieved
-   @return DRIVER_OP_SUCCESS if we ran the command ok.
+   @return \p DRIVER_OP_SUCCESS if we ran the command ok.
 */
 driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
                                            mmc_audio_volume_t *p_volume);
@@ -601,7 +602,7 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
   lsn_t mmc_get_disc_last_lsn( const CdIo_t *p_cdio );
 
   /**
-    Return the discmode as reported by the MMC Read (FULL) TOC
+    Return the discmode as reported by the MMC Read (FULL) \p TOC
     command.
 
     Information was obtained from Section 5.1.13 (Read TOC/PMA/ATIP)
@@ -642,12 +643,12 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
     Find out if media tray is open or closed.
     @param p_cdio the CD object to be acted upon.
     @return 1 if media is open, 0 if closed. Error
-    return codes are the same as driver_return_code_t
+    return codes are the same as \p driver_return_code_t.
   */
   int mmc_get_tray_status ( const CdIo_t *p_cdio );
 
   /**
-    Get the CD-ROM hardware info via an MMC INQUIRY command.
+    Get the CD-ROM hardware info via an MMC \p INQUIRY command.
 
     @param p_cdio the CD object to be acted upon.
     @param p_hw_info place to store hardware information retrieved
@@ -662,12 +663,12 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
     Find out if media has changed since the last call.
     @param p_cdio the CD object to be acted upon.
     @return 1 if media has changed since last call, 0 if not. Error
-    return codes are the same as driver_return_code_t
+    return codes are the same as \p driver_return_code_t.
   */
   int mmc_get_media_changed(const CdIo_t *p_cdio);
 
   /**
-    Get the media catalog number (MCN) from the CD via MMC.
+    Get the media catalog number (\p MCN) from the CD via MMC.
 
     @param p_cdio the CD object to be acted upon.
     @return the media catalog number r NULL if there is none or we
@@ -680,7 +681,7 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
   char * mmc_get_mcn(const CdIo_t *p_cdio);
 
   /**
-    Get the international standard recording code (ISRC) of the track via MMC.
+    Get the international standard recording code (\p ISRC) of the track via MMC.
 
     @param p_cdio the CD object to be acted upon.
     @param i_track the track to get the ISRC info for
@@ -698,12 +699,16 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
 
     This is the raw SCSI/MMC reply as retrieved by mmc_read_toc_cdtext().
     It consists of 4 header bytes and a variable number of text packs.
-    The first two bytes of the header tell as big-endian number the number of
-    bytes to follow. This count includes the next two header bytes which are
-    supposed to bear the value 0.
-    For full detail see include file <cdio/mmc_ll_cmds.h>.
- 
-    To parse the text packs into a cdtext_t object do:
+
+    The first two bytes of the header, a Big-Endian number, specifies
+    the number of following bytes. The count also includes the next two
+    header bytes which should be 0.
+
+    See also information in mmc_read_toc_cdtext().
+
+    Here is some code to parse the text packs into a \p cdtext_t object:
+
+    @code
       #include <cdio/mmc.h>
       #include <cdio/cdtext.h>
 
@@ -711,11 +716,13 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
       if (NULL != reply)
           cdtext_data_init(p_cdtext, reply + 4,
                            (size_t) CDIO_MMC_GET_LEN16(reply) - 2);
+    @endcode
 
-    @return pointer to data on success, NULL on error or if CD-Text
+    @param p_cdio the CD object to be acted upon.
+    @return pointer to data on success, \p NULL on error or if CD-Text
             information does not exist.
 
-    Note: the caller must free the returned memory
+    Note: the caller must free the returned memory.
 
   */
   uint8_t * mmc_read_cdtext (const CdIo_t *p_cdio);
@@ -723,7 +730,7 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
   /**
     Report if CD-ROM has a particular kind of interface (ATAPI, SCSCI, ...)
     Is it possible for an interface to have several? If not this
-    routine could probably return the single mmc_feature_interface_t.
+    routine could probably return the single \p mmc_feature_interface_t.
     @param p_cdio the CD object to be acted upon.
     @param e_interface
     @return true if we have the interface and false if not.
@@ -739,11 +746,11 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
       @param p_cdio object to read from
 
       @param p_buf place to read data into.  The caller should make
-             sure this location can store at least CDIO_CD_FRAMESIZE,
-             M2RAW_SECTOR_SIZE, or M2F2_SECTOR_SIZE depending on the
+             sure this location can store at least \p CDIO_CD_FRAMESIZE,
+             \p M2RAW_SECTOR_SIZE, or \p M2F2_SECTOR_SIZE depending on the
              kind of sector getting read. If you don't know whether
              you have a Mode 1/2, Form 1/ Form 2/Formless sector best
-             to reserve space for the maximum, M2RAW_SECTOR_SIZE.
+             to reserve space for the maximum, \p M2RAW_SECTOR_SIZE.
 
       @param i_lsn sector to read
       @param i_blocksize size of each block
@@ -813,7 +820,7 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
       Obtain the SCSI sense reply of the most-recently-performed MMC command.
       These bytes give an indication of possible problems which occured in
       the drive while the command was performed. With some commands they tell
-      about the current state of the drive (e.g. 00h TEST UNIT READY).
+      about the current state of the drive (e.g. 00h \p TEST \p UNIT \p READY).
       @param p_cdio CD structure set by cdio_open().
 
       @param pp_sense returns the sense bytes received from the drive.
@@ -821,10 +828,10 @@ driver_return_code_t mmc_audio_get_volume (CdIo_t *p_cdio,  /*out*/
       available. Dispose non-NULL pointers by cdio_free() when no longer
       needed.  See SPC-3 4.5.3 Fixed format sense data.  SCSI error
       codes as of SPC-3 Annex D, MMC-5 Annex F: sense[2]&15 = Key ,
-      sense[12] = ASC , sense[13] = ASCQ
+      sense[12] = \p ASC , sense[13] = \p ASCQ
 
-      @return number of valid bytes in sense, 0 in case of no sense
-              bytes available, <0 in case of internal error.
+      @return number of valid bytes in sense, 0 when no sense
+              bytes are available, and less than 0 when there is an internal error.
   */
   int mmc_last_cmd_sense ( const CdIo_t *p_cdio,
                            cdio_mmc_request_sense_t **pp_sense);

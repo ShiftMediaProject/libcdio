@@ -50,9 +50,9 @@ Go over `Changelog` and add to `NEWS`. Update date of release.
 Remove "git" from `configure.ac`'s release name. E.g.
 
 ```
-    define(RELEASE_NUM, 23)
-    define(LIBCDIO_VERSION_STR, 0.9$1git)
-                                     ^^^
+    define(RELEASE_NUM, 2.1.0)
+    define(LIBCDIO_VERSION_STR, $11git)
+                                   ^^^
     ...
 ```
 
@@ -63,7 +63,7 @@ Make doxygen documentation:
 
 
 ```
-  $ (cd doc/doxygen; ./run_doxygen)
+  $ (cd doc/doxygen; doxygen -u; ./run_doxygen)
 ```
 
 remove any errors.

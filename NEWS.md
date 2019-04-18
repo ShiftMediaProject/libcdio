@@ -1,6 +1,6 @@
 version 2.1.0
 =============
-2019-04-15 Easter/Passover
+2019-04-17 Holy Wednesday
 
 Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett. This release introduces an OpenBSD driver, courtesy of Edd Barrett, based on the NetBSD driver.
 

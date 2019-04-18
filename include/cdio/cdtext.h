@@ -1,6 +1,6 @@
 /*
     Copyright (C) 2018 Thomas Schmitt
-    Copyright (C) 2004, 2005, 2008, 2012 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2004, 2005, 2008, 2012, 2019 Rocky Bernstein <rocky@gnu.org>
     adapted from cuetools
     Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
 
@@ -234,8 +234,8 @@ const char *cdtext_lang2str (cdtext_lang_t i);
   @param lang language to look up
 
   @return if lang is among the possible results of cdtext_lang2str():
-          the cdtext_lang_t which is associated.
-          else: CDTEXT_LANGUAGE_INVALID
+          the \p cdtext_lang_t which is associated, or \p
+          CDTEXT_LANGUAGE_INVALID otherwise.
 */
 cdtext_lang_t cdtext_str2lang (const char *lang);
 
@@ -245,7 +245,7 @@ cdtext_lang_t cdtext_str2lang (const char *lang);
 const char *cdtext_field2str (cdtext_field_t i);
 
 /*!
-  Initialize a new cdtext structure.
+  Initialize a new \p cdtext_t structure.
 
   When the structure is no longer needed, release the
   resources using cdtext_delete.
@@ -257,21 +257,26 @@ cdtext_t *cdtext_init (void);
   CD drive, but without the 4-byte header which the drive prepended.
 
   The text pack data can be obtained by the calls
-    cdio_get_cdtext_raw()
-    mmc_read_cdtext()
-    mmc_read_toc_cdtext()
-  With each of them, the reply begins by the 4-byte header, which thus needs
-  to be skipped:
+
+    - cdio_get_cdtext_raw()
+    - mmc_read_cdtext()
+    - mmc_read_toc_cdtext()
+
+  Each sets in the buffer passed into values that begin with a 4-byte header. This should
+  be skipped. Here is some sample code:
+
+  @code
     #include <cdio/mmc_ll_cmds.h>
     if (DRIVER_OP_SUCCESS == mmc_read_toc_cdtext (p_cdio, &i_length, p_buf, 0)
         && 4 < i_length)
         cdtext_data_init(p_cdtext, p_buf + 4, (size_t) i_length - 4);
+  @endcode
 
-  An alternative to cdtext_data_init() on a separate cdtext_t object is to call
-    cdio_get_cdtext()
-  which returns a pointer to the cdtext_t object that is attached to the
-  inquired CdIo_t object. This cdtext_t object gets created and filled if
-  none is yet attached to the inquired CdIo_t object.
+  Instead of calling cdtext_data_init(), you can call
+  cdio_get_cdtext() which returns a pointer to the \p cdtext_t object
+  that is attached to the inquired \p CdIo_t object. This \p cdtext_t
+  object gets created and filled if none is yet attached to the
+  inquired \p CdIo_t object.
 
   @param p_cdtext the CD-TEXT object
   @param wdata the data
@@ -282,7 +287,7 @@ cdtext_t *cdtext_init (void);
 int cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data);
 
 /*!
-  Free memory associated with the given cdtext_t object.
+  Free memory associated with the given \p cdtext_t object.
 
   @param p_cdtext the CD-TEXT object
 */
@@ -397,7 +402,7 @@ cdtext_lang_t *cdtext_list_languages_v2(cdtext_t *p_cdtext);
   @param p_cdtext the CD-TEXT object
   @param idx      the desired index: 0 to 7.
 
-  @return true on success, false if no language block is associated to idx
+  @return true on success, false if no language block is associated to \p idx.
 */
 bool
 cdtext_set_language_index(cdtext_t *p_cdtext, int idx);
@@ -405,7 +410,7 @@ cdtext_set_language_index(cdtext_t *p_cdtext, int idx);
 /*!
   Sets the given field at the given track to the given value.
 
-  Recodes to UTF-8 if charset is not NULL.
+  Recodes to UTF-8 if charset is not \p NULL.
 
   @param p_cdtext the CD-TEXT object
   @param key field to set
