@@ -713,16 +713,32 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
         /* determine encoding */
         switch (blocksize.charcode){
           case CDTEXT_CHARCODE_ISO_8859_1:
-            /* default */
             charset = (char *) "ISO-8859-1";
             break;
           case CDTEXT_CHARCODE_ASCII:
-            charset = (char *) "ASCII";
+            /* ASCII is a subset of ISO-8859-1. Some CDs announce it but then
+             * have 8-bit characters in their text. Trying ISO-8859-1 gives
+             * more hope for a readable result than telling iconv to be picky.
+             */
+            charset = (char *) "ISO-8859-1";
             break;
           case CDTEXT_CHARCODE_SHIFT_JIS:
             charset = (char *) "SHIFT_JIS";
             break;
+          default:
+            /* Do not let charset pass here as NULL */
+            cdio_warn("CD-TEXT: Unknown character set code %u.\n",
+                      (unsigned int) blocksize.charcode);
+            charset = (char *) "ISO-8859-1";
         }
+
+        cdio_debug("CD-TEXT character set: code=%u , name=%s , chosen=%s\n",
+                   (unsigned int) blocksize.charcode,
+                   blocksize.charcode == 0 ? "ISO-8859-1" :
+                   blocksize.charcode == 1 ? "ASCII" :
+                   blocksize.charcode == 0x80 ? "SHIFT_JIS" :
+                   "",
+                   charset);
 
         /* set track numbers */
         p_cdtext->block[i_block].first_track = blocksize.i_first_track;
