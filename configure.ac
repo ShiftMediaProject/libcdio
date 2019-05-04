@@ -426,16 +426,6 @@ int has_timeout=sizeof(test.timeout);],
 	   cd_drivers="${cd_drivers}, GNU/Linux"
 	fi
 	;;
-     bsdi*)
-        AC_CHECK_HEADERS(dvd.h, [have_bsdi_dvd_h="yes"])
-	if test "x$have_bsdi_dvd_h" = "xyes" ; then
-     	  AC_DEFINE([HAVE_BSDI_CDROM], [1],
-                    [Define 1 if you have BSDI-type CD-ROM support])
-	 LIBS="$LIBS -ldvd -lcdrom"
-         LIBCDIO_LIBS="$LIBCDIO_LIBS  -lcdrom"
-	  cd_drivers="${cd_drivers}, BSDI"
-	fi
-	;;
      sunos*|sun*|solaris*)
      	AC_DEFINE([HAVE_SOLARIS_CDROM], [1],
                   [Define 1 if you have Solaris CD-ROM support])
@@ -511,13 +501,6 @@ int has_timeout=sizeof(test.timeout);],
  	# LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, NetBSD "
 	;;
-     os2*)
-       AC_DEFINE([HAVE_OS2_CDROM], [1],
-                  [Define 1 if you have OS/2 CD-ROM support])
-       LT_NO_UNDEFINED="-no-undefined"
-       LDFLAGS="$LDFLAGS -Zbin-files"
-       cd_drivers="${cd_drivers}, OS2 "
-       ;;
      *)
 	AC_MSG_WARN([Don't have OS CD-reading support for ${host_os}...])
 	AC_MSG_WARN([Will use generic support.])
