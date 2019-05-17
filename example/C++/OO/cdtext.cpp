@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2005, 2008, 2009, 2012 Rocky Bernstein <rocky@gnu.org>
-  
+  Copyright (C) 2005, 2008-2009, 2012, 2019 Rocky Bernstein <rocky@gnu.org>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -33,7 +33,7 @@
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define CDDA_IMAGE "../../../test/data/cdtext.cue"
 
-static void 
+static void
 print_cdtext_track_info(CdioCDText *cdtext, track_t i_track) {
   cdtext_field_t i;
 
@@ -44,8 +44,8 @@ print_cdtext_track_info(CdioCDText *cdtext, track_t i_track) {
     }
   }
 }
-    
-static void 
+
+static void
 print_disc_info(CdioDevice *device)
 {
   track_t i_first_track = device->getFirstTrackNum();
@@ -69,9 +69,10 @@ print_disc_info(CdioDevice *device)
 
     printf("CD-Text available in: ");
 
-    languages = cdtext->listLanguages();
+    languages = cdtext->listLanguagesV2();
+    /* The API promises that non-NULL p_cdtext yields non-NULL languages */
     for(i=0; i<8; i++)
-      if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i])
+      if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i])
           printf("%s ", cdtext->lang2str(languages[i]));
     printf("\n");
   }

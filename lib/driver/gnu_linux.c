@@ -999,66 +999,7 @@ static driver_return_code_t
 _read_mode1_sector_linux (void *p_user_data, void *p_data, lsn_t lsn,
                           bool b_form2)
 {
-
-#if 0
-  char buf[M2RAW_SECTOR_SIZE] = { 0, };
-  struct cdrom_msf *p_msf = (struct cdrom_msf *) &buf;
-  msf_t _msf;
-
-  _img_private_t *p_env = p_user_data;
-
-  cdio_lsn_to_msf (lsn, &_msf);
-  p_msf->cdmsf_min0 = cdio_from_bcd8(_msf.m);
-  p_msf->cdmsf_sec0 = cdio_from_bcd8(_msf.s);
-  p_msf->cdmsf_frame0 = cdio_from_bcd8(_msf.f);
-
- retry:
-  switch (p_env->access_mode)
-    {
-    case _AM_NONE:
-      cdio_warn ("no way to read mode1");
-      return 1;
-      break;
-
-    case _AM_IOCTL:
-      if (ioctl (p_env->gen.fd, CDROMREADMODE1, &buf) == -1)
-        {
-          perror ("ioctl()");
-          return 1;
-          /* exit (EXIT_FAILURE); */
-        }
-      break;
-
-    case _AM_READ_CD:
-    case _AM_READ_10:
-      if (_read_mode2_sectors (p_env, buf, lsn, 1,
-                               (p_env->access_mode == _AM_READ_10)))
-        {
-          perror ("ioctl()");
-          if (p_env->access_mode == _AM_READ_CD)
-            {
-              cdio_info ("READ_CD failed; switching to READ_10 mode...");
-              p_env->access_mode = _AM_READ_10;
-              goto retry;
-            }
-          else
-            {
-              cdio_info ("READ_10 failed; switching to ioctl(CDROMREADMODE2) mode...");
-              p_env->access_mode = _AM_IOCTL;
-              goto retry;
-            }
-          return 1;
-        }
-      break;
-    }
-
-  memcpy (p_data, buf + CDIO_CD_SYNC_SIZE + CDIO_CD_HEADER_SIZE,
-          b_form2 ? M2RAW_SECTOR_SIZE: CDIO_CD_FRAMESIZE);
-
-#else
   return cdio_generic_read_form1_sector(p_user_data, p_data, lsn);
-#endif
-  return 0;
 }
 
 /*!
@@ -1185,7 +1126,7 @@ static bool
 read_toc_linux (void *p_user_data)
 {
   _img_private_t *p_env = p_user_data;
-  int i;
+  int i, i_last_track;
   unsigned int u_tracks;
 
   /* read TOC header */
@@ -1196,9 +1137,10 @@ read_toc_linux (void *p_user_data)
   }
 
   p_env->gen.i_first_track = p_env->tochdr.cdth_trk0;
-  p_env->gen.i_tracks      = p_env->tochdr.cdth_trk1;
+  i_last_track             = p_env->tochdr.cdth_trk1;
+  p_env->gen.i_tracks      = i_last_track - p_env->gen.i_first_track + 1;
 
-  u_tracks = p_env->gen.i_tracks - p_env->gen.i_first_track + 1;
+  u_tracks = p_env->gen.i_tracks;
 
   if (u_tracks > CDIO_CD_MAX_TRACKS) {
      cdio_log(CDIO_LOG_WARN, "Number of tracks exceeds maximum (%d vs. %d)\n",
@@ -1208,7 +1150,7 @@ read_toc_linux (void *p_user_data)
 
 
   /* read individual tracks */
-  for (i= p_env->gen.i_first_track; i<=p_env->gen.i_tracks; i++) {
+  for (i= p_env->gen.i_first_track; i <= i_last_track; i++) {
     struct cdrom_tocentry *p_toc =
       &(p_env->tocent[i-p_env->gen.i_first_track]);
 

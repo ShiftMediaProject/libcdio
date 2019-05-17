@@ -13,7 +13,10 @@
 #   You should have received a copy of the GNU General Public License
 #   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+.PHONY: check-leaks
+
 GETOPT_C = getopt.c getopt1.c
+check_programs =
 
 noinst_HEADERS = cddb.h getopt.h util.h
 
@@ -28,13 +31,15 @@ if BUILD_CDDA_PLAYER
 cdda_player_SOURCES = cdda-player.c cddb.c cddb.h $(GETOPT_C)
 cdda_player_LDADD   = $(LIBCDIO_LIBS) $(CDDB_LIBS) $(CDDA_PLAYER_LIBS)
 bin_cdda_player     = cdda-player
+check_programs     += cdda-player
 endif
 
 if BUILD_CD_DRIVE
 cd_drive_SOURCES = cd-drive.c util.c util.h $(GETOPT_C)
 cd_drive_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 bin_cd_drive     = cd-drive
-man_cd_drive         = cd-drive.1
+man_cd_drive     = cd-drive.1
+check_programs  += cd-drive
 endif
 
 if BUILD_CDINFO
@@ -42,12 +47,14 @@ cd_info_SOURCES = cd-info.c cddb.c cddb.h util.c util.h $(GETOPT_C)
 cd_info_LDADD   =  $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(CDDB_LIBS) $(VCDINFO_LIBS) $(LTLIBICONV)
 bin_cd_info     = cd-info
 man_cd_info     = cd-info.1
+check_programs += cd-info
 endif
 
 if BUILD_CDINFO_LINUX
 cdinfo_linux_SOURCES = cdinfo-linux.c
 cdinfo_linux_LDADD   = $(LIBCDIO_LIBS)
 bin_cdinfo_linux     = cdinfo-linux
+check_programs      += cdinfo-linux
 endif
 
 if BUILD_CD_READ
@@ -55,6 +62,7 @@ cd_read_SOURCES = cd-read.c util.c util.h $(GETOPT_C)
 cd_read_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 bin_cd_read     = cd-read
 man_cd_read     = cd-read.1
+check_programs += cd-read
 endif
 
 if BUILD_ISO_INFO
@@ -62,6 +70,7 @@ iso_info_SOURCES = iso-info.c util.c util.h $(GETOPT_C)
 iso_info_LDADD   = $(LIBUDF_LIBS) $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 bin_iso_info     = iso-info
 man_iso_info     = iso-info.1
+check_programs  += iso-info
 endif
 
 if BUILD_ISO_READ
@@ -69,11 +78,13 @@ iso_read_SOURCES = iso-read.c util.c util.h $(GETOPT_C)
 iso_read_LDADD   = $(LIBUDF_LIBS) $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 bin_iso_read     = iso-read
 man_iso_read     = iso-read.1
+check_programs  += iso-read
 endif
 
 mmc_tool_SOURCES = mmc-tool.c util.c util.h $(GETOPT_C)
 mmc_tool_LDADD   = $(LIBISO9660_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 bin_mmc_tool     = mmc-tool
+check_programs  += mmc-tool
 
 bin_PROGRAMS = $(bin_cd_drive) $(bin_cd_info)  $(bin_cdinfo_linux) $(bin_cd_read) $(bin_iso_info) $(bin_iso_read) $(bin_cdda_player) $(bin_mmc_tool)
 
@@ -83,6 +94,12 @@ man_MANS = $(man_cd_drive) $(man_cd_info) $(man_cd_read) $(man_iso_read) $(man_i
 EXTRA_DIST = cd-drive.help2man cd-info.help2man cd-read.help2man \
              iso-info.help2man iso-read.help2man $(GETOPT_C) getopt_int.h \
              $(man_MANS)
+
+check-leaks: $(check_programs)
+	for p in $(check_programs); do \
+	   valgrind ./$$p; \
+        done
+
 
 if MAINTAINER_MODE
 $(man_MANS): %.1: %$(EXEEXT) %.help2man

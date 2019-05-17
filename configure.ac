@@ -1,4 +1,4 @@
-dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2018
+dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2018, 2019
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
@@ -14,7 +14,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-define(RELEASE_NUM, 2.0.0)
+define(RELEASE_NUM, 2.1.0)
 define(CDIO_VERSION_STR, $1)
 
 AC_PREREQ(2.61)
@@ -34,7 +34,7 @@ m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])],
 
 # FIXME: write a m4 macro to convert x.y.zjunk to x*10000 + y*100 + z
 # LIBCDIO_VERSION_NUM=`echo RELEASE_NUM | cut -d . -f 1 | tr -d a-z`
-LIBCDIO_VERSION_NUM=20000
+LIBCDIO_VERSION_NUM=20100
 AC_SUBST(LIBCDIO_VERSION_NUM)
 
 AM_MISSING_PROG(HELP2MAN, help2man, $missing_dir)
@@ -85,7 +85,6 @@ AM_CONDITIONAL(BUILD_EXAMPLES, test "x$enable_example_progs" != "xno")
 
 dnl We use C
 AC_PROG_CC
-AM_PROG_CC_C_O
 
 if test "x$enable_cxx" != "xno" ; then
   AC_PROG_CXX
@@ -98,7 +97,6 @@ dnl For iso_read test
 AC_CHECK_PROGS(ISO_MAKING_COMMAND, genisoimage mkisofs)
 
 dnl Checks for programs.
-AC_AIX
 
 cd_drivers='cdrdao, BIN/CUE, NRG'
 
@@ -510,6 +508,7 @@ int has_timeout=sizeof(test.timeout);],
                   [Define 1 if you have NetBSD CD-ROM support])
  	# LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, NetBSD "
+	enable_cdda_player="no"
 	;;
      os2*)
        AC_DEFINE([HAVE_OS2_CDROM], [1],
@@ -666,25 +665,13 @@ if test "x$enable_cdda_player" = "xyes"; then
 						      ])])
 fi
 
-AC_DEFINE(HAVE_KEYPAD, [], [Define this if your libcurses has keypad])
 if test "x$enable_cdda_player" = "xyes"; then
-    if test "x$have_ncurses_h" = "xyes"; then
-      AC_CHECK_LIB(ncurses, mvprintw,
-        [LIBCURSES=ncurses; CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lncurses"],
-        AC_CHECK_LIB(curses, mvprintw,
-                     [LIBCURSES=curses;
-                       CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
-                     [AC_MSG_WARN([Will not build cdda-player - did not find libncurses or libcurses])
-                     enable_cdda_player=no]))
-    else
-        AC_CHECK_LIB(curses, mvprintw,
-                     [LIBCURSES=curses;
-                     CDDA_PLAYER_LIBS="$CDDA_PLAYER_LIBS -lcurses"],
-                     [AC_MSG_WARN([Will not build cdda-player - did not find libcurses])])
-    fi
-    if test "x$enable_cdda_player" = "xyes"; then
-      AC_CHECK_LIB($LIBCURSES, keypad, [HAVE_KEYPAD=yes])
-    fi
+  PKG_CHECK_MODULES(CDDA_PLAYER, ncurses,
+                    [AC_DEFINE(HAVE_KEYPAD, [1], [Define this if your libcurses has keypad])],
+                    [AC_CHECK_LIB(curses, keypad,
+                                  [CDDA_PLAYER_LIBS="-lcurses"],
+                                  [AC_MSG_WARN([Will not build cdda-player - did not find libncurses or libcurses])
+                                    enable_cdda_player=no])])
 fi
 
 AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xyes")

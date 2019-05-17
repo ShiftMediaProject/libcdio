@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005, 2006, 2008, 2009, 2010, 2011, 2012, 2017
+  Copyright (C) 2005-2012, 2017, 2019
   Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
@@ -68,6 +68,9 @@
 # endif
 #endif
 
+#include <term.h>
+extern TERMINAL *cur_term;
+
 #include <cdio/cdio.h>
 #include <cdio/mmc.h>
 #include <cdio/util.h>
@@ -77,6 +80,7 @@
 #include "cddb.h"
 #include "getopt.h"
 
+static WINDOW * cur_window = NULL;
 static void action(const char *psz_action);
 static void display_cdinfo(CdIo_t *p_cdio, track_t i_tracks,
                            track_t i_first_track);
@@ -222,8 +226,8 @@ static void
 tty_raw(void)
 {
   if (!b_interactive) return;
+  if (!cur_window) cur_window = initscr();
 
-  initscr();
   cbreak();
   clear();
   noecho();
@@ -269,6 +273,7 @@ select_wait(int sec)
   fd_set          se;
 
   FD_ZERO(&se);
+  FD_SET(STDIN_FILENO, &se);
   tv.tv_sec = sec;
   tv.tv_usec = 0;
   return select(1,&se,NULL,NULL,&tv);
@@ -336,6 +341,9 @@ finish(const char *psz_msg, int rc)
     refresh();
   }
   tty_restore();
+  if (cur_term) del_curterm(cur_term);
+  cur_window = NULL;
+
 #ifdef HAVE_CDDB
   if (p_conn) cddb_destroy(p_conn);
   cddb_disc_destroy(p_cddb_disc);
@@ -930,6 +938,7 @@ usage(char *prog)
             "  -h      print this help\n"
             "  -k      print key mapping\n"
             "  -a      start up in auto-mode\n"
+            "  -d      debug\n"
             "  -v      verbose\n"
             "\n"
             "for non-interactive use (only one) of these:\n"
@@ -1417,7 +1426,7 @@ main(int argc, char *argv[])
     case 'd':
       debug = 1;
       if (cdio_loglevel_default > CDIO_LOG_DEBUG)
-      cdio_loglevel_default = CDIO_LOG_DEBUG;
+        cdio_loglevel_default = CDIO_LOG_DEBUG;
       break;
     case 'a':
       auto_mode = 1;
@@ -1543,6 +1552,10 @@ main(int argc, char *argv[])
     nostop=1;
     if (EJECT_CD == cd_op) {
       i_rc = cd_eject() ? 0 : 1;
+    } else if (STOP_PLAYING == cd_op) {
+      b_cd = true;
+      i_rc = cd_stop(p_cdio_global) ? 0 : 1;
+      goto done;
     } else {
       switch (cd_op) {
       case PS_LIST_TRACKS:
@@ -1752,6 +1765,7 @@ main(int argc, char *argv[])
   }
   if (!nostop) cd_stop(p_cdio_global);
   tty_restore();
+done:
   finish("bye", i_rc);
 
   return 0; /* keep compiler happy */

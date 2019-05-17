@@ -784,7 +784,6 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   iso711_t i_fname;
   unsigned int stat_len;
   iso9660_stat_t *p_stat = NULL;
-  bool err;
 
   if (!dir_len) return NULL;
 
@@ -801,16 +800,8 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
     }
   p_stat->type    = (p_iso9660_dir->file_flags & ISO_DIRECTORY)
     ? _STAT_DIR : _STAT_FILE;
-  p_stat->lsn     = from_733_with_err (p_iso9660_dir->extent, &err);
-  if (err) {
-    free(p_stat);
-    return NULL;
-  }
-  p_stat->size    = from_733_with_err (p_iso9660_dir->size, &err);
-  if (err) {
-    free(p_stat);
-    return NULL;
-  }
+  p_stat->lsn     = from_733 (p_iso9660_dir->extent);
+  p_stat->size    = from_733 (p_iso9660_dir->size);
   p_stat->secsize = _cdio_len2blocks (p_stat->size, ISO_BLOCKSIZE);
   p_stat->rr.b3_rock = dunno; /*FIXME should do based on mask */
   p_stat->b_xa    = false;
@@ -843,9 +834,9 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
       strncpy(p_stat->filename, rr_fname, i_rr_fname+1);
     } else {
       if ('\0' == p_iso9660_dir->filename.str[1] && 1 == i_fname)
-	strncpy (p_stat->filename, ".", sizeof("."));
+	strncpy (p_stat->filename, ".", strlen(".")+1);
       else if ('\1' == p_iso9660_dir->filename.str[1] && 1 == i_fname)
-	strncpy (p_stat->filename, "..", sizeof(".."));
+	strncpy (p_stat->filename, "..", strlen("..")+1);
 #ifdef HAVE_JOLIET
       else if (u_joliet_level) {
 	int i_inlen = i_fname;

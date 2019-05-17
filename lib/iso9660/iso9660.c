@@ -377,6 +377,7 @@ iso9660_set_ltime_with_timezone(const struct tm *p_tm,
 
   if (!p_tm) return;
 
+#pragma GCC diagnostic ignored "-Wformat-truncation"
   snprintf(_pvd_date, 17,
            "%4.4d%2.2d%2.2d" "%2.2d%2.2d%2.2d" "%2.2d",
            p_tm->tm_year + 1900, p_tm->tm_mon + 1, p_tm->tm_mday,
@@ -637,7 +638,7 @@ iso9660_set_pvd(void *pd,
 
   /* magic stuff ... thatis CD XA marker... */
   strncpy(((char*)&ipd)+ISO_XA_MARKER_OFFSET, ISO_XA_MARKER_STRING,
-          sizeof(ISO_XA_MARKER_STRING));
+          strlen(ISO_XA_MARKER_STRING)+1);
 
   ipd.type = to_711(ISO_VD_PRIMARY);
   iso9660_strncpy_pad (ipd.id, ISO_STANDARD_ID, 5, ISO9660_DCHARS);

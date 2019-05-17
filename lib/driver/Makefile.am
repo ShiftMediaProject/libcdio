@@ -40,7 +40,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libcdio_la_CURRENT = 18
+libcdio_la_CURRENT = 19
 libcdio_la_REVISION = 0
 libcdio_la_AGE = 0
 

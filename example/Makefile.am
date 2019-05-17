@@ -48,6 +48,7 @@ noinst_PROGRAMS = \
 	sample4 \
 	tracks \
 	udf1 \
+	udf2 \
 	udffile
 
 check_PROGRAMS  = device drives isofile2 \
@@ -131,6 +132,9 @@ tracks_LDADD        = $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 udf1_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udf1_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
+
+udf2_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
+udf2_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)
 
 udffile_DEPENDENCIES = $(LIBUDF_LIBS) $(LIBCDIO_DEPS)
 udffile_LDADD        = $(LIBUDF_LIBS) $(LIBCDIO_LIBS) $(LTLIBICONV)

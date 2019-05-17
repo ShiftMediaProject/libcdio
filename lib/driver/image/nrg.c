@@ -1125,7 +1125,7 @@ _eject_media_nrg(void *obj)
 }
 
 #if !defined(HAVE_GLOB_H) && defined(_WIN32)
-static inline void Win32Glob(LPCWSTR pattern, LPCWSTR szCurPath, char ***drives, unsigned int *num_files)
+static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
 {
   char szPath[MAX_PATH];
   WCHAR wszPath[MAX_PATH];

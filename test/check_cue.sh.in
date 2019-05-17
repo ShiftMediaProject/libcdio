@@ -25,19 +25,29 @@ BASE=`basename $0 .sh`
 
 fname=cdda
 testnum=CD-DA
-if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
-  opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --no-cddb"
-  test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
-  RC=$?
-  check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
+for fname in cdda cdda_4_5
+do
+  if test "$fname" = cdda_4_5
+  then
+    testnum=CD-DA-4-5
+  else
+    testnum=CD-DA
+  fi
 
-  opts="--quiet --no-device-info --bin-file ${abs_top_srcdir}/test/data/${fname}.bin --no-cddb"
-  test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
-  RC=$?
-  check_result $RC "cd-info BIN test $testnum" "${CD_INFO} $opts"
-else
-  echo "-- Don't see BIN file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
-fi
+  if test -f ${abs_top_srcdir}/test/data/${fname}.bin ; then
+    opts="--quiet --no-device-info --cue-file ${abs_top_srcdir}/test/data/${fname}.cue --no-cddb"
+    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
+    RC=$?
+    check_result $RC "cd-info CUE test $testnum" "${CD_INFO} $opts"
+
+    opts="--quiet --no-device-info --bin-file ${abs_top_srcdir}/test/data/${fname}.bin --no-cddb"
+    test_cdinfo "$opts" ${fname}.dump ${abs_top_srcdir}/test/${fname}.right
+    RC=$?
+    check_result $RC "cd-info BIN test $testnum" "${CD_INFO} $opts"
+  else
+    echo "-- Don't see BIN file ${abs_top_srcdir}/test/data/${fname}.bin. Test $testnum skipped."
+  fi
+done
 
 fname=isofs-m1
 if test -f  ${abs_top_srcdir}/test/data/${fname}.bin ; then

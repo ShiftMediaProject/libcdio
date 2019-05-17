@@ -1,4 +1,5 @@
 /*
+  Copyright (C) 2018 Thomas Schmitt
   Copyright (C) 2004-2005, 2008, 2011, 2012, 2013 Rocky Bernstein <rocky@gnu.org>
   toc reading routine adapted from cuetools
   Copyright (C) 2003 Svend Sanjay Sorensen <ssorensen@fastmail.fm>
@@ -85,7 +86,7 @@ const char *cdtext_genre[MAX_CDTEXT_GENRE_CODE] =
   "World Music"
 };
 
-const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
+const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE + 1] =
 {
   "Unknown",
   "Albanian",
@@ -131,6 +132,9 @@ const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
   "Turkish",
   "Flemish",
   "Wallon",
+  "", "", "", "", "", "", "", "", "", "",
+  "", "", "", "", "", "", "", "", "", "",
+  "", "", "", "", "",
   "Zulu",
   "Vietnamese",
   "Uzbek",
@@ -148,7 +152,6 @@ const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE] =
   "Shona",
   "Serbo-croat",
   "Ruthenian",
-  "Russian",
   "Russian",
   "Quechua",
   "Pushtu",
@@ -223,10 +226,11 @@ cdtext_genre2str(cdtext_genre_t i)
 const char *
 cdtext_lang2str(cdtext_lang_t i)
 {
-  if (i >= MAX_CDTEXT_LANGUAGE_CODE)
-    return "INVALID";
-  else
+  if (i <= CDTEXT_LANGUAGE_WALLON)
     return cdtext_language[i];
+  else if (i >= CDTEXT_LANGUAGE_ZULU && i <= CDTEXT_LANGUAGE_AMHARIC)
+    return cdtext_language[i];
+  return "INVALID";
 }
 
 /*!
@@ -314,7 +318,7 @@ cdtext_lang_t
 cdtext_get_language(const cdtext_t *p_cdtext)
 {
   if (NULL == p_cdtext)
-    return CDTEXT_LANGUAGE_UNKNOWN;
+    return CDTEXT_LANGUAGE_BLOCK_UNUSED;
   return p_cdtext->block[p_cdtext->block_i].language_code;
 }
 
@@ -344,12 +348,22 @@ cdtext_get_last_track(const cdtext_t *p_cdtext)
   return p_cdtext->block[p_cdtext->block_i].last_track;
 }
 
-/*
+/*!
+  @deprecated Use cdtext_list_languages_v2()
+
   Returns a list of available languages or NULL.
+
+  __WARNING__: The indices in the returned array _do not_ match the indexing
+           as expected by cdtext_set_language_index().
+           Use cdtext_select_language with the values of array elements.
 
   Internally the list is stored in a static array.
 
   @param p_cdtext the CD-TEXT object
+  @return NULL if p_cdtext is NULL.
+          Else an array of 8 cdtext_lang_t elements:
+          CDTEXT_LANGUAGE_UNKNOWN not only marks language code 0x00
+          but also invalid language codes and invalid language blocks.
 */
 cdtext_lang_t
 *cdtext_list_languages(const cdtext_t *p_cdtext)
@@ -363,11 +377,72 @@ cdtext_lang_t
   for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++)
   {
     avail[i] = CDTEXT_LANGUAGE_UNKNOWN;
-    if (CDTEXT_LANGUAGE_UNKNOWN != p_cdtext->block[i].language_code)
+    if (CDTEXT_LANGUAGE_UNKNOWN != p_cdtext->block[i].language_code &&
+        CDTEXT_LANGUAGE_INVALID != p_cdtext->block[i].language_code &&
+        CDTEXT_LANGUAGE_BLOCK_UNUSED != p_cdtext->block[i].language_code)
       avail[j++] = p_cdtext->block[i].language_code;
   }
 
   return avail;
+}
+
+/*!
+  Returns an array of available languages or NULL.
+  The index of an array element may be used to select the corresponding
+  language block by call cdtext_set_language_index().
+
+  The return value is a pointer into the memory range of *p_cdtext.
+  Do not use it after having freed that memory range.
+
+  @param p_cdtext the CD-TEXT object
+  @return NULL if p_cdtext is NULL, or an array of 8 cdtext_lang_t elements.
+
+  If an enumeration is CDTEXT_LANGUAGE_INVALID, then the language block has an invalid
+  language code.
+
+  If an enumeration is CDTEXT_LANGUAGE_BLOCK_UNUSED, then the block does not
+  exist on CD or could not be read in CD-TEXT for some reason.
+
+  Otherwise, the enumeration of element will be a value in
+  CDTEXT_LANGUAGE_UNKNOWN to CDTEXT_LANGUAGE_AMHARIC, and is a block
+  in that language.
+*/
+cdtext_lang_t
+*cdtext_list_languages_v2(cdtext_t *p_cdtext)
+{
+  int i;
+
+  if (NULL == p_cdtext)
+    return NULL;
+  for (i = 0; i < CDTEXT_NUM_BLOCKS_MAX; i++)
+  {
+    p_cdtext->languages[i] = p_cdtext->block[i].language_code;
+  }
+  return p_cdtext->languages;
+}
+
+/*!
+  Select the given language by block index. See cdtext_list_languages_v2().
+  If the index is bad, or no language block with that index was read:
+  select the default language at index 0 and return false.
+
+  @param p_cdtext the CD-TEXT object
+  @param idx      the desired index: 0 to 7.
+
+  @return true on success, false if no language block is associated to idx
+*/
+bool
+cdtext_set_language_index(cdtext_t *p_cdtext, int idx)
+{
+  if (NULL == p_cdtext)
+    return false;
+  p_cdtext->block_i = 0;
+  if (idx < 0 || idx > 7)
+    return false;
+  if (p_cdtext->block[idx].language_code == CDTEXT_LANGUAGE_BLOCK_UNUSED)
+    return false;
+  p_cdtext->block_i = idx;
+  return true;
 }
 
 /*!
@@ -386,7 +461,7 @@ cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t language)
   if(NULL == p_cdtext)
     return false;
 
-  if (CDTEXT_LANGUAGE_UNKNOWN != language)
+  if (CDTEXT_LANGUAGE_BLOCK_UNUSED != language)
   {
     int i;
     for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
@@ -395,9 +470,8 @@ cdtext_select_language(cdtext_t *p_cdtext, cdtext_lang_t language)
         return true;
       }
     }
-  } else {
-    p_cdtext->block_i = 0;
   }
+  p_cdtext->block_i = 0;
   return false;
 }
 
@@ -425,7 +499,7 @@ cdtext_t
       }
     }
     p_cdtext->block[i].genre_code = CDTEXT_GENRE_UNUSED;
-    p_cdtext->block[i].language_code = CDTEXT_LANGUAGE_UNKNOWN;
+    p_cdtext->block[i].language_code = CDTEXT_LANGUAGE_BLOCK_UNUSED;
   }
 
   p_cdtext->block_i = 0;
@@ -455,24 +529,28 @@ cdtext_is_field (const char *key)
 }
 
 /*!
-  Returns associated cdtext_lang_t if argument is a supported language.
+  Return the language code of a given language string representation.
+  This is the inverse of cdtext_lang2str().
 
-  Internal function.
+  @param lang language to look up
 
-  @param lang language to test
-
-  @return CDTEXT_LANGUAGE_UNKNOWN if language is not supported
+  @return if lang is among the possible results of cdtext_lang2str():
+          the cdtext_lang_t which is associated.
+          else: CDTEXT_LANGUAGE_INVALID
 */
 cdtext_lang_t
-cdtext_is_language(const char *lang)
+cdtext_str2lang (const char *lang)
 {
   unsigned int i;
 
-  for (i = 0; i < MAX_CDTEXT_LANGUAGE_CODE; i++)
+  if(0 == lang[0]) /* The empty texts in cdtext_language[] are invalid */
+    return CDTEXT_LANGUAGE_INVALID;
+
+  for (i = 0; i <= MAX_CDTEXT_LANGUAGE_CODE; i++)
     if (0 == strcmp(cdtext_language[i], lang)) {
       return i;
     }
-  return CDTEXT_LANGUAGE_UNKNOWN;
+  return CDTEXT_LANGUAGE_INVALID;
 }
 
 /*!
@@ -619,13 +697,18 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
       }
 
       if(blocksize.i_packs[15] == 3) {
+        cdtext_lang_t lcode;
         /* if there were 3 BLOCKSIZE packs */
         /* set copyright */
         p_cdtext->block[i_block].copyright = (0x03 == (blocksize.copyright & 0x03));
 
         /* set Language */
-        if(blocksize.langcode[i_block] <= 0x7f)
-          p_cdtext->block[i_block].language_code = blocksize.langcode[i_block];
+        lcode = blocksize.langcode[i_block];
+        if(lcode <= CDTEXT_LANGUAGE_WALLON ||
+          (lcode >= CDTEXT_LANGUAGE_ZULU && lcode <= CDTEXT_LANGUAGE_AMHARIC) )
+          p_cdtext->block[i_block].language_code = lcode;
+        else
+          p_cdtext->block[i_block].language_code = CDTEXT_LANGUAGE_INVALID;
 
         /* determine encoding */
         switch (blocksize.charcode){

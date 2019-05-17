@@ -433,6 +433,20 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
                      "Expecting a track number, got %s", psz_field);
             goto err_exit;
           }
+          if (i_track < 1 || i_track > 99) {
+            cdio_log(log_level,
+                     "Track number out of range 1 to 99, got %s", psz_field);
+            goto err_exit;
+          }
+          if(cd) {
+            if (-1 == i) {
+              cd->gen.i_first_track = i_track;
+            } else if(cd->gen.i_first_track + i + 1 != i_track) {
+              cdio_log(log_level,
+                       "Track number out of sequence. Expected %d, got %d",
+                       cd->gen.i_first_track + i + 1, i_track);
+            }
+          }
         }
         if (NULL != (psz_field = strtok(NULL, " \t\n\r"))) {
           track_info_t  *this_track=NULL;
@@ -749,7 +763,7 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
               cd->tocent[i].indexes[cd->tocent[i].nindex++] = lba;
 #else
               track_info_t  *this_track=
-                &(cd->tocent[cd->gen.i_tracks - cd->gen.i_first_track]);
+                &(cd->tocent[cd->gen.i_tracks - 1]);
 
               switch (start_index) {
 
@@ -990,7 +1004,7 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
 }
 
 #if !defined(HAVE_GLOB_H) && defined(_WIN32)
-static inline void Win32Glob(LPCWSTR pattern, LPCWSTR szCurPath, char ***drives, unsigned int *num_files)
+static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
 {
   char szPath[MAX_PATH];
   WCHAR wszPath[MAX_PATH];
@@ -1093,7 +1107,8 @@ _get_track_format_bincue(void *p_user_data, track_t i_track)
 
   if (!p_env->gen.init) return TRACK_FORMAT_ERROR;
 
-  if (i_track > p_env->gen.i_tracks || i_track == 0)
+  if (i_track > p_env->gen.i_first_track + p_env->gen.i_tracks - 1
+      || i_track < p_env->gen.i_first_track)
     return TRACK_FORMAT_ERROR;
 
   return p_env->tocent[i_track-p_env->gen.i_first_track].track_format;
@@ -1132,10 +1147,11 @@ _get_lba_track_bincue(void *p_user_data, track_t i_track)
 {
   _img_private_t *p_env = p_user_data;
 
-  if (i_track == CDIO_CDROM_LEADOUT_TRACK) i_track = p_env->gen.i_tracks+1;
+  if (i_track == CDIO_CDROM_LEADOUT_TRACK)
+    i_track = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
   if (i_track <= p_env->gen.i_tracks + p_env->gen.i_first_track
-      && i_track != 0) {
+      && i_track >= p_env->gen.i_first_track) {
     return p_env->tocent[i_track-p_env->gen.i_first_track].start_lba;
   } else
     return CDIO_INVALID_LBA;

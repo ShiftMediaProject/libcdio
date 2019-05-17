@@ -1,5 +1,3 @@
-/Makefile
-/Makefile.in
 /*.aux
 /*.cp
 /*.cps
@@ -13,6 +11,9 @@
 /*.toc
 /*.tp
 /*.vr
+/Makefile
+/Makefile.in
+/how-to-make-a-release.html
 /mdate-sh
 /stamp-vti
 /texinfo.tex

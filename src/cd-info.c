@@ -450,10 +450,11 @@ print_cdtext_info(CdIo_t *p_cdio, track_t i_tracks, track_t i_first_track) {
     return;
   }
 
-  languages = cdtext_list_languages(p_cdtext);
+  languages = cdtext_list_languages_v2(p_cdtext);
+  /* The API promises that non-NULL p_cdtext yields non-NULL languages */
   for(i=0; i<8; i++)
-    if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i]
-         && cdtext_select_language(p_cdtext, languages[i]))
+    if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i]
+         && cdtext_set_language_index(p_cdtext, i))
     {
       printf("\nLanguage %d '%s':\n", i, cdtext_lang2str(languages[i]));
 
@@ -970,7 +971,7 @@ main(int argc, char *argv[])
 
   if (!opts.no_tracks) {
     printf("CD-ROM Track List (%i - %i)\n" NORMAL,
-           i_first_track, i_tracks);
+           i_first_track, i_first_track + i_tracks - 1);
 
     printf("  #: MSF       LSN    Type   Green? Copy?");
     if ( CDIO_DISC_MODE_CD_DA == discmode
@@ -1106,8 +1107,10 @@ main(int argc, char *argv[])
       num_data++;
       if (-1 == first_data)  first_data = i;
     }
-    /* skip to leadout? */
-    if (i == i_tracks) i = CDIO_CDROM_LEADOUT_TRACK-1;
+    /* skip to leadout */
+    if (i == i_first_track + i_tracks - 1) {
+      i = CDIO_CDROM_LEADOUT_TRACK-1;
+    }
   }
 
   if (cdio_is_discmode_cdrom(discmode)) {

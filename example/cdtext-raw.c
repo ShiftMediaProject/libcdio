@@ -1,5 +1,5 @@
 /* -*- C -*-
-  Copyright (C) 2004, 2006, 2008, 2010, 2011, 2012, 2017
+  Copyright (C) 2004, 2006, 2008, 2010-2012, 2017, 2019
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -32,6 +32,9 @@
 #ifdef HAVE_STDLIB_H
 #include <stdlib.h>
 #endif
+#ifdef HAVE_STRING_H
+#include <string.h>
+#endif
 
 #include <cdio/cdio.h>
 
@@ -62,10 +65,12 @@ print_cdtext_info(cdtext_t *p_cdtext) {
 
   int i, j;
 
-  languages = cdtext_list_languages(p_cdtext);
+  languages = cdtext_list_languages_v2(p_cdtext);
+  if (NULL == languages)
+    return;
   for(i=0; i<8; i++)
-    if ( CDTEXT_LANGUAGE_UNKNOWN != languages[i]
-         && cdtext_select_language(p_cdtext, languages[i]))
+    if ( CDTEXT_LANGUAGE_BLOCK_UNUSED != languages[i]
+         && cdtext_set_language_index(p_cdtext, i))
     {
       printf("\nLanguage %d '%s':\n", i, cdtext_lang2str(languages[i]));
 

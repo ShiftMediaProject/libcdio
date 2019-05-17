@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 if test -z $srcdir ; then
   srcdir=$(pwd)
