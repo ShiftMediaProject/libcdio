@@ -180,6 +180,7 @@ cdtext_destroy
 cdtext_field2str
 cdtext_genre2str
 cdtext_lang2str
+cdtext_str2lang
 cdtext_get
 cdtext_get_const
 cdtext_get_genre
@@ -189,8 +190,10 @@ cdtext_get_last_track
 cdtext_init
 cdtext_data_init
 cdtext_list_languages
+cdtext_list_languages_v2
 cdtext_set
 cdtext_select_language
+cdtext_set_language_index
 debug_cdio_mmc_feature
 debug_cdio_mmc_feature_interface
 debug_cdio_mmc_feature_profile
