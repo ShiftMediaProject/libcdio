@@ -27,6 +27,8 @@
 
 #ifdef __cplusplus
 extern "C" {
+#else
+# include <stdbool.h>
 #endif /* __cplusplus */
 
 /* If <sys/types.h> is not available on your platform please
@@ -102,27 +104,6 @@ typedef uint8_t ubyte;
 #  define INT64_C(c) c ## LL
 # endif
 #endif
-
-#ifndef __cplusplus
-
-/* All the stdbool.h seem to define those */
-#ifndef __bool_true_false_are_defined
-#define __bool_true_false_are_defined 1
-
-#undef bool
-#undef true
-#undef false
-
-#ifdef _Bool
-#define bool _Bool
-#else
-#define bool unsigned char
-#endif
-#define true 1
-#define false 0
-
-#endif /* __bool_true_false_are_defined */
-#endif /*C++*/
 
   /* some GCC optimizations -- gcc 2.5+ */
 
