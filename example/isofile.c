@@ -58,8 +58,8 @@
 
 #define my_exit(rc)				\
   fclose (p_outfd);				\
-  free(p_statbuf);				\
-  iso9660_close(p_iso);				\
+  iso9660_stat_free(p_statbuf);	\
+  iso9660_close(p_iso);			\
   return rc;					\
 
 int
@@ -109,7 +109,7 @@ main(int argc, const char *argv[])
   if (!(p_outfd = fopen (psz_fname, "wb")))
     {
       perror ("fopen()");
-      free(p_statbuf);
+      iso9660_stat_free(p_statbuf);
       iso9660_close(p_iso);
       return 3;
     }

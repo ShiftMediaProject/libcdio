@@ -124,7 +124,7 @@ public:
 
     Stat(const Stat& copy_in)
     {
-      free(p_stat);
+      iso9660_stat_free(p_stat);
       p_stat = (iso9660_stat_t *)
         calloc( 1, sizeof(iso9660_stat_t)
                 + strlen(copy_in.p_stat->filename)+1 );
@@ -133,7 +133,7 @@ public:
 
     const Stat& operator= (const Stat& right)
     {
-      free(p_stat);
+      iso9660_stat_free(p_stat);
       this->p_stat = right.p_stat;
       return right;
     }

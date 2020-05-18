@@ -69,8 +69,8 @@
 
 #define my_exit(rc)				\
   fclose (p_outfd);				\
-  free(p_statbuf);				\
-  cdio_destroy(p_cdio);				\
+  iso9660_stat_free(p_statbuf);	\
+  cdio_destroy(p_cdio);			\
   return rc;					\
 
 
@@ -130,7 +130,7 @@ main(int argc, const char *argv[])
   if (!(p_outfd = fopen (translated_name, "wb"))) {
       perror ("fopen()");
       cdio_destroy(p_cdio);
-      free(p_statbuf);
+      iso9660_stat_free(p_statbuf);
       return 3;
     }
 

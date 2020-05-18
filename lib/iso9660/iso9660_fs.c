@@ -821,12 +821,10 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 	/* realloc gives valgrind errors */
 	iso9660_stat_t *p_stat_new =
 	  calloc(1, sizeof(iso9660_stat_t)+i_rr_fname+2);
-        if (!p_stat_new)
-          {
-          cdio_warn("Couldn't calloc(1, %d)", (int)(sizeof(iso9660_stat_t)+i_rr_fname+2));
-	  free(p_stat);
-          return NULL;
-          }
+	if (!p_stat_new) {
+	  cdio_warn("Couldn't calloc(1, %d)", (int)(sizeof(iso9660_stat_t)+i_rr_fname+2));
+	  goto fail;
+	}
 	memcpy(p_stat_new, p_stat, stat_len);
 	free(p_stat);
 	p_stat = p_stat_new;
@@ -845,10 +843,8 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
                              &p_psz_out, "UCS-2BE")) {
           strncpy(p_stat->filename, p_psz_out, i_fname);
           free(p_psz_out);
-        }
-        else {
-          free(p_stat);
-          return NULL;
+        } else {
+          goto fail;
         }
       }
 #endif /*HAVE_JOLIET*/
@@ -861,10 +857,8 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
 
   iso9660_get_dtime(&(p_iso9660_dir->recording_time), true, &(p_stat->tm));
 
-  if (dir_len < sizeof (iso9660_dir_t)) {
-    iso9660_stat_free(p_stat);
-    return NULL;
-  }
+  if (dir_len < sizeof (iso9660_dir_t))
+    goto fail;
 
 
   {
@@ -907,6 +901,9 @@ _iso9660_dir_to_statbuf (iso9660_dir_t *p_iso9660_dir, bool_3way_t b_xa,
   }
   return p_stat;
 
+fail:
+  iso9660_stat_free(p_stat);
+  return NULL;
 }
 
 /*!
