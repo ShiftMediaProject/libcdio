@@ -107,6 +107,9 @@ main(int argc, const char *argv[])
 	printf ("%s [LSN %6d] %8u %s%s\n",
 		2 == p_s->p_stat->type ? "d" : "-",
 		p_s->p_stat->lsn, p_s->p_stat->size, psz_path, filename);
+
+	/* stat_vector.clear() currently does not dispose the objects */
+	delete(p_s);
       }
 
     stat_vector.clear();

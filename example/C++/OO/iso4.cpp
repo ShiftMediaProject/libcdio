@@ -93,6 +93,7 @@ main(int argc, const char *argv[])
     print_vd_info("Volume     ", get_volume_id);
     print_vd_info("Volume Set ", get_volumeset_id);
     free(psz_str);
+    delete(p_pvd);
   }
 
   if (p_iso->readdir (psz_path, stat_vector))
