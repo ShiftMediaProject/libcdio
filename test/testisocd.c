@@ -108,7 +108,7 @@ main(int argc, const char *argv[])
 
       /* Compare the two statbufs. */
       if (p_statbuf->lsn != p_statbuf2->lsn ||
-	  p_statbuf->size != p_statbuf2->size ||
+	  p_statbuf->total_size != p_statbuf2->total_size ||
 	  p_statbuf->type != p_statbuf2->type) {
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "fs_find_lsn isn't the same\n");
@@ -151,6 +151,8 @@ main(int argc, const char *argv[])
       iso9660_stat_free(p_statbuf2);
       iso9660_stat_free(p_statbuf3);
       cdio_destroy(p_cdio);
+      if (NULL != psz_path)
+	free(psz_path);
       exit(rc);
     }
   }

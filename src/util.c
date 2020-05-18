@@ -480,18 +480,20 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 	       const char *psz_name_translated)
 {
   char date_str[30];
+  double total_size, m2f2_size;
 
 #ifdef HAVE_ROCK
   if (yep == p_statbuf->rr.b3_rock && b_rock) {
-    report ( stdout, "  %s %3d %d %d [LSN %6lu] %9u",
+    total_size = (double) (S_ISLNK(p_statbuf->rr.st_mode)
+				? strlen(p_statbuf->rr.psz_symlink)
+				: p_statbuf->total_size );
+    report ( stdout, "  %s %3d %d %d [LSN %6lu] %9.f",
 	     iso9660_get_rock_attr_str (p_statbuf->rr.st_mode),
 	     p_statbuf->rr.st_nlinks,
 	     p_statbuf->rr.st_uid,
 	     p_statbuf->rr.st_gid,
 	     (long unsigned int) p_statbuf->lsn,
-	     S_ISLNK(p_statbuf->rr.st_mode)
-	     ? strlen(p_statbuf->rr.psz_symlink)
-	     : (unsigned int) p_statbuf->size );
+	     total_size );
 
   } else
 #endif
@@ -503,17 +505,18 @@ print_fs_attrs(iso9660_stat_t *p_statbuf, bool b_rock, bool b_xa,
 	     p_statbuf->xa.filenum,
 	     (long unsigned int) p_statbuf->lsn );
 
+    total_size = (double) p_statbuf->total_size;
     if (uint16_from_be(p_statbuf->xa.attributes) & XA_ATTR_MODE2FORM2) {
-      report ( stdout, "%9u (%9u)",
-	       (unsigned int) p_statbuf->secsize * M2F2_SECTOR_SIZE,
-	       (unsigned int) p_statbuf->size );
+      m2f2_size = (double) CDIO_EXTENT_BLOCKS(p_statbuf->total_size)
+			   * M2F2_SECTOR_SIZE;
+      report ( stdout, "%9.f (%9.f)", m2f2_size, total_size );
     } else
-      report (stdout, "%9u", (unsigned int) p_statbuf->size);
+      report (stdout, "%9.f", total_size);
   } else {
-    report ( stdout,"  %c [LSN %6lu] %9u",
+    total_size = (double) p_statbuf->total_size;
+    report ( stdout,"  %c [LSN %6lu] %9.f",
 	     (p_statbuf->type == _STAT_DIR) ? 'd' : '-',
-	     (long unsigned int) p_statbuf->lsn,
-	     (unsigned int) p_statbuf->size );
+	     (long unsigned int) p_statbuf->lsn, total_size );
   }
 
   if (yep == p_statbuf->rr.b3_rock && b_rock) {

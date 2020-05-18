@@ -163,6 +163,8 @@ extern const char ISO_STANDARD_ID[sizeof("CD001")-1];
 
 #define ISO_STANDARD_ID      "CD001"
 
+#define CDIO_EXTENT_BLOCKS(size) ((size + (ISO_BLOCKSIZE - 1)) / ISO_BLOCKSIZE)
+
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
@@ -529,17 +531,41 @@ typedef CdioList_t CdioISO9660DirList_t;
 */
 struct iso9660_stat_s { /* big endian!! */
 
- iso_rock_statbuf_t rr;              /**< Rock Ridge-specific fields  */
+  iso_rock_statbuf_t rr;              /**< Rock Ridge-specific fields  */
 
   struct tm          tm;              /**< time on entry - FIXME merge with
                                          one of entries above, like ctime? */
   lsn_t              lsn;             /**< start logical sector number */
-  uint32_t           size;            /**< total size in bytes */
-  uint32_t           secsize;         /**< number of sectors allocated */
+
+#ifndef DO_NOT_WANT_COMPATIBILITY
+
+  /* *** Deprecated Legacy API ***
+     Use .total_size and CDIO_EXTENT_BLOCKS.
+   */
+  uint32_t           size;         /**< size of the first extent, in bytes */
+  uint32_t           secsize;      /**< size of the first extent, in sectors */
+
+#endif /* DO_NOT_WANT_COMPATIBILITY */
+
+  /* Multi-extent aware size, in bytes.
+
+     It is guaranteed that the bytes are stored as gapless string in a
+     continguous sequence of blocks. I.e. they can be read sequentially
+     starting at iso9660_stat_s.lsn.
+     Data files which do not fulfil this promise cause a warning message
+     and are not represented by this type of struct.
+     (Directories are not allowed to have more than one extent and thus cannot
+      legally break the promise.)
+   */
+  uint64_t           total_size;
+
+  /* NB: If you need to access the 'secsize' equivalent for an extent,
+   * you should use CDIO_EXTENT_BLOCKS(iso9660_stat_s.total_size) */
+
   iso9660_xa_t       xa;              /**< XA attributes */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   bool               b_xa;
-  char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
+  char               filename[EMPTY_ARRAY_SIZE];    /**< filename */
 };
 
 /** A mask used in iso9660_ifs_read_vd which allows what kinds
