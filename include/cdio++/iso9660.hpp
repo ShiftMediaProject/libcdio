@@ -384,7 +384,10 @@ public:
             (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
           stat_vector.push_back(new ISO9660::Stat(p_statbuf));
         }
-	iso9660_filelist_free(p_stat_list);
+	/* explicitely not iso9660_filelist_free(p_stat_list) because the
+	   p_statbuf objects live on in stat_vector.
+	 */
+	_cdio_list_free(p_stat_list, false, (CdioDataFree_t) NULL);
         return true;
       } else {
         return false;
