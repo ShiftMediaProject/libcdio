@@ -475,7 +475,7 @@ udf_get_volume_id(udf_t *p_udf, /*out*/ char *psz_volid, unsigned int i_volid)
 
   volid_len = strlen(r)+1;     /* +1 for NUL terminator */
   if (psz_volid != NULL) {
-    strncpy(psz_volid, r, MIN(volid_len, i_volid));
+    strncpy(psz_volid, r, i_volid);
     psz_volid[i_volid-1] = 0;  /* strncpy does not always terminate the dest */
   }
   free(r);
@@ -541,7 +541,7 @@ udf_get_logical_volume_id(udf_t *p_udf, /*out*/ char *psz_logvolid, unsigned int
 
   logvolid_len = strlen(r)+1;  /* +1 for NUL terminator */
   if (psz_logvolid != NULL) {
-    strncpy(psz_logvolid, r, MIN(logvolid_len, i_logvolid));
+    strncpy(psz_logvolid, r, i_logvolid);
     psz_logvolid[i_logvolid-1] = 0;    /* strncpy does not always terminate the dest */
   }
   free(r);

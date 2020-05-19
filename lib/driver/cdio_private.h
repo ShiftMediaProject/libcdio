@@ -55,7 +55,7 @@ static inline char *libcdio_strndup(const char *s, size_t n)
     if (!result)
         return 0;
     result[len] = '\0';
-    return (char *) strncpy (result, s, len);
+    return (char *) memcpy (result, s, len);
 }
 #endif /*HAVE_STRNDUP*/
 
