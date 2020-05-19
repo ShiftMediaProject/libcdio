@@ -2,7 +2,7 @@
   Copyright (C) 2003-2005, 2007-2008, 2011-2012, 2014, 2017
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
-         and Heiko Eißfeldt <heiko@hexco.de>
+         and Heiko Eiï¿½feldt <heiko@hexco.de>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -1027,7 +1027,7 @@ main(int argc, char *argv[])
 
         if (i_bytes_raw < 1024)
           printf( "(%lu bytes", i_bytes_raw );
-        if (i_bytes_raw < 1024 * 1024)
+        else if (i_bytes_raw < 1024 * 1024)
           printf( "(%lu KB", i_bytes_raw / 1024 );
         else
           printf( "(%lu MB", i_bytes_raw / (1024 * 1024) );
@@ -1035,7 +1035,7 @@ main(int argc, char *argv[])
         printf(" raw, ");
         if (i_bytes_formatted < 1024)
           printf( "%lu bytes", i_bytes_formatted );
-        if (i_bytes_formatted < 1024 * 1024)
+        else if (i_bytes_formatted < 1024 * 1024)
           printf( "%lu KB", i_bytes_formatted / 1024 );
         else
           printf( "%lu MB", i_bytes_formatted / (1024 * 1024) );
