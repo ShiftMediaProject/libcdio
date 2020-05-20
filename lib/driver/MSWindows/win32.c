@@ -818,12 +818,15 @@ _cdio_get_track_msf(void *p_user_data, track_t i_tracks, msf_t *p_msf)
   if (!p_env->gen.toc_init)
     if (!read_toc_win32 (p_env)) return false;
 
-  if (i_tracks == CDIO_CDROM_LEADOUT_TRACK) i_tracks = p_env->gen.i_tracks+1;
+  if (i_tracks == CDIO_CDROM_LEADOUT_TRACK)
+    i_tracks = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
-  if (i_tracks > p_env->gen.i_tracks+1 || i_tracks == 0) {
+  if (i_tracks > (p_env->gen.i_tracks + p_env->gen.i_first_track)
+      || i_tracks < p_env->gen.i_first_track) {
     return false;
   } else {
-    cdio_lsn_to_msf(p_env->tocent[i_tracks-1].start_lsn, p_msf);
+    cdio_lsn_to_msf(
+          p_env->tocent[i_tracks - p_env->gen.i_first_track].start_lsn, p_msf);
     return true;
   }
 }
