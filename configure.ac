@@ -633,8 +633,18 @@ if test "x$enable_cddb" != "xno"; then
     AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
 fi
 
-
 AC_SUBST(CDDB_LIBS)
+
+AC_ARG_ENABLE(compatibility,
+	AC_HELP_STRING([--disable-compatibility], [disable the use of obsoleted APIs (default enabled)]),
+	enable_compatibility=$enableval, enable_compatibility=yes)
+if test "x${enable_compatibility}" != "xyes"; then
+   AC_DEFINE(DO_NOT_WANT_COMPATIBILITY, [],
+   [Define this if you do not need compability with obsoleted libcdio APIs.])
+   DO_NOT_WANT_COMPATIBILITY=1
+fi
+
+AC_SUBST(DO_NOT_WANT_COMPATIBILITY)
 
 # We have to disable cdda_player unless we have either ncurses.h or
 # curses.h
