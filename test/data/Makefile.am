@@ -28,7 +28,8 @@ check_DATA = \
 	isofs-m1.toc   \
 	joliet.iso     \
 	malformed.iso  \
-	malformed2.iso  \
+	malformed2.iso \
+	multi_extent_8k.iso \
 	p1.bin         \
 	p1.cue         \
 	p1.nrg         \
