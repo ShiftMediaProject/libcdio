@@ -1,4 +1,5 @@
 /*
+  Copyright (C) 2020 Pete Batard <pete@akeo.ie>
   Copyright (C) 2005, 2008, 2010-2011, 2014, 2017 Rocky Bernstein
   <rocky@gnu.org>
 
@@ -40,6 +41,7 @@
 #include <cdio/logging.h>
 #include <cdio/bytesex.h>
 #include "filemode.h"
+#include "cdio_private.h"
 
 #define CDIO_MKDEV(ma,mi)	((ma)<<16 | (mi))
 
@@ -47,6 +49,10 @@ enum iso_rock_enums iso_rock_enums;
 iso_rock_nm_flag_t iso_rock_nm_flag;
 iso_rock_sl_flag_t iso_rock_sl_flag;
 iso_rock_tf_flag_t iso_rock_tf_flag;
+
+/* Used by get_rock_ridge_filename() */
+extern iso9660_stat_t*
+_iso9660_dd_find_lsn(void* p_image, lsn_t i_lsn);
 
 /* Our own realloc routine tailored for the iso9660_stat_t symlink
    field.  I can't figure out how to make realloc() work without
@@ -142,12 +148,22 @@ realloc_symlink(/*in/out*/ iso9660_stat_t *p_stat, uint8_t i_grow)
     }								  \
   }
 
+/* Indicates if we should process deep directory entries */
+static inline bool
+is_rr_dd_enabled(void * p_image) {
+  cdio_header_t* p_header = (cdio_header_t*)p_image;
+  if (!p_header)
+    return false;
+  return !(p_header->u_flags & CDIO_HEADER_FLAGS_DISABLE_RR_DD);
+}
+
 /*!
   Get
   @return length of name field; 0: not found, -1: to be ignored
 */
 int
 get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
+			/*in*/ void * p_image,
 			/*out*/ char * psz_name,
 			/*in/out*/ iso9660_stat_t *p_stat)
 {
@@ -316,15 +332,31 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	}
       case SIG('C','L'):
 	/* Child Link for a deep directory */
-	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_CL;
+	if (!is_rr_dd_enabled(p_image))
+	  break;
+	{
+	  iso9660_stat_t* target = NULL;
+	  p_stat->rr.u_su_fields |= ISO_ROCK_SUF_CL;
+	  target = _iso9660_dd_find_lsn(p_image, from_733(rr->u.PL.location));
+	  if (!target) {
+	    cdio_warn("Could not get Rock Ridge deep directory child");
+	    break;
+	  }
+	  memcpy(p_stat, target, sizeof(iso9660_stat_t));
+	  /* Prevent the symlink from being freed on the duplicated struct */
+	  target->rr.psz_symlink = NULL;
+	  iso9660_stat_free(target);
+	}
 	break;
       case SIG('P','L'):
 	/* Parent link of a deep directory */
-	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_PL;
+	if (is_rr_dd_enabled(p_image))
+	  p_stat->rr.u_su_fields |= ISO_ROCK_SUF_PL;
 	break;
       case SIG('R','E'):
 	/* Relocated entry for a deep directory */
-	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_RE;
+	if (is_rr_dd_enabled(p_image))
+	  p_stat->rr.u_su_fields |= ISO_ROCK_SUF_RE;
 	break;
       case SIG('S','F'):
 	/* Sparse File */
