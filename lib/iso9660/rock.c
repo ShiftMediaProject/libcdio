@@ -158,7 +158,8 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
   int i_namelen = 0;
   int truncate=0;
 
-  if (!p_stat || nope == p_stat->rr.b3_rock) return 0;
+  if (!p_stat || nope == p_stat->rr.b3_rock)
+    return 0;
   *psz_name = 0;
 
   SETUP_ROCK_RIDGE(p_iso9660_dir, chr, len);
@@ -172,19 +173,21 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
       rr = (iso_extension_record_t *) chr;
       sig = *chr+(*(chr+1) << 8);
 
-      /* We used to check for some vaid values of SIG, specifically
+      /* We used to check for some valid values of SIG, specifically
 	 SP, CE, ER, RR, PX, PN, SL, NM, CL, PL, TF, and ZF.
 	 However there are various extensions to this set. So we
 	 skip checking now.
       */
 
-      if (rr->len == 0) goto out; /* Something got screwed up here */
+      if (rr->len == 0)
+	goto out; /* Something got screwed up here */
       chr += rr->len;
       len -= rr->len;
 
-      switch(sig){
+      switch(sig) {
       case SIG('S','P'):
 	CHECK_SP(goto out);
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_SP;
 	break;
       case SIG('C','E'):
 	{
@@ -195,19 +198,21 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	    break;
 	}
 	CHECK_CE;
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_CE;
 	break;
       case SIG('E','R'):
-	p_stat->rr.b3_rock = yep;
 	cdio_debug("ISO 9660 Extensions: ");
 	{
 	  int p;
-	  for(p=0;p<rr->u.ER.len_id;p++) cdio_debug("%c",rr->u.ER.data[p]);
+	  for (p=0; p < rr->u.ER.len_id; p++)
+	    cdio_debug("%c", rr->u.ER.data[p]);
 	}
 	break;
       case SIG('N','M'):
 	/* Alternate name */
-	p_stat->rr.b3_rock = yep;
-	if (truncate) break;
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_NM;
+	if (truncate)
+	  break;
 	if (rr->u.NM.flags & ISO_ROCK_NM_PARENT) {
 	  i_namelen = sizeof("..");
 	  strncat(psz_name, "..", i_namelen);
@@ -235,7 +240,7 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	p_stat->rr.st_nlinks = from_733(rr->u.PX.st_nlinks);
 	p_stat->rr.st_uid    = from_733(rr->u.PX.st_uid);
 	p_stat->rr.st_gid    = from_733(rr->u.PX.st_gid);
-	p_stat->rr.b3_rock    = yep;
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_PX;
 	break;
       case SIG('S','L'):
 	{
@@ -246,6 +251,7 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	  slen = rr->len - 5;
 	  p_sl = &rr->u.SL.link;
 	  p_stat->rr.i_symlink = symlink_len;
+	  p_stat->rr.u_su_fields |= ISO_ROCK_SUF_SL;
 	  while (slen > 1){
 	    rootflag = 0;
 	    switch(p_sl->flags &~1){
@@ -294,9 +300,6 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	realloc_symlink(p_stat, 1);
 	p_stat->rr.psz_symlink[symlink_len]='\0';
 	break;
-      case SIG('R','E'):
-	free(buffer);
-	return -1;
       case SIG('T','F'):
 	/* Time stamp(s) for a file */
 	{
@@ -308,17 +311,36 @@ get_rock_ridge_filename(iso9660_dir_t * p_iso9660_dir,
 	  add_time(ISO_ROCK_TF_BACKUP,     backup);
 	  add_time(ISO_ROCK_TF_EXPIRATION, expiration);
 	  add_time(ISO_ROCK_TF_EFFECTIVE,  effective);
-	  p_stat->rr.b3_rock = yep;
+	  p_stat->rr.u_su_fields |= ISO_ROCK_SUF_TF;
 	  break;
 	}
+      case SIG('C','L'):
+	/* Child Link for a deep directory */
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_CL;
+	break;
+      case SIG('P','L'):
+	/* Parent link of a deep directory */
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_PL;
+	break;
+      case SIG('R','E'):
+	/* Relocated entry for a deep directory */
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_RE;
+	break;
+      case SIG('S','F'):
+	/* Sparse File */
+	p_stat->rr.u_su_fields |= ISO_ROCK_SUF_SF;
+	cdio_warn("Rock Ridge Sparse File detected");
+	break;
       default:
 	break;
       }
     }
   }
   free(buffer);
+  if (p_stat->rr.u_su_fields & ISO_ROCK_SUF_FORMAL)
+    p_stat->rr.b3_rock = yep;
   return i_namelen; /* If 0, this file did not have a NM field */
- out:
+out:
   free(buffer);
   return 0;
 }
