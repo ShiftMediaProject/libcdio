@@ -23,6 +23,7 @@ check_DATA = \
 	copying.iso    \
 	data1.toc      \
 	data2.toc      \
+	deep-directory.iso \
 	isofs-m1.bin   \
 	isofs-m1.cue   \
 	isofs-m1.toc   \
