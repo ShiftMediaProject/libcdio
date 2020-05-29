@@ -214,7 +214,7 @@ static int read_iso_file(const char *iso_name, const char *src,
   uint64_t i;
   iso9660_t *iso;
 
-  iso = iso9660_open (iso_name);
+  iso = iso9660_open_ext (iso_name, ISO_EXTENSION_ALL);
 
   if (NULL == iso) {
     report(stderr,

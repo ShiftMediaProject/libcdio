@@ -59,7 +59,7 @@ main(int argc, const char *argv[])
   iso9660_t *p_iso;
 
   psz_fname = ISO9660_IMAGE;
-  p_iso = iso9660_open (psz_fname);
+  p_iso = iso9660_open_ext(psz_fname, ISO_EXTENSION_ROCK_RIDGE);
 
   if (NULL == p_iso) {
     fprintf(stderr, "Sorry, couldn't open %s as an ISO-9660 image\n",
@@ -77,7 +77,7 @@ main(int argc, const char *argv[])
   iso9660_close(p_iso);
 
   psz_fname = ISO9660_IMAGE_RR;
-  p_iso = iso9660_open (psz_fname);
+  p_iso = iso9660_open_ext(psz_fname, ISO_EXTENSION_ROCK_RIDGE);
 
   if (NULL == p_iso) {
     fprintf(stderr, "Sorry, couldn't open %s as an ISO-9660 image\n",
