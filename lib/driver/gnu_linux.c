@@ -168,8 +168,8 @@ check_mounts_linux(const char *mtab)
         continue;
       }
 
-      strncpy(mnt_type, mntent->mnt_type, i_mnt_type);
-      strncpy(mnt_dev, mntent->mnt_fsname, i_mnt_dev);
+      strcpy(mnt_type, mntent->mnt_type);
+      strcpy(mnt_dev, mntent->mnt_fsname);
 
       /* Handle "supermount" filesystem mounts */
       if ( strcmp(mnt_type, "supermount") == 0 ) {
