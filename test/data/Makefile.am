@@ -24,6 +24,8 @@ check_DATA = \
 	data1.toc      \
 	data2.toc      \
 	deep-directory.iso \
+	deep_directory1_file \
+	deep_directory2_file \
 	isofs-m1.bin   \
 	isofs-m1.cue   \
 	isofs-m1.toc   \
@@ -31,6 +33,7 @@ check_DATA = \
 	malformed.iso  \
 	malformed2.iso \
 	multi_extent_8k.iso \
+	multi_extent_file \
 	p1.bin         \
 	p1.cue         \
 	p1.nrg         \
