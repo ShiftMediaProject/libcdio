@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClInclude Include="..\include\cdio\audio.h" />
+    <ClInclude Include="..\include\cdio\bytesex.h" />
+    <ClInclude Include="..\include\cdio\bytesex_asm.h" />
+    <ClInclude Include="..\include\cdio\cdio.h" />
+    <ClInclude Include="..\include\cdio\cdtext.h" />
+    <ClInclude Include="..\include\cdio\cd_types.h" />
+    <ClInclude Include="..\include\cdio\device.h" />
+    <ClInclude Include="..\include\cdio\disc.h" />
+    <ClInclude Include="..\include\cdio\ds.h" />
+    <ClInclude Include="..\include\cdio\dvd.h" />
+    <ClInclude Include="..\include\cdio\ecma_167.h" />
+    <ClInclude Include="..\include\cdio\iso9660.h" />
+    <ClInclude Include="..\include\cdio\logging.h" />
+    <ClInclude Include="..\include\cdio\memory.h" />
+    <ClInclude Include="..\include\cdio\mmc.h" />
+    <ClInclude Include="..\include\cdio\mmc_cmds.h" />
+    <ClInclude Include="..\include\cdio\mmc_hl_cmds.h" />
+    <ClInclude Include="..\include\cdio\mmc_ll_cmds.h" />
+    <ClInclude Include="..\include\cdio\mmc_util.h" />
+    <ClInclude Include="..\include\cdio\posix.h" />
+    <ClInclude Include="..\include\cdio\read.h" />
+    <ClInclude Include="..\include\cdio\rock.h" />
+    <ClInclude Include="..\include\cdio\sector.h" />
+    <ClInclude Include="..\include\cdio\track.h" />
+    <ClInclude Include="..\include\cdio\types.h" />
+    <ClInclude Include="..\include\cdio\udf.h" />
+    <ClInclude Include="..\include\cdio\udf_file.h" />
+    <ClInclude Include="..\include\cdio\udf_time.h" />
+    <ClInclude Include="..\include\cdio\utf8.h" />
+    <ClInclude Include="..\include\cdio\util.h" />
+    <ClInclude Include="..\include\cdio\xa.h" />
+    <ClInclude Include="cdio\version.h" />
+    <ClInclude Include="config.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\lib\driver\abs_path.c" />
+    <ClCompile Include="..\lib\driver\aix.c" />
+    <ClCompile Include="..\lib\driver\audio.c" />
+    <ClCompile Include="..\lib\driver\cdio.c" />
+    <ClCompile Include="..\lib\driver\cdtext.c" />
+    <ClCompile Include="..\lib\driver\cd_types.c" />
+    <ClCompile Include="..\lib\driver\device.c" />
+    <ClCompile Include="..\lib\driver\disc.c" />
+    <ClCompile Include="..\lib\driver\ds.c" />
+    <ClCompile Include="..\lib\driver\FreeBSD\freebsd.c" />
+    <ClCompile Include="..\lib\driver\FreeBSD\freebsd_cam.c" />
+    <ClCompile Include="..\lib\driver\FreeBSD\freebsd_ioctl.c" />
+    <ClCompile Include="..\lib\driver\gnu_linux.c" />
+    <ClCompile Include="..\lib\driver\image\bincue.c" />
+    <ClCompile Include="..\lib\driver\image\cdrdao.c" />
+    <ClCompile Include="..\lib\driver\image\nrg.c" />
+    <ClCompile Include="..\lib\driver\image_common.c" />
+    <ClCompile Include="..\lib\driver\logging.c" />
+    <ClCompile Include="..\lib\driver\memory.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc_hl_cmds.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc_ll_cmds.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc_util.c" />
+    <ClCompile Include="..\lib\driver\MSWindows\aspi32.c" />
+    <ClCompile Include="..\lib\driver\MSWindows\win32.c" />
+    <ClCompile Include="..\lib\driver\MSWindows\win32_ioctl.c" />
+    <ClCompile Include="..\lib\driver\netbsd.c" />
+    <ClCompile Include="..\lib\driver\osx.c" />
+    <ClCompile Include="..\lib\driver\read.c" />
+    <ClCompile Include="..\lib\driver\realpath.c" />
+    <ClCompile Include="..\lib\driver\sector.c" />
+    <ClCompile Include="..\lib\driver\solaris.c" />
+    <ClCompile Include="..\lib\driver\track.c" />
+    <ClCompile Include="..\lib\driver\utf8.c" />
+    <ClCompile Include="..\lib\driver\util.c" />
+    <ClCompile Include="..\lib\driver\_cdio_generic.c" />
+    <ClCompile Include="..\lib\driver\_cdio_stdio.c" />
+    <ClCompile Include="..\lib\driver\_cdio_stream.c" />
+    <ClCompile Include="..\lib\iso9660\iso9660.c" />
+    <ClCompile Include="..\lib\iso9660\iso9660_fs.c" />
+    <ClCompile Include="..\lib\iso9660\rock.c" />
+    <ClCompile Include="..\lib\iso9660\xa.c" />
+    <ClCompile Include="..\lib\udf\filemode.c" />
+    <ClCompile Include="..\lib\udf\udf.c" />
+    <ClCompile Include="..\lib\udf\udf_file.c" />
+    <ClCompile Include="..\lib\udf\udf_fs.c" />
+    <ClCompile Include="..\lib\udf\udf_time.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="libcdio.def" />
+  </ItemGroup>
+</Project>

@@ -1004,7 +1004,7 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
 }
 
 #if !defined(HAVE_GLOB_H) && defined(_WIN32)
-static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
+static void Win32Glob(LPCWSTR pattern, LPCWSTR wszCurPath, char ***drives, unsigned int *num_files)
 {
   char szPath[MAX_PATH];
   WCHAR wszPath[MAX_PATH];
@@ -1012,7 +1012,7 @@ static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives
   HANDLE hFind;
   BOOL bFound;
 
-  SetCurrentDirectoryW(szCurPath);
+  SetCurrentDirectoryW(wszCurPath);
 
   hFind = FindFirstFileW(pattern, &ffd);
   bFound = (hFind != INVALID_HANDLE_VALUE);
@@ -1031,7 +1031,7 @@ static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives
          (wcscmp(ffd.cFileName, L".") != 0) && (wcscmp(ffd.cFileName, L"..") != 0) ) {
       GetFullPathNameW(ffd.cFileName, sizeof(wszPath) / sizeof(wszPath[0]), wszPath, NULL);
       Win32Glob(pattern, wszPath, drives, num_files);
-      SetCurrentDirectoryW(szCurPath);
+      SetCurrentDirectoryW(wszCurPath);
     }
     bFound = FindNextFileW(hFind, &ffd);
   }
