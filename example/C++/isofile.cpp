@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2004, 2006, 2008 Rocky Bernstein <rocky@gnu.org>
-  
+  Copyright (C) 2004, 2006, 2008, 2021 Rocky Bernstein <rocky@gnu.org>
+
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
   the Free Software Foundation, either version 3 of the License, or
@@ -25,7 +25,7 @@
 
 /* This is the ISO 9660 image. */
 #define ISO9660_IMAGE_PATH "../../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/data/copying.iso"
 
 #define LOCAL_FILENAME "copying"
 
@@ -76,19 +76,19 @@ main(int argc, const char *argv[])
     printf("Extracts filename from ISO-9660-image.ISO.\n");
     return 1;
   }
-  
-  if (argc > 1) 
+
+  if (argc > 1)
     psz_image = argv[1];
-  else 
+  else
     psz_image = ISO9660_IMAGE;
 
-  if (argc > 2) 
+  if (argc > 2)
     psz_fname = argv[2];
-  else 
+  else
     psz_fname = LOCAL_FILENAME;
 
   p_iso = iso9660_open (psz_image);
-  
+
   if (NULL == p_iso) {
     fprintf(stderr, "Sorry, couldn't open ISO 9660 image %s\n", psz_image);
     return 1;
@@ -96,9 +96,9 @@ main(int argc, const char *argv[])
 
   p_statbuf = iso9660_ifs_stat_translate (p_iso, psz_fname);
 
-  if (NULL == p_statbuf) 
+  if (NULL == p_statbuf)
     {
-      fprintf(stderr, 
+      fprintf(stderr,
 	      "Could not get ISO-9660 file information for file %s\n",
 	      psz_fname);
       iso9660_close(p_iso);
@@ -116,22 +116,22 @@ main(int argc, const char *argv[])
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
   {
     const unsigned int i_blocks = CEILING(p_statbuf->size, ISO_BLOCKSIZE);
-    for (i = 0; i < i_blocks ; i++) 
+    for (i = 0; i < i_blocks ; i++)
     {
       char buf[ISO_BLOCKSIZE];
       const lsn_t lsn = p_statbuf->lsn + i;
 
       memset (buf, 0, ISO_BLOCKSIZE);
-      
+
       if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, lsn, 1) )
       {
 	fprintf(stderr, "Error reading ISO 9660 file %s at LSN %lu\n",
 		psz_fname, (long unsigned int) lsn);
 	my_exit(4);
       }
-      
+
       fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
-      
+
       if (ferror (p_outfd))
 	{
 	  perror ("fwrite()");
@@ -139,7 +139,7 @@ main(int argc, const char *argv[])
 	}
     }
   }
-  
+
   fflush (p_outfd);
 
   /* Make sure the file size has the exact same byte size. Without the
@@ -148,7 +148,7 @@ main(int argc, const char *argv[])
   if (ftruncate (fileno (p_outfd), p_statbuf->size))
     perror ("ftruncate()");
 
-  printf("Extraction of file '%s' from %s successful.\n", 
+  printf("Extraction of file '%s' from %s successful.\n",
 	 psz_fname, psz_image);
 
   my_exit(0);

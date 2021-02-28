@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2006, 2008, 2009 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2009, 2021 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define ISO9660_IMAGE_PATH "../../../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/isofs-m1.cue"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/data/isofs-m1.cue"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
