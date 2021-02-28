@@ -1,5 +1,6 @@
 /*
-    Copyright (C) 2006, 2008, 2011-2012, 2016-2017 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2006, 2008, 2011-2012, 2016-2017, 2021 Rocky
+    Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +30,6 @@
 #include <vector>               // vector class library
 #include <cstdlib>
 #include <cstring>
-using namespace std;
 
 /** ISO 9660 class.
 */
@@ -46,12 +46,12 @@ public:
 
     PVD()
     {
-      memset(&pvd, 0, sizeof(pvd));
+      std::memset(&pvd, 0, sizeof(pvd));
     }
 
     PVD(iso9660_pvd_t *p_new_pvd)
     {
-      memcpy(&pvd, p_new_pvd, sizeof(pvd));
+      std::memcpy(&pvd, p_new_pvd, sizeof(pvd));
     };
 
     /*!
@@ -115,7 +115,7 @@ public:
   public:
 
     iso9660_stat_t *p_stat;
-    typedef vector< ISO9660::Stat *> stat_vector_t;
+    typedef std::vector< ISO9660::Stat *> stat_vector_t;
 
     Stat(iso9660_stat_t *p_new_stat)
     {
@@ -153,7 +153,7 @@ public:
   {
   public:
 
-    typedef vector< ISO9660::Stat *> stat_vector_t;
+    typedef std::vector< ISO9660::Stat *> stat_vector_t;
 
     /*!
       Given a directory pointer, find the filesystem entry that contains
@@ -207,7 +207,7 @@ public:
   {
   public:
 
-    typedef vector< ISO9660::Stat *> stat_vector_t;
+    typedef std::vector< ISO9660::Stat *> stat_vector_t;
 
     IFS()
     {
@@ -422,7 +422,7 @@ public:
 
 };
 
-typedef vector< ISO9660::Stat *> stat_vector_t;
-typedef vector <ISO9660::Stat *>::iterator stat_vector_iterator_t;
+typedef std::vector< ISO9660::Stat *> stat_vector_t;
+typedef std::vector <ISO9660::Stat *>::iterator stat_vector_iterator_t;
 
 #endif /* CDIO_ISO9660_HPP_ */
