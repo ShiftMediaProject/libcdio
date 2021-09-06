@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2013, 2017-2018 Rocky Bernstein
-  <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2013, 2017-2018, 2021
+   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -219,7 +219,7 @@ static int read_iso_file(const char *iso_name, const char *src,
   if (NULL == iso) {
     report(stderr,
            "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n",
-           program_name, src);
+           program_name, iso_name);
     return 1;
   }
 
