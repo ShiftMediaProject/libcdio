@@ -56,6 +56,8 @@ main(int argc, const char *argv[])
 {
   CdIo_t *p_cdio;
   long int i_sleep = 30;
+  int media_changed_ret;
+
   if (argc > 1) {
     p_cdio = cdio_open (argv[1], DRIVER_DEVICE);
     if (argc > 2) {
@@ -76,18 +78,22 @@ main(int argc, const char *argv[])
     return 1;
   }
 
-  if (cdio_get_media_changed(p_cdio))
+  if ((media_changed_ret = cdio_get_media_changed(p_cdio)) == 1)
     printf("Initial media status: changed\n");
-  else
+  else if (media_changed_ret == 0)
     printf("Initial media status: not changed\n");
+  else
+    printf("Error while invoking media changed request!\n");
 
   printf("Giving you %ld seconds to change CD if you want to do so.\n",
 	 i_sleep);
   sleep(i_sleep);
-  if (cdio_get_media_changed(p_cdio))
+  if ((media_changed_ret = cdio_get_media_changed(p_cdio)) == 1)
     printf("Media status: changed\n");
-  else
+  else if (media_changed_ret == 0)
     printf("Media status: not changed\n");
+  else
+    printf("Error while invoking media changed request!\n");
 
   cdio_destroy(p_cdio);
   return 0;

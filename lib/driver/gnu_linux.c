@@ -52,6 +52,9 @@
 # else
 #  error "You need a kernel greater than 2.2.16 to have CDROM support"
 # endif
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(5,16,0)
+#   define __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
+# endif
 #else
 #  error "You need <linux/version.h> to have CDROM support"
 #endif
@@ -98,6 +101,16 @@ typedef struct {
   struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1];
 
   struct cdrom_tochdr    tochdr;
+
+#if defined(__CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED)
+  /* The new TIMED_MEDIA_CHANGED ioctl requires us
+    to store the timestamp of our last check. Since
+    cdio_media_changed takes user data through a constant
+    pointer, we cannot use a direct field, as that would
+    not be writable in that method. Therefore, make this
+    a pointer. */ 
+  __s64 *last_changed_timestamp;
+#endif
 
 } _img_private_t;
 
@@ -505,7 +518,19 @@ get_last_session_linux (void *p_user_data,
 static int
 get_media_changed_linux (const void *p_user_data) {
   const _img_private_t *p_env = p_user_data;
+#if defined(__CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED)
+  struct cdrom_timed_media_change_info info = {
+    .last_media_change  = *(p_env->last_changed_timestamp),
+    .media_flags        = 0
+  };
+  if (ioctl(p_env->gen.fd, CDROM_TIMED_MEDIA_CHANGE, &info)) {
+    return DRIVER_OP_ERROR;
+  }
+  *(p_env->last_changed_timestamp) = info.last_media_change;
+  return info.media_flags & MEDIA_CHANGED_FLAG;
+#else
   return ioctl(p_env->gen.fd, CDROM_MEDIA_CHANGED, 0);
+#endif
 }
 
 /*!
@@ -1611,6 +1636,23 @@ no_tuple:;
 #endif
 
 /*!
+  Release and free resources associated with cd for linux driver.
+ */
+static void
+free_linux (void *p_user_data)
+{
+#ifdef __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
+  _img_private_t *p_env = p_user_data;
+  if (p_env->last_changed_timestamp) {
+    free(p_env->last_changed_timestamp);
+    p_env->last_changed_timestamp = 0;
+  }
+#endif
+
+  cdio_generic_free(p_user_data);
+}
+
+/*!
   Initialization routine. This is the only thing that doesn't
   get called via a function pointer. In fact *we* are the
   ones to set that up.
@@ -1654,7 +1696,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_set_volume      = audio_set_volume_linux,
     .audio_stop            = audio_stop_linux,
     .eject_media           = eject_media_linux,
-    .free                  = cdio_generic_free,
+    .free                  = free_linux,
     .get_arg               = get_arg_linux,
     .get_blocksize         = get_blocksize_mmc,
     .get_cdtext            = get_cdtext_generic,
@@ -1712,6 +1754,10 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   _data->gen.toc_init   = false;
   _data->gen.fd         = -1;
   _data->gen.b_cdtext_error = false;
+#ifdef __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
+  _data->last_changed_timestamp = calloc(1, sizeof (__s64));
+  *(_data->last_changed_timestamp) = 0;
+#endif
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_linux();
@@ -1754,7 +1800,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   free(ret);
 
  err_exit:
-    cdio_generic_free(_data);
+    free_linux(_data);
     return NULL;
 
 #else
