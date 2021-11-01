@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005-2012, 2017, 2019
+  Copyright (C) 2005-2012, 2017, 2019, 2021
   Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
