@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-  Copyright (C) 2002-2006, 2008-2013, 2017 Rocky Bernstein
+  Copyright (C) 2002-2006, 2008-2013, 2017, 2022 Rocky Bernstein
   <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -108,7 +108,7 @@ typedef struct {
     cdio_media_changed takes user data through a constant
     pointer, we cannot use a direct field, as that would
     not be writable in that method. Therefore, make this
-    a pointer. */ 
+    a pointer. */
   __s64 *last_changed_timestamp;
 #endif
 
