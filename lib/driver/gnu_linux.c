@@ -672,13 +672,13 @@ static int is_mounted (const char * device, char * target) {
   char real_device_1[PATH_MAX];
   char real_device_2[PATH_MAX];
 
-  char file_device[PATH_MAX];
-  char file_target[PATH_MAX];
+  struct mntent *fs;
 
-  fp = fopen ( "/proc/mounts", "r");
+  fp = setmntent("/proc/mounts", "r");
+
   /* Older systems just have /etc/mtab */
   if(!fp)
-    fp = fopen ( "/etc/mtab", "r");
+    fp = setmntent("/etc/mtab", "r");
 
   /* Neither /proc/mounts nor /etc/mtab could be opened, give up here */
   if(!fp) return 0;
@@ -691,19 +691,19 @@ static int is_mounted (const char * device, char * target) {
 
   /* Read entries */
 
-  while ( fscanf(fp, "%s %s %*s %*s %*d %*d\n", file_device, file_target) != EOF ) {
-      if (NULL == cdio_realpath(file_device, real_device_2)) {
+  while ((fs = getmntent(fp)) != NULL) {
+      if (NULL == cdio_realpath(fs->mnt_fsname, real_device_2)) {
           cdio_debug("Problems resolving device %s: %s\n",
-                     file_device, strerror(errno));
+                     fs->mnt_fsname, strerror(errno));
       }
     if(!strcmp(real_device_1, real_device_2)) {
-      strcpy(target, file_target);
-      fclose(fp);
+      strcpy(target, fs->mnt_dir);
+      endmntent(fp);
       return 1;
     }
 
   }
-  fclose(fp);
+  endmntent(fp);
   return 0;
 }
 
