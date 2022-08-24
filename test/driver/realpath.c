@@ -1,5 +1,7 @@
 /* -*- C -*-
-  Copyright (C) 2010-2012, 2015, 2017 Rocky Bernstein <rocky@gnu.org>
+
+  Copyright (C) 2010-2012, 2015, 2017, 2022 Rocky Bernstein
+  <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -175,16 +177,17 @@ main(int argc, const char *argv[])
         rc = check_rc(symlink(psz_symlink_file, psz_symlink_file),
                       "symlink", psz_symlink_file);
         if (0 == rc) {
-            cdio_realpath(psz_symlink_file, psz_file_check);
-            if (0 != strncmp(psz_file_check, symlink_file, PATH_MAX)) {
+            char *retvalue = cdio_realpath(psz_symlink_file, psz_file_check);
+            if (0 != retvalue) {
+	      if (0 != strncmp(psz_file_check, symlink_file, PATH_MAX)) {
                 fprintf(stderr, "direct cdio_realpath cycle test failed. %s vs %s\n",
                         psz_file_check, symlink_file);
 		rc = 5;
 		goto err_exit;
+	      }
+	      check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
             }
-            check_rc(unlink(psz_symlink_file), "unlink", psz_symlink_file);
         }
-
     }
 
     check_rc(unlink(psz_orig_file), "unlink", psz_orig_file);
