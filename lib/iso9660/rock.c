@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2020 Pete Batard <pete@akeo.ie>
-  Copyright (C) 2005, 2008, 2010-2011, 2014, 2017 Rocky Bernstein
+  Copyright (C) 2005, 2008, 2010-2011, 2014, 2017, 2022 Rocky Bernstein
   <rocky@gnu.org>
 
   Adapted from GNU/Linux fs/isofs/rock.c (C) 1992, 1993 Eric Youngdale
@@ -471,7 +471,7 @@ iso9660_get_rock_attr_str(posix_mode_t st_mode)
   result[ 8] = (st_mode & ISO_ROCK_IWOTH) ? 'w' : '-';
   result[ 9] = (st_mode & ISO_ROCK_IXOTH) ? 'x' : '-';
 
-  result[11] = '\0';
+  result[10] = '\0';
 
   return result;
 }
