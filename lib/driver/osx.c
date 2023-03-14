@@ -1232,7 +1232,7 @@ read_toc_osx (void *p_user_data)
     CFRange range;
     CFIndex buf_len;
 
-    buf_len = CFDataGetLength( data ) + 1;
+    buf_len = CFDataGetLength( data );
     range = CFRangeMake( 0, buf_len );
 
     if( ( p_env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
