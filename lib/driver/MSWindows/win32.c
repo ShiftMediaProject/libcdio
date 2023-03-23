@@ -708,6 +708,36 @@ get_arg_win32 (void *p_user_data, const char key[])
   return NULL;
 }
 
+/**
+  Read CD-Text binary data.
+*/
+static uint8_t *
+read_cdtext_win32(void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if( p_env->hASPI ) {
+    return read_cdtext_generic(p_user_data);
+  } else {
+    return read_cdtext_win32ioctl(p_user_data);
+  }
+}
+
+/**
+  Read CD-Text and return cdtext_t structure.
+*/
+static cdtext_t *
+get_cdtext_win32 (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if( p_env->hASPI ) {
+    return get_cdtext_generic(p_user_data);
+  } else {
+    return get_cdtext_win32ioctl(p_user_data);
+  }
+}
+
 /*!
   Return the media catalog number MCN.
 
@@ -997,8 +1027,8 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.eject_media            = eject_media_win32;
   _funcs.free                   = free_win32;
   _funcs.get_arg                = get_arg_win32;
-  _funcs.get_cdtext             = get_cdtext_generic;
-  _funcs.get_cdtext_raw         = read_cdtext_generic;
+  _funcs.get_cdtext             = get_cdtext_win32;
+  _funcs.get_cdtext_raw         = read_cdtext_win32;
   _funcs.get_default_device     = cdio_get_default_device_win32;
   _funcs.get_devices            = cdio_get_devices_win32;
   _funcs.get_disc_last_lsn      = get_disc_last_lsn_win32;

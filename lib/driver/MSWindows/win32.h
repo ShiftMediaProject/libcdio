@@ -194,6 +194,16 @@ get_last_session_win32ioctl (void *p_user_data,
                              /*out*/ lsn_t *i_last_session);
 
 /*!
+  Read CD-Text binary data.
+ */
+uint8_t *read_cdtext_win32ioctl (void *p_user_data);
+
+/*!
+  Read CD-Text and return cdtext_t structure.
+ */
+cdtext_t *get_cdtext_win32ioctl (void *p_user_data);
+
+/*!
   Return the media catalog number MCN.
 
   Note: string is malloc'd so caller should free() then returned

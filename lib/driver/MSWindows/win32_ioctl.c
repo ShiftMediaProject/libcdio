@@ -67,6 +67,7 @@
 #include "cdio_assert.h"
 #include <cdio/mmc.h>
 #include "cdio/logging.h"
+#include "cdtext_private.h" 
 
 #if defined (_XBOX)
 #define windows_error(loglevel,i_err) {                    \
@@ -1214,6 +1215,70 @@ get_last_session_win32ioctl (void *p_user_data,
     (session.TrackData[0].Address[3]);
 
   return DRIVER_OP_SUCCESS;
+}
+
+/**
+  Read CD-Text binary data.
+*/
+uint8_t *
+read_cdtext_win32ioctl(void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+  DWORD dw_bytes_returned;
+  CDROM_READ_TOC_EX read_toc_ex;
+  size_t size = CDTEXT_LEN_BINARY_MAX + 4;
+  uint8_t *data = malloc(size);
+
+  memset( &read_toc_ex, 0, sizeof(read_toc_ex) );
+  memset( data, 0, size );
+
+  read_toc_ex.Format = CDROM_READ_TOC_EX_FORMAT_CDTEXT;
+
+  if( ! DeviceIoControl( p_env->h_device_handle,
+                       IOCTL_CDROM_READ_TOC_EX,
+                       &read_toc_ex, sizeof(read_toc_ex),
+                       data, size,
+                       &dw_bytes_returned, NULL ) ) {
+    cdio_debug( "could not read CD-Text" );
+    free( data );
+    return NULL;
+  }
+
+  return data;
+}
+
+/**
+  Read CD-Text and return cdtext_t structure.
+*/
+cdtext_t *
+get_cdtext_win32ioctl (void *p_user_data)
+{
+  generic_img_private_t *p_env = p_user_data;
+  uint8_t *p_cdtext_data = NULL;
+  size_t  len;
+
+  if (!p_env) return NULL;
+
+  if (p_env->b_cdtext_error) return NULL;
+
+  if (NULL == p_env->cdtext) {
+    p_cdtext_data = read_cdtext_win32ioctl (p_env);
+
+    if (NULL != p_cdtext_data) {
+      len = CDIO_MMC_GET_LEN16(p_cdtext_data)-2;
+      p_env->cdtext = cdtext_init();
+
+      if(len <= 0 || 0 != cdtext_data_init (p_env->cdtext, &p_cdtext_data[4], len)) {
+        p_env->b_cdtext_error = true;
+        cdtext_destroy (p_env->cdtext);
+        p_env->cdtext = NULL;
+      }
+
+      free(p_cdtext_data);
+    }
+  }
+
+  return p_env->cdtext;
 }
 
 /**
