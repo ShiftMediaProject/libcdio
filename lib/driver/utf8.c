@@ -288,7 +288,7 @@ bool cdio_charset_from_utf8(cdio_utf8_t * src, char ** dst,
   wchar_t* le_dst;
   size_t i, len;
 
-  if (src == NULL || dst == NULL || dst_len == NULL || dst_charset == NULL || strcmp(dst_charset, "UTF-8") != 0)
+  if (src == NULL || dst == NULL || dst_len == NULL || dst_charset == NULL || strcmp(dst_charset, "UCS-2BE") != 0)
     return false;
 
   /* Eliminate empty strings */
