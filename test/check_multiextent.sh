@@ -36,19 +36,29 @@ fi
 
 BASE=`basename $0 .sh`
 
-fname=multiextent
+for i in multi_extent_8k.iso multi_extent_8k_joliet.iso
+do
+  if test "$i" = multi_extent_8k.iso
+  then
+    fname=multiextent
+    aspect="ISO 9660 + Rock Ridge"
+  else
+    fname=multiextent_joliet
+    aspect="Joliet"
+  fi
 
-# File listing
-iso_image="${srcdir}/data/multi_extent_8k.iso"
-opts="--no-header --quiet -l ${iso_image}"
-test_iso_info "$opts" ${fname}.dump ${srcdir}/${fname}.right
-RC=$?
-check_result $RC 'Multiextent listing test' "$ISO_INFO $opts"
+  # File listing
+  iso_image="${srcdir}/data/${i}"
+  opts="--no-header --quiet -l ${iso_image}"
+  test_iso_info "$opts" ${fname}.dump ${srcdir}/${fname}.right
+  RC=$?
+  check_result $RC "$aspect"' multiextent listing test' "$ISO_INFO $opts"
 
-# File dump and comparison
-opts="--ignore --image ${iso_image} --extract multi_extent_file"
-test_iso_read "$opts" ${fname} ${srcdir}/data/multi_extent_file
-RC=$?
-check_result $RC 'Multiextent read test' "$ISO_READ $opts"
+  # File dump and comparison
+  opts="--ignore --image ${iso_image} --extract multi_extent_file"
+  test_iso_read "$opts" ${fname} ${srcdir}/data/multi_extent_file
+  RC=$?
+  check_result $RC "$aspect"' multiextent read test' "$ISO_READ $opts"
+done
 
 exit $RC
