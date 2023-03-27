@@ -2,7 +2,7 @@
   Copyright (C) 2003-2005, 2007-2008, 2011-2012, 2014, 2017
   Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 1996, 1997, 1998  Gerd Knorr <kraxel@bytesex.org>
-         and Heiko Ei�feldt <heiko@hexco.de>
+         and Heiko Eißfeldt <heiko@hexco.de>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -199,7 +199,7 @@ parse_options (int argc, char *argv[])
     "  -H, --cddb-http                 Lookup CDDB via HTTP proxy (default no\n"
     "                                  proxy)\n"
     "  --cddb-server=STRING            CDDB server to contact for information\n"
-    "                                  (default: freedb.freedb.org)\n"
+    "                                  (default: gnudb.gnudb.org)\n"
     "  --cddb-cache=STRING             Location of CDDB cache directory\n"
     "                                  (default ~/.cddbclient)\n"
     "  --cddb-email=STRING             Email address to give CDDB server\n"

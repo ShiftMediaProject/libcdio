@@ -458,7 +458,7 @@ CDs.
 
 There are currently two popular CDDB services on the Internet. The
 original database has been renamed Gracenote and is a profit making
-entity. FreeDB (@url{http://freedb.org} is an open source CD
+entity. GnuDB (@url{https://gnudb.org} is an open source CD
 information resource that is free for developers and the public to
 use.
 
