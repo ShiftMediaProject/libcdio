@@ -1,7 +1,7 @@
 __________________________________
 ISO-9660 Information
 /:
-  drwxr-xr-x   1 0 0 [LSN     50]      2048 Jun 27 2018 08:21:56  .
-  drwxr-xr-x   1 0 0 [LSN     50]      2048 Jun 27 2018 08:21:56  ..
-  -rw-r--r--   1 1000 1000 [LSN     55]     54305 Jun 10 2018 17:52:58  multi_extent_file
+  drwxr-xr-x   1 0 0 [LSN     18]      2048 Mar 27 2023 14:09:08  .
+  drwxr-xr-x   1 0 0 [LSN     18]      2048 Mar 27 2023 14:09:08  ..
+  -rw-r--r--   1 1007 1001 [LSN     33]     54305 Jun 17 2020 19:29:52  multi_extent_file
 
