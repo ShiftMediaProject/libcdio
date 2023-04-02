@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003-2008, 2012-2013, 2017
+    Copyright (C) 2003-2008, 2012-2013, 2017, 2023
                   Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -766,7 +766,7 @@ typedef struct _iso9660_s iso9660_t;
     tm will reported in GMT.
   */
   bool iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
-                          /*out*/ struct tm *tm);
+                          /*out*/ struct tm *p_tm);
 
 
   /*!
