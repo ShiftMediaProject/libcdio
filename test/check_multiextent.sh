@@ -36,12 +36,18 @@ fi
 
 BASE=`basename $0 .sh`
 
-for i in multi_extent_8k.iso multi_extent_8k_joliet.iso
+for i in multi_extent_8k.iso \
+         multi_extent_8k_emul_toc_padded.iso \
+         multi_extent_8k_joliet.iso 
 do
   if test "$i" = multi_extent_8k.iso
   then
     fname=multiextent
-    aspect="ISO 9660 + Rock Ridge"
+    aspect="ISO 9660+RockRidge"
+  elif test "$i" = multi_extent_8k_emul_toc_padded.iso
+  then
+    fname=multiextent_emultocpad
+    aspect="ISO 9660+RockRidge+Emul.TOC+Padding"
   else
     fname=multiextent_joliet
     aspect="Joliet"
