@@ -43,11 +43,11 @@ do
   if test "$i" = multi_extent_8k.iso
   then
     fname=multiextent
-    aspect="ISO 9660+RockRidge"
+    aspect="ISO9660+RockRidge"
   elif test "$i" = multi_extent_8k_emul_toc_padded.iso
   then
     fname=multiextent_emultocpad
-    aspect="ISO 9660+RockRidge+Emul.TOC+Padding"
+    aspect="ISO9660+RockRidge+EmulTOC+Padding"
   else
     fname=multiextent_joliet
     aspect="Joliet"
