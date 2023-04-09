@@ -23,13 +23,10 @@
 /configure
 /cov-int
 /depcomp
+/dist
 /install-sh
 /libcdio++.pc
-/libcdio-*.sig
-/libcdio-*.tar.bz2
-/libcdio-*.tar.gz
-/libcdio-*.tar.gz.directive
-/libcdio-*.tar.gz.directive.asc
+/libcdio-*
 /libcdio.pc
 /libcdio_cdda.pc
 /libiso9660++.pc

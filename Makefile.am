@@ -1,5 +1,5 @@
 #   Copyright (C) 2003-2004, 2006, 2008, 2011-2013, 2016, 2019
-#   Rocky Bernstein <rocky@gnu.org>
+#   2023 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -27,18 +27,23 @@ EXTRA_DIST = \
 	MSVC/config.h \
 	MSVC/libcdio.sln \
 	MSVC/libcdio.vcproj  \
-	README.libcdio \
 	NEWS.md \
+	README.libcdio \
 	THANKS \
 	example/README \
-	libcdio.pc.in \
 	libcdio++.pc.in \
-	libiso9660.pc.in \
+	libcdio.pc.in \
 	libiso9660++.pc.in \
+	libiso9660.pc.in \
 	libudf.pc.in \
 	make-check-filter.pl \
 	make-check-filter.rb \
-	package/libcdio.spec.in
+	package/libcdio.spec.in \
+	test/README.multiextent \
+	$(wildcard test/data/*.bin) \
+	$(wildcard test/data/*.cue) \
+	$(wildcard test/data/*.iso) \
+	$(wildcard test/*.right)
 
 SUBDIRS = doc include lib src test example
 
