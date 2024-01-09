@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003-2008, 2012-2013, 2017, 2023
+    Copyright (C) 2003-2008, 2012-2013, 2017, 2023-2024
                   Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -910,8 +910,8 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value using iso9660_stat_free().
  */
-#define iso9660_fs_find_lsn  iso9660_find_fs_lsn
 iso9660_stat_t *iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
+iso9660_stat_t *iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
 
 
 /*!

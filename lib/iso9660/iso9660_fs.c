@@ -1,5 +1,6 @@
 /*
-  Copyright (C) 2003-2008, 2011-2015, 2017 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2003-2008, 2011-2015, 2017, 2024
+  Rocky Bernstein <rocky@gnu.org>
   Copyright (C) 2018, 2020 Pete Batard <pete@akeo.ie>
   Copyright (C) 2018 Thomas Schmitt <scdbackup@gmx.net>
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
@@ -796,7 +797,7 @@ _iso9660_is_rock_ridge_enabled(void* p_image)
 /*!
   Convert a directory record name to a 0-terminated string.
   One of parameters alloc_result and cpy_result should be non-NULL to take
-  the result. 
+  the result.
 */
 static bool
 _iso9660_recname_to_cstring(const char *src, size_t src_len,
@@ -1234,7 +1235,7 @@ _fs_iso_stat_traverse (iso9660_t *p_iso, const iso9660_stat_t *_root,
 {
   unsigned offset = 0;
   uint8_t *_dirbuf = NULL;
-  uint32_t blocks; 
+  uint32_t blocks;
   int ret, cmp;
   iso9660_stat_t *p_stat = NULL;
   iso9660_dir_t *p_iso9660_dir = NULL;
@@ -1775,6 +1776,8 @@ iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
     free(psz_full_filename);
   return p_statbuf;
 }
+iso9660_stat_t *
+iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn) __attribute__ ((alias ("iso9660_fs_find_lsn")));
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
