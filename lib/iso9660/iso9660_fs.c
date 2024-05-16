@@ -1514,7 +1514,22 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
     uint32_t blocks = CDIO_EXTENT_BLOCKS(p_stat->total_size);
     CdioISO9660DirList_t *retval = _cdio_list_new ();
     bool skip_following_extents = false;
+	
+    // Check if the dir buffer size exceeds the maximum limit
+    const size_t MAX_DIRBUF_LEN = 1 * 1024 * 1024 * 1024; 
+    if (dirbuf_len > MAX_DIRBUF_LEN) {
+	cdio_warn("Dir buffer size too large");
+	iso9660_stat_free(p_stat);
+	return NULL;
+    }
 
+    // Check for potential integer overflow when calculating total blocks
+    if (blocks > (SIZE_MAX / ISO_BLOCKSIZE)) {
+	cdio_warn("Total size is too large");
+	iso9660_stat_free(p_stat);
+	return NULL;
+    }
+	
     _dirbuf = calloc(1, blocks * ISO_BLOCKSIZE);
     if (!_dirbuf)
       {
