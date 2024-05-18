@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005-2006, 2008, 2011, 2013-2014, 2017
+  Copyright (C) 2005-2006, 2008, 2011, 2013-2014, 2017, 2024
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -279,7 +279,7 @@ udf_fopen(udf_dirent_t *p_udf_root, const char *psz_name)
    The returned string is allocated and must be freed by the caller
 */
 static char*
-unicode16_decode(const uint8_t *data, int i_len)
+unicode16_decode(const uint8_t *data, unsigned int u_len)
 {
   int i;
   char* r = NULL;
@@ -292,14 +292,14 @@ unicode16_decode(const uint8_t *data, int i_len)
   switch (data[0])
   {
   case 8:
-    r = (char*)calloc(i_len, 1);
+    r = (char*)calloc(u_len, 1);
     if (r == NULL)
       return r;
-    for (i=0; i<i_len-1; i++)
+    for (i=0; i<u_len-1; i++)
       r[i] = data[i+1];
     return r;
   case 16:
-    cdio_charset_to_utf8((char*)&data[1], i_len-1, &r, "UCS-2BE");
+    cdio_charset_to_utf8((char*)&data[1], u_len-1, &r, "UCS-2BE");
     return r;
   default:
     /* Empty string, as some existing sections can't take a NULL pointer */
@@ -743,7 +743,7 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
 	(p_udf_dirent->fid->file_characteristics & UDF_FILE_PARENT) != 0;
 
       {
-	const unsigned int i_len = p_udf_dirent->fid->i_file_id;
+	const unsigned int u_len = p_udf_dirent->fid->i_file_id;
 
 	if (DRIVER_OP_SUCCESS != udf_read_sectors(p_udf, &p_udf_dirent->fe, p_udf->i_part_start
 			 + uint32_from_le(p_udf_dirent->fid->icb.loc.lba), 1)) {
@@ -753,7 +753,7 @@ udf_readdir(udf_dirent_t *p_udf_dirent)
 
        free_and_null(p_udf_dirent->psz_name);
        p = (uint8_t*)p_udf_dirent->fid->u.imp_use.data + p_udf_dirent->fid->u.i_imp_use;
-       p_udf_dirent->psz_name = unicode16_decode(p, i_len);
+       p_udf_dirent->psz_name = unicode16_decode(p, u_len);
       }
       return p_udf_dirent;
     }
