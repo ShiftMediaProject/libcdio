@@ -1509,6 +1509,16 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
   }
 
   {
+	// **Fix for overflow on 32-bit systems**
+	//
+	// uint32_t has a limited maximum value, and if p_stat->total_size (the total
+	// size of the directory) is very large, the calculation might exceed this limit.
+
+	if (p_stat->total_size > SIZE_MAX / ISO_BLOCKSIZE) {
+	  cdio_warn("Total size is too large");
+	  iso9660_stat_free(p_stat);
+	  return NULL;
+	}
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
     uint32_t blocks = CDIO_EXTENT_BLOCKS(p_stat->total_size);
@@ -1606,6 +1616,16 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
   }
 
   {
+	// **Fix for overflow on 32-bit systems**
+	//
+	// uint32_t has a limited maximum value, and if p_stat->total_size (the total
+	// size of the directory) is very large, the calculation might exceed this limit.
+
+	if (p_stat->total_size > SIZE_MAX / ISO_BLOCKSIZE) {
+	  cdio_warn("Total size is too large");
+	  iso9660_stat_free(p_stat);
+	  return NULL;
+	}
     long int ret;
     unsigned offset = 0;
     uint8_t *_dirbuf = NULL;
