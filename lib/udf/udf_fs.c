@@ -283,12 +283,7 @@ unicode16_decode(const uint8_t *data, unsigned int u_len)
 {
   int i;
   char* r = NULL;
-  
-  // Check if i_len is valid
-  if (i_len < 0) {
-      return NULL;
-  }
-  
+
   switch (data[0])
   {
   case 8:
