@@ -164,6 +164,10 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
   if (! p_udf_fe->i_alloc_descs)
     return false;
 
+  // check the validity of the i_extended_attr member
+  if (p_udf_fe->i_extended_attr > UINT32_MAX - sizeof(udf_short_ad_t) || p_udf_fe->i_extended_attr < 0)
+	return false;
+
   switch (p_udf_fe->icb_tag.flags & ICBTAG_FLAG_AD_MASK) {
   case ICBTAG_FLAG_AD_SHORT:
     {
