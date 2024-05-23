@@ -1495,6 +1495,12 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
   iso9660_stat_t *p_iso9660_stat = NULL;
   iso9660_stat_t *p_stat;
 
+  unsigned offset = 0;
+  uint8_t *_dirbuf = NULL;
+  uint32_t blocks;
+  CdioISO9660DirList_t *retval;
+  bool skip_following_extents = false;
+
   if (!p_cdio)   return NULL;
   if (!psz_path) return NULL;
 
@@ -1508,89 +1514,76 @@ iso9660_fs_readdir (CdIo_t *p_cdio, const char psz_path[])
     return NULL;
   }
 
-  {
-	// **Fix for overflow on 32-bit systems**
-	//
-	// uint32_t has a limited maximum value, and if p_stat->total_size (the total
-	// size of the directory) is very large, the calculation might exceed this limit.
+  /* Check for overflow on 32-bit systems.
+     uint32_t has a limited maximum value, and if p_stat->total_size (the total
+     size of the directory) is very large, the calculation might exceed this limit.
+  */
+  if (p_stat->total_size > SIZE_MAX / ISO_BLOCKSIZE) {
+    cdio_warn("Total size is too large");
+    iso9660_stat_free(p_stat);
+    return NULL;
+  }
 
-	if (p_stat->total_size > SIZE_MAX / ISO_BLOCKSIZE) {
-	  cdio_warn("Total size is too large");
-	  iso9660_stat_free(p_stat);
-	  return NULL;
-	}
-    unsigned offset = 0;
-    uint8_t *_dirbuf = NULL;
-    uint32_t blocks = CDIO_EXTENT_BLOCKS(p_stat->total_size);
-    CdioISO9660DirList_t *retval = _cdio_list_new ();
-    bool skip_following_extents = false;
+  blocks = CDIO_EXTENT_BLOCKS(p_stat->total_size);
+  retval = _cdio_list_new ();
 
-    /* // Check if the dir buffer size exceeds the maximum limit */
-    /* const size_t MAX_DIRBUF_LEN = 1 * 1024 * 1024 * 1024;  */
-    /* if (dirbuf_len > MAX_DIRBUF_LEN) { */
-    /* 	cdio_warn("Dir buffer size too large"); */
-    /* 	iso9660_stat_free(p_stat); */
-    /* 	return NULL; */
-    /* } */
+  /* Check for potential integer overflow when calculating total blocks */
+  if (blocks > (SIZE_MAX / ISO_BLOCKSIZE)) {
+    cdio_warn("Total size is too large");
+    iso9660_stat_free(p_stat);
+    return NULL;
+  }
 
-    // Check for potential integer overflow when calculating total blocks
-    if (blocks > (SIZE_MAX / ISO_BLOCKSIZE)) {
-	cdio_warn("Total size is too large");
-	iso9660_stat_free(p_stat);
-	return NULL;
-    }
-
-    _dirbuf = calloc(1, blocks * ISO_BLOCKSIZE);
-    if (!_dirbuf)
-      {
+  _dirbuf = calloc(1, blocks * ISO_BLOCKSIZE);
+  if (!_dirbuf)
+    {
       cdio_warn("Couldn't calloc(1, %d)", blocks * ISO_BLOCKSIZE);
       iso9660_stat_free(p_stat);
       iso9660_dirlist_free(retval);
       return NULL;
-      }
-
-    if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn,
-				ISO_BLOCKSIZE, blocks)) {
-      iso9660_stat_free(p_stat);
-      iso9660_dirlist_free(retval);
-      return NULL;
     }
 
-    while (offset < (blocks * ISO_BLOCKSIZE))
-      {
-	p_iso9660_dir = (void *) &_dirbuf[offset];
+  if (cdio_read_data_sectors (p_cdio, _dirbuf, p_stat->lsn,
+			      ISO_BLOCKSIZE, blocks)) {
+    iso9660_stat_free(p_stat);
+    iso9660_dirlist_free(retval);
+    return NULL;
+  }
 
-	if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
-  	  continue;
+  while (offset < (blocks * ISO_BLOCKSIZE))
+    {
+      p_iso9660_dir = (void *) &_dirbuf[offset];
 
-	if (skip_following_extents) {
-	  /* Do not register remaining extents of ill file */
-	  p_iso9660_stat = NULL;
-	} else {
-	  p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir,
-						   p_iso9660_stat, p_cdio,
-						   dunno, p_env->u_joliet_level);
-	  if (NULL == p_iso9660_stat)
-	    skip_following_extents = true; /* Start ill file mode */
-	}
-	if ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)
-	  skip_following_extents = false; /* Ill or not: The file ends now */
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
 
-	if ((p_iso9660_stat) &&
-	    ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)) {
-	  _cdio_list_append (retval, p_iso9660_stat);
-	  p_iso9660_stat = NULL;
-	}
+      if (skip_following_extents) {
+	/* Do not register remaining extents of ill file */
+	p_iso9660_stat = NULL;
+      } else {
+	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir,
+						 p_iso9660_stat, p_cdio,
+						 dunno, p_env->u_joliet_level);
+	if (NULL == p_iso9660_stat)
+	  skip_following_extents = true; /* Start ill file mode */
+      }
+      if ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)
+	skip_following_extents = false; /* Ill or not: The file ends now */
 
-	offset += iso9660_get_dir_len(p_iso9660_dir);
+      if ((p_iso9660_stat) &&
+	  ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)) {
+	_cdio_list_append (retval, p_iso9660_stat);
+	p_iso9660_stat = NULL;
       }
 
-    cdio_assert (offset == (blocks * ISO_BLOCKSIZE));
+      offset += iso9660_get_dir_len(p_iso9660_dir);
+    }
 
-    free(_dirbuf);
-    iso9660_stat_free(p_stat);
-    return retval;
-  }
+  cdio_assert (offset == (blocks * ISO_BLOCKSIZE));
+
+  free(_dirbuf);
+  iso9660_stat_free(p_stat);
+  return retval;
 }
 
 /*!
@@ -1604,6 +1597,14 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
   iso9660_stat_t *p_iso9660_stat = NULL;
   iso9660_stat_t *p_stat;
 
+  long int ret;
+  unsigned offset = 0;
+  uint8_t *_dirbuf = NULL;
+  uint32_t blocks;
+  CdioList_t *retval;
+  size_t dirbuf_len;
+  bool skip_following_extents = false;
+
   if (!p_iso)    return NULL;
   if (!psz_path) return NULL;
 
@@ -1615,92 +1616,87 @@ iso9660_ifs_readdir (iso9660_t *p_iso, const char psz_path[])
     return NULL;
   }
 
-  {
-	// **Fix for overflow on 32-bit systems**
-	//
-	// uint32_t has a limited maximum value, and if p_stat->total_size (the total
-	// size of the directory) is very large, the calculation might exceed this limit.
+  /* Check for overflow on 32-bit systems.
+     uint32_t has a limited maximum value, and if p_stat->total_size (the total
+     size of the directory) is very large, the calculation might exceed this limit.
+  */
 
-	if (p_stat->total_size > SIZE_MAX / ISO_BLOCKSIZE) {
-	  cdio_warn("Total size is too large");
-	  iso9660_stat_free(p_stat);
-	  return NULL;
-	}
-    long int ret;
-    unsigned offset = 0;
-    uint8_t *_dirbuf = NULL;
-    uint32_t blocks = CDIO_EXTENT_BLOCKS(p_stat->total_size);
-    CdioList_t *retval = _cdio_list_new ();
-    const size_t dirbuf_len = blocks * ISO_BLOCKSIZE;
-    bool skip_following_extents = false;
-
-    if (!dirbuf_len)
-      {
-        cdio_warn("Invalid directory buffer sector size %u", blocks);
-	iso9660_stat_free(p_stat);
-	_cdio_list_free (retval, true, NULL);
-        return NULL;
-      }
-
-    _dirbuf = calloc(1, dirbuf_len);
-    if (!_dirbuf)
-      {
-        cdio_warn("Couldn't calloc(1, %lu)", (unsigned long)dirbuf_len);
-	iso9660_stat_free(p_stat);
-	_cdio_list_free (retval, true, NULL);
-        return NULL;
-      }
-
-    ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, blocks);
-    if (ret != dirbuf_len) 	  {
-      _cdio_list_free (retval, true, NULL);
-      iso9660_stat_free(p_stat);
-      free (_dirbuf);
-      return NULL;
-    }
-
-    while (offset < (dirbuf_len))
-      {
-	p_iso9660_dir = (void *) &_dirbuf[offset];
-
-	if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
-	  continue;
-
-	if (skip_following_extents) {
-	  /* Do not register remaining extents of ill file */
-	  p_iso9660_stat = NULL;
-	} else {
-	  p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir,
-						   p_iso9660_stat,
-						   p_iso,
-						   p_iso->b_xa,
-						   p_iso->u_joliet_level);
-	  if (NULL == p_iso9660_stat)
-	    skip_following_extents = true; /* Start ill file mode */
-	  else if (p_iso9660_stat->rr.u_su_fields & ISO_ROCK_SUF_RE)
-	    continue; /* Ignore RE entries */
-	}
-	if ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)
-	  skip_following_extents = false; /* Ill or not: The file ends now */
-	if ((p_iso9660_stat) &&
-	    ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)) {
-	  _cdio_list_append(retval, p_iso9660_stat);
-	  p_iso9660_stat = NULL;
-	}
-
-	offset += iso9660_get_dir_len(p_iso9660_dir);
-      }
-
-    free (_dirbuf);
+  if (p_stat->total_size > SIZE_MAX / ISO_BLOCKSIZE) {
+    cdio_warn("Total size is too large");
     iso9660_stat_free(p_stat);
+    return NULL;
+  }
 
-    if (offset != dirbuf_len) {
-      _cdio_list_free (retval, true, (CdioDataFree_t) iso9660_stat_free);
+  blocks = CDIO_EXTENT_BLOCKS(p_stat->total_size);
+  dirbuf_len = blocks * ISO_BLOCKSIZE;
+  retval = _cdio_list_new ();
+
+  if (!dirbuf_len)
+    {
+      cdio_warn("Invalid directory buffer sector size %u", blocks);
+      iso9660_stat_free(p_stat);
+      _cdio_list_free (retval, true, NULL);
       return NULL;
     }
 
-    return retval;
+  _dirbuf = calloc(1, dirbuf_len);
+  if (!_dirbuf)
+    {
+      cdio_warn("Couldn't calloc(1, %lu)", (unsigned long)dirbuf_len);
+      iso9660_stat_free(p_stat);
+      _cdio_list_free (retval, true, NULL);
+      return NULL;
+    }
+
+  ret = iso9660_iso_seek_read (p_iso, _dirbuf, p_stat->lsn, blocks);
+  if (ret != dirbuf_len) 	  {
+    _cdio_list_free (retval, true, NULL);
+    iso9660_stat_free(p_stat);
+    free (_dirbuf);
+    return NULL;
   }
+
+  while (offset < (dirbuf_len))
+    {
+      p_iso9660_dir = (void *) &_dirbuf[offset];
+
+      if (iso9660_check_dir_block_end(p_iso9660_dir, &offset))
+	continue;
+
+      if (skip_following_extents) {
+	/* Do not register remaining extents of ill file */
+	p_iso9660_stat = NULL;
+      } else {
+	p_iso9660_stat = _iso9660_dir_to_statbuf(p_iso9660_dir,
+						 p_iso9660_stat,
+						 p_iso,
+						 p_iso->b_xa,
+						 p_iso->u_joliet_level);
+	if (NULL == p_iso9660_stat)
+	  skip_following_extents = true; /* Start ill file mode */
+	else if (p_iso9660_stat->rr.u_su_fields & ISO_ROCK_SUF_RE)
+	  continue; /* Ignore RE entries */
+      }
+      if ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)
+	skip_following_extents = false; /* Ill or not: The file ends now */
+      if ((p_iso9660_stat) &&
+	  ((p_iso9660_dir->file_flags & ISO_MULTIEXTENT) == 0)) {
+	_cdio_list_append(retval, p_iso9660_stat);
+	p_iso9660_stat = NULL;
+      }
+
+      offset += iso9660_get_dir_len(p_iso9660_dir);
+    }
+
+  free (_dirbuf);
+  iso9660_stat_free(p_stat);
+
+  if (offset != dirbuf_len) {
+    _cdio_list_free (retval, true, (CdioDataFree_t) iso9660_stat_free);
+    return NULL;
+  }
+
+  return retval;
 }
 
 typedef CdioISO9660FileList_t * (iso9660_readdir_t)

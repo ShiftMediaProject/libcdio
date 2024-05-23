@@ -161,11 +161,11 @@ bool
 udf_get_lba(const udf_file_entry_t *p_udf_fe,
 	    /*out*/ uint32_t *start, /*out*/ uint32_t *end)
 {
-  if (! p_udf_fe->i_alloc_descs)
+  if (! p_udf_fe->u_alloc_descs)
     return false;
 
-  // check the validity of the i_extended_attr member
-  if (p_udf_fe->i_extended_attr > UINT32_MAX - sizeof(udf_short_ad_t) || p_udf_fe->i_extended_attr < 0)
+  // check the validity of the u_extended_attr member
+  if (p_udf_fe->u_extended_attr > UINT32_MAX - sizeof(udf_short_ad_t))
 	return false;
 
   switch (p_udf_fe->icb_tag.flags & ICBTAG_FLAG_AD_MASK) {
@@ -173,7 +173,7 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
     {
       /* The allocation descriptor field is filled with short_ad's. */
       udf_short_ad_t *p_ad = (udf_short_ad_t *)
-	(p_udf_fe->u.ext_attr + uint32_from_le(p_udf_fe->i_extended_attr));
+	(p_udf_fe->u.ext_attr + uint32_from_le(p_udf_fe->u_extended_attr));
 
       *start = uint32_from_le(p_ad->pos);
       *end = *start +
@@ -185,7 +185,7 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
     {
       /* The allocation descriptor field is filled with long_ad's */
       udf_long_ad_t *p_ad = (udf_long_ad_t *)
-	(p_udf_fe->u.ext_attr + uint32_from_le(p_udf_fe->i_extended_attr));
+	(p_udf_fe->u.ext_attr + uint32_from_le(p_udf_fe->u_extended_attr));
 
       *start = uint32_from_le(p_ad->loc.lba); /* ignore partition number */
       *end = *start +
@@ -196,7 +196,7 @@ udf_get_lba(const udf_file_entry_t *p_udf_fe,
   case ICBTAG_FLAG_AD_EXTENDED:
     {
       udf_ext_ad_t *p_ad = (udf_ext_ad_t *)
-	(p_udf_fe->u.ext_attr + uint32_from_le(p_udf_fe->i_extended_attr));
+	(p_udf_fe->u.ext_attr + uint32_from_le(p_udf_fe->u_extended_attr));
 
       *start = uint32_from_le(p_ad->ext_loc.lba); /* ignore partition number */
       *end = *start +

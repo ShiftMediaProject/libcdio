@@ -1,6 +1,6 @@
 /* -*- C -*-
   Copyright (C) 2009 Thomas Schmitt <scdbackup@gmx.net>
-  Copyright (C) 2010, 2012-2013, 2017 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2010, 2012-2013, 2017, 2024 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@
 
 /* gcc may warn if no prototypes are given before function definition */
 
-static int handle_outcome(CdIo_t *p_cdio, int i_status,
+static int handle_outcome(CdIo_t *p_cdio, driver_return_code_t i_status,
 			       unsigned int *pi_sense_avail,
 			       cdio_mmc_request_sense_t * p_sense_reply,
 			       unsigned int i_flag);
@@ -84,12 +84,12 @@ static int test_mode_select(CdIo_t *p_cdio,
 			    unsigned char *p_buf, unsigned int i_size,
 			    unsigned int i_flag);
 
-static int mode_sense(CdIo_t *p_cdio, unsigned int *pi_sense_avail,
+static driver_return_code_t mode_sense(CdIo_t *p_cdio, unsigned int *pi_sense_avail,
 		      cdio_mmc_request_sense_t * p_sense_reply,
 		      unsigned int i_page_code,
 		      unsigned int subpage_code, int i_alloc_len,
 		      unsigned char *buf, int *i_size,
-		      unsigned int i_flag);
+		      unsigned int u_flag);
 
 static int test_unit_ready(CdIo_t *p_cdio,
 			   unsigned int *pi_sense_avail,
@@ -201,22 +201,22 @@ static driver_return_code_t
 mode_sense(CdIo_t *p_cdio, unsigned int *pi_sense_avail,
 	   cdio_mmc_request_sense_t *p_sense_reply,
 	   unsigned int i_page_code, unsigned int subpage_code, int i_alloc_len,
-	   unsigned char *p_buf, int *pi_size, unsigned int i_flag)
+	   unsigned char *p_buf, int *pi_size, unsigned int u_flag)
 {
   driver_return_code_t i_status;
 
   if (i_alloc_len < 10)
     return DRIVER_OP_BAD_PARAMETER;
 
-  if (i_flag & 1)
+  if (u_flag & 1)
     printf("mode_sense(0x%X, %X, %d) ... ",
 	   i_page_code, subpage_code, i_alloc_len);
 
   i_status = mmc_mode_sense_10(p_cdio, p_buf, i_alloc_len, i_page_code);
-  handle_outcome(p_cdio, i_status, pi_sense_avail, p_sense_reply, i_flag & 1);
+  handle_outcome(p_cdio, i_status, pi_sense_avail, p_sense_reply, u_flag & 1);
   if (DRIVER_OP_SUCCESS != i_status)
     return i_status;
-  if (i_flag & 2)
+  if (u_flag & 2)
     *pi_size = p_buf[9] + 10;                  /* MMC-5 7.2.3 */
   else
     *pi_size = p_buf[0] * 256 + p_buf[1] + 2;  /* SPC-3 7.4.3, table 240 */
@@ -242,14 +242,14 @@ static int
 test_mode_select(CdIo_t *p_cdio,
                  unsigned int *pi_sense_avail,
 		 cdio_mmc_request_sense_t *p_sense_reply,
-                 unsigned char *p_buf, unsigned int i_size, unsigned int i_flag)
+                 unsigned char *p_buf, unsigned int i_size, unsigned int u_flag)
 {
     int i_status, i;
 
     if (i_size < 10)
 	return DRIVER_OP_BAD_PARAMETER;
 
-    if (i_flag & 1) {
+    if (u_flag & 1) {
 	printf("-- test_mode_select to drive: %d bytes\n", i_size);
 	for (i = 0; i < i_size; i++) {
 	    printf("%2.2X ", (unsigned int) p_buf[i]);
@@ -260,12 +260,12 @@ test_mode_select(CdIo_t *p_cdio,
 	    printf("\n");
     }
 
-    if (i_flag & 1)
+    if (u_flag & 1)
 	printf("-- test_mode_select(0x%X, %d, %d) ... ",
 	       (unsigned int) p_buf[8], (unsigned int) p_buf[9], i_size);
     i_status = mmc_mode_select_10(p_cdio, p_buf, i_size, 0x10, 10000);
     return handle_outcome(p_cdio, i_status, pi_sense_avail, p_sense_reply,
-			  i_flag & 1);
+			  u_flag & 1);
 }
 
 /* UNOBTRUSIVE */
@@ -273,23 +273,23 @@ test_mode_select(CdIo_t *p_cdio,
    @param pi_sense_avail  Number of available sense bytes
                           (18 get copied if all 18 exist)
    @param p_sense_reply  eventual sense bytes
-   @param i_flag          bit0= verbose
+   @param u_flag          bit0= verbose
    @return             return value of mmc_run_cmd()
  */
 static int
 test_unit_ready(CdIo_t *p_cdio,
 		unsigned int *pi_sense_avail,
 		cdio_mmc_request_sense_t *p_sense_reply,
-		unsigned int i_flag)
+		unsigned int u_flag)
 {
   int i_status;
 
-  if (i_flag & 1)
+  if (u_flag & 1)
     printf("-- test_unit_ready ... ");
   i_status = mmc_test_unit_ready(p_cdio, 0);
 
   return handle_outcome(p_cdio, i_status, pi_sense_avail, p_sense_reply,
-                             i_flag & 1);
+                             u_flag & 1);
 }
 
 
@@ -304,14 +304,14 @@ test_unit_ready(CdIo_t *p_cdio,
    @return     1= all seems well , 0= minor failure , -1= severe failure
 */
 static int
-wait_for_drive(CdIo_t *p_cdio, unsigned int i_max_tries, unsigned int i_flag)
+wait_for_drive(CdIo_t *p_cdio, unsigned int i_max_tries, unsigned int u_flag)
 {
     int i_ret, i;
     unsigned int i_sense_avail;
     cdio_mmc_request_sense_t sense_reply;
 
     for (i = 0; i < i_max_tries; i++) {
-	i_ret = test_unit_ready(p_cdio, &i_sense_avail, &sense_reply, !!(i_flag & 1));
+	i_ret = test_unit_ready(p_cdio, &i_sense_avail, &sense_reply, !!(u_flag & 1));
 	if (i_ret == 0) /* Unit is ready */
 	    return 1;
 	if (i_sense_avail < 18)
@@ -329,7 +329,7 @@ wait_for_drive(CdIo_t *p_cdio, unsigned int i_max_tries, unsigned int i_flag)
 
 	    /* Medium not present */;
 
-	    if (!(i_flag & 2))
+	    if (!(u_flag & 2))
 		return 1;
 	} else if (0 == sense_reply.sense_key && 0 == sense_reply.asc) {
 
@@ -354,12 +354,12 @@ wait_for_drive(CdIo_t *p_cdio, unsigned int i_max_tries, unsigned int i_flag)
 /* OBTRUSIVE. Opens and closes drive door - watch your fingers! */
 /**
    Eject, wait, load asynchronously, and watch by test unit ready loop.
-   @param i_flag bit0= verbose
+   @param u_flag bit0= verbose
                  bit1= expect media (do not end on no-media sense)
    @return   1= all seems well , 0= minor failure , -1= severe failure
 */
 static int
-test_eject_load_cycle(CdIo_t *p_cdio, unsigned int i_flag)
+test_eject_load_cycle(CdIo_t *p_cdio, unsigned int u_flag)
 {
     int i_ret;
     unsigned int i_sense_avail;
@@ -368,7 +368,7 @@ test_eject_load_cycle(CdIo_t *p_cdio, unsigned int i_flag)
     /* Eject synchronously */
     printf("test_eject_load_cycle: WARNING: EJECTING THE TRAY !\n");
     sleep(2);
-    load_eject(p_cdio, &i_sense_avail, &sense_reply, 0 | (i_flag & 1));
+    load_eject(p_cdio, &i_sense_avail, &sense_reply, 0 | (u_flag & 1));
 
     printf("test_eject_load_cycle: waiting for 5 seconds. DO NOT TOUCH THE TRAY !\n");
     sleep(3);
@@ -376,10 +376,10 @@ test_eject_load_cycle(CdIo_t *p_cdio, unsigned int i_flag)
     /* Load asynchronously */
     printf("test_eject_load_cycle: WARNING: LOADING THE TRAY !\n");
     sleep(2);
-    load_eject(p_cdio, &i_sense_avail, &sense_reply, 4 | 2 | (i_flag & 1));
+    load_eject(p_cdio, &i_sense_avail, &sense_reply, 4 | 2 | (u_flag & 1));
 
     /* Wait for drive attention */
-    i_ret = wait_for_drive(p_cdio, 30, i_flag & 3);
+    i_ret = wait_for_drive(p_cdio, 30, u_flag & 3);
     return i_ret;
 }
 
@@ -391,7 +391,7 @@ test_eject_load_cycle(CdIo_t *p_cdio, unsigned int i_flag)
    @return    1= all seems well , 0= minor failure , -1= severe failure
 */
 static int
-test_eject_test_load(CdIo_t *p_cdio, unsigned int i_flag)
+test_eject_test_load(CdIo_t *p_cdio, unsigned int u_flag)
 {
     int i_ret;
     unsigned int i_sense_avail;
@@ -400,12 +400,12 @@ test_eject_test_load(CdIo_t *p_cdio, unsigned int i_flag)
   /* Eject synchronously */
   printf("test_eject_test_load: WARNING: EJECTING THE TRAY !\n");
   sleep(2);
-  load_eject(p_cdio, &i_sense_avail, &sense_reply, 0 | (i_flag & 1));
+  load_eject(p_cdio, &i_sense_avail, &sense_reply, 0 | (u_flag & 1));
 
   printf("test_eject_test_load: waiting for 5 seconds. DO NOT TOUCH THE TRAY !\n");
   sleep(3);
 
-  i_ret = test_unit_ready(p_cdio, &i_sense_avail, &sense_reply, i_flag & 1);
+  i_ret = test_unit_ready(p_cdio, &i_sense_avail, &sense_reply, u_flag & 1);
   if (i_ret == 0) {
     fprintf(stderr,
             "test_eject_test_load: Drive ready although tray ejected.\n");
@@ -426,7 +426,7 @@ test_eject_test_load(CdIo_t *p_cdio, unsigned int i_flag)
   fprintf(stderr,
     "test_eject_test_load: WARNING: LOADING THE TRAY !\n");
   sleep(2);
-  load_eject(p_cdio, &i_sense_avail, &sense_reply, 4 | (i_flag & 1));
+  load_eject(p_cdio, &i_sense_avail, &sense_reply, 4 | (u_flag & 1));
 
   return 1;
 }
@@ -440,7 +440,7 @@ test_eject_test_load(CdIo_t *p_cdio, unsigned int i_flag)
    @return    1= all seems well , 0= minor failure , -1= severe failure
 */
 static int
-test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
+test_rwr_mode_page(CdIo_t *p_cdio, unsigned int u_flag)
 {
     int i_ret;
     unsigned int i_sense_avail = 0;
@@ -455,7 +455,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
     i_alloc_len = 10;
     i_ret = mode_sense(p_cdio, &i_sense_avail, &sense_reply,
 			    page_code, subpage_code, i_alloc_len,
-			    buf, &i_size, 2 | (i_flag & 1));
+			    buf, &i_size, 2 | (u_flag & 1));
     if (i_ret != 0) {
 	fprintf(stderr,
 		"-- test_rwr_mode_page: Cannot obtain mode page 05h.\n");
@@ -464,7 +464,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
     i_alloc_len = (i_size <= sizeof(buf)) ? i_size : sizeof(buf);
     i_ret = mode_sense(p_cdio, &i_sense_avail, &sense_reply,
 			    page_code, subpage_code, i_alloc_len,
-			    buf, &i_size, (i_flag & 1));
+			    buf, &i_size, (u_flag & 1));
     if (i_ret != 0) {
 	fprintf(stderr,
 		"-- test_rwr_mode_page: Cannot obtain mode page 05h.\n");
@@ -474,7 +474,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
     old_i_size = i_size;
 
     write_type = buf[10] & 0x0f;
-    if (i_flag & 1)
+    if (u_flag & 1)
 	printf("test_rwr_mode_page: Write type = %d (%s)\n",
 	       write_type, write_type < 4 ? w_types[write_type] : "Reserved");
 
@@ -494,7 +494,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
     buf[16] = 0;                        /* Session Format : "CD-DA or CD-ROM" */
 
     i_ret = test_mode_select(p_cdio, &i_sense_avail, &sense_reply,
-			     buf, i_size, i_flag & 1);
+			     buf, i_size, u_flag & 1);
     if (i_ret != 0) {
 	fprintf(stderr,
 		"-- test_rwr_mode_page: Cannot set mode page 05h.\n");
@@ -509,7 +509,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
     /* Read mode page and check whether effect visible in buf[10] */
     i_ret = mode_sense(p_cdio, &i_sense_avail, &sense_reply,
 			    page_code, subpage_code, i_alloc_len,
-			    buf, &i_size, (i_flag & 1));
+			    buf, &i_size, (u_flag & 1));
     if (0 != i_ret) {
 	fprintf(stderr, "test_rwr_mode_page: Cannot obtain mode page 05h.\n");
 	final_return = final_return > 0 ? 0 : final_return;
@@ -523,7 +523,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
 
     /* Restore old mode page */
     i_ret = test_mode_select(p_cdio, &i_sense_avail, &sense_reply,
-			     old_buf, old_i_size, i_flag & 1);
+			     old_buf, old_i_size, u_flag & 1);
     if (0 != i_ret) {
 	fprintf(stderr, "test_rwr_mode_page: Cannot set mode page 05h.\n");
 	if (i_ret == DRIVER_OP_NOT_PERMITTED) {
@@ -537,7 +537,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
     /* Read mode page and check whether old_buf is in effect again */
     i_ret = mode_sense(p_cdio, &i_sense_avail, &sense_reply,
 		       page_code, subpage_code, i_alloc_len,
-		       buf, &i_size, (i_flag & 1));
+		       buf, &i_size, (u_flag & 1));
     if (0 != i_ret) {
 	fprintf(stderr, "test_rwr_mode_page: Cannot obtain mode page 05h.\n");
 	return final_return > 0 ? 0 : final_return;
@@ -546,7 +546,7 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
 		"test_rwr_mode_page: Mode page was not restored to old state.\n");
 	final_return = final_return > 0 ? -1 : final_return;
     }
-    if (i_flag & 1)
+    if (u_flag & 1)
 	printf("test_rwr_mode_page: Mode page 2Ah restored to previous state\n");
     return final_return;
 }
@@ -574,12 +574,12 @@ test_rwr_mode_page(CdIo_t *p_cdio, unsigned int i_flag)
                           else an proposal for an exit() value is returned
 */
 static int
-test_write(char *psz_drive_path, unsigned int i_flag)
+test_write(char *psz_drive_path, unsigned int u_flag)
 {
     unsigned int i_sense_avail = 0;
     unsigned int i_sense_valid;
     int i_ret;
-    bool b_verbose = !!(i_flag & 1);
+    bool b_verbose = !!(u_flag & 1);
     int old_log_level = cdio_loglevel_default;
     cdio_mmc_request_sense_t sense_reply;
     CdIo_t *p_cdio;
@@ -673,7 +673,7 @@ test_write(char *psz_drive_path, unsigned int i_flag)
 
 	/* How are we, finally ? */
 	i_ret = test_unit_ready(p_cdio, &i_sense_valid, &sense_reply, b_verbose);
-	if ((i_flag & 1) && 0 != i_ret && 2 == sense_reply.sense_key &&
+	if ((u_flag & 1) && 0 != i_ret && 2 == sense_reply.sense_key &&
 	    0x3a == sense_reply.asc)
 	    fprintf(stderr, "test_unit_ready: Note: No loaded media detected.\n");
 	i_ret = 0;

@@ -72,7 +72,7 @@ static driver_return_code_t get_disc_erasable(const CdIo_t *p_cdio,
 					      const char *psz_source,
 					      bool verbose);
 
-static int mode_sense(CdIo_t *p_cdio, int *pi_sense_avail,
+static driver_return_code_t mode_sense(CdIo_t *p_cdio, int *pi_sense_avail,
 		      cdio_mmc_request_sense_t *p_sense_reply,
 		      unsigned int page_code, unsigned int subpage_code,
 		      int i_alloc_len,
