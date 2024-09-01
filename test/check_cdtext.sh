@@ -68,4 +68,10 @@ test_cdtext_raw "$opts" ${srcdir}/${fname}.dump ${srcdir}/${fname}.right
 RC=$?
 check_result $RC "CD-Text libburnia roundtrip" "${CDTEXT_RAW} $opts"
 
+fname=cdtext-krosis
+opts="${srcdir}/data/${fname}.cdt"
+test_cdtext_raw "$opts" ${srcdir}/${fname}.dump ${srcdir}/${fname}.right
+RC=$?
+check_result $RC "CD-Text Krosis blanks + tab indicator" "${CDTEXT_RAW} $opts"
+
 exit 0

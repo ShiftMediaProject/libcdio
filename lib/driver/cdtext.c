@@ -799,7 +799,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
             buffer[i_buf++] = pack.text[j];
             if(pack.db_chars)
               buffer[i_buf++] = pack.text[j+1];
-          } else if(i_buf > 0) {
+          } else {
             /* if end of string */
 
             /* check if the buffer contains only the Tab Indicator */
@@ -815,38 +815,41 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
                 buffer[i_buf++] = 0;
             }
 
-            switch (pack.type) {
-              case CDTEXT_PACK_TITLE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_TITLE, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_PERFORMER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_PERFORMER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_SONGWRITER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_SONGWRITER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_COMPOSER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_COMPOSER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_ARRANGER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_ARRANGER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_MESSAGE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_MESSAGE, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_DISCID:
-                if (cur_track == 0)
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_DISCID, buffer, cur_track, NULL);
-                break;
-              case CDTEXT_PACK_GENRE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_GENRE, buffer, cur_track, "ASCII");
-                break;
-              case CDTEXT_PACK_UPC:
-                if (cur_track == 0)
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_UPC_EAN, buffer, cur_track, "ASCII");
-                else
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_ISRC, buffer, cur_track, "ISO-8859-1");
-                break;
+            if ( ! CDTEXT_COMPARE_CHAR(buffer, '\0', pack.db_chars)) {
+              /* implies cur_track is in valid range */
+              switch (pack.type) {
+                case CDTEXT_PACK_TITLE:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_TITLE, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_PERFORMER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_PERFORMER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_SONGWRITER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_SONGWRITER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_COMPOSER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_COMPOSER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_ARRANGER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_ARRANGER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_MESSAGE:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_MESSAGE, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_DISCID:
+                  if (cur_track == 0)
+                    cdtext_set(p_cdtext, CDTEXT_FIELD_DISCID, buffer, cur_track, NULL);
+                  break;
+                case CDTEXT_PACK_GENRE:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_GENRE, buffer, cur_track, "ASCII");
+                  break;
+                case CDTEXT_PACK_UPC:
+                  if (cur_track == 0)
+                    cdtext_set(p_cdtext, CDTEXT_FIELD_UPC_EAN, buffer, cur_track, "ASCII");
+                  else
+                    cdtext_set(p_cdtext, CDTEXT_FIELD_ISRC, buffer, cur_track, "ISO-8859-1");
+                  break;
+              }
             }
             i_buf = 0;
             ++cur_track;
