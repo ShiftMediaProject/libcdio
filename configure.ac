@@ -1,4 +1,5 @@
-dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2018, 2019, 2023
+dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2018, 2019,
+dnl 2023-2024
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
@@ -118,7 +119,6 @@ else
 	-Wdisabled-optimization
 	-Wendif-labels
 	-Winline
-	-Wmissing-declarations
 	-Wmissing-prototypes
 	-Wnested-externs
 	-Wno-sign-compare
