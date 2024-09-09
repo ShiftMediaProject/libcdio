@@ -12,7 +12,7 @@ without warranty of any kind.
 Basic Installation
 ==================
 
-   If you are compiling from git sources, see README.develop.
+If you are compiling from git sources, see README-develop.md
 
    Briefly, the shell command:
    ./configure && make && sudo make install
@@ -74,7 +74,7 @@ or regenerate `configure' using a newer version of `autoconf'.
      order to regenerate files that came with the distribution.
 
   7. You can also type `make uninstall' to remove the installed
-     files again.  
+     files again.
 
   8. `make distcheck', which can by used by developers to test that
      all other targets like `make install' and `make uninstall' work
@@ -82,7 +82,7 @@ or regenerate `configure' using a newer version of `autoconf'.
 
   9. For a list of all targets if you have remake installed, `remake
   --tasks' will give a list.
-     
+
 
 Compilers and Options
 =====================
@@ -318,4 +318,3 @@ operates.
 
 `configure' also accepts some other, not widely useful, options.  Run
 `configure --help' for more details.
-
