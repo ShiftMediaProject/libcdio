@@ -28,7 +28,8 @@ EXTRA_DIST = \
 	MSVC/libcdio.sln \
 	MSVC/libcdio.vcproj  \
 	NEWS.md \
-	README.libcdio \
+	README.md \
+	README-libcdio.md \
 	THANKS \
 	example/README \
 	libcdio++.pc.in \

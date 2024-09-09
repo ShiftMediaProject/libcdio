@@ -1,45 +1,55 @@
-See README.develop if you plan use the git or development version.
+Building `libcdio` from released source
+=======================================
 
-0. To compile the source, you'll need a POSIX shell and utilities (sh,
-sed, grep, cat), an ANSI C compiler like gcc, and a POSIX "make"
-program like GNU make or remake. You may also want to have "libtool" installed
-for building portable shared libraries.
+See [README-develop.md](README-develop.md) if you plan use the git or development version.
 
-1. Uncompress and unpack the source code using for example "tar". Recent
+* To compile the source, you'll need a POSIX shell and utilities (sh, sed, grep, cat), an ANSI C compiler like gcc, and a POSIX "make" program like GNU make or remake. You may also want to have "libtool" installed for building portable shared libraries.
+
+* Uncompress and unpack the source code using for example "tar". Recent
 versions of GNU tar can do this in one step like this:
-  tar -xpf libcdio-*.bz  # or libcdio-*.gz
 
-2. Go into the directory, run "configure" followed by "make":
+```shell
+tar -xpf libcdio-*.bz  # or libcdio-*.gz
+```
 
-  cd libcdio-*
-  sh ./configure MAKE=make  # or remake or gmake
+* Go into the directory, run "configure" followed by "make":
 
-3. If step 2 works, compile everything:
+```shell
+    cd libcdio-*
+    sh ./configure MAKE=make  # or remake or gmake
+```
 
-  make  # or remake
+* If step 2 works, compile everything:
 
-4. Run the regression tests if you want:
+```shell
+    make  # or remake
+```
 
-  make check  # or remake check
+* Run the regression tests if you want:
 
-5. Install. If the preceding steps were successful:
+```shell
+    make check  # or remake check
+```
 
-  make install  # you may have to do this as root
-                # or "sudo make install"
+* Install. If the preceding steps were successful:
 
+```shell
+    make install  # you may have to do this as root
+                  # or "sudo make install"
+```
 
 If you have problems linking libcdio or libiso9660, see the BSD
-section.  You might also try the option --without-versioned-libs. However
+section.  You might also try the option `--without-versioned-libs`. However
 this option does help with the situation described below so it is
 preferred all other things being equal.
 
 If you are debugging libcdio, the libtool and the dynamic libraries
-can make things harder. I suggest setting CFLAGS to include
-'-fno-inline -g' and using --disable-shared on configure.
+can make things harder. I suggest setting `CFLAGS` to include
+`-fno-inline -g` and using `--disable-shared` on `configure`.
 
-
-VCD dependency:
+VCD dependency
 ---------------
+
 One thing that confuses people is the "dependency" on libvcdinfo from
 vcdimager, while vcdimager has a dependency on libcdio.  This libcdio
 dependency on vcdimager is an optional (i.e. not mandatory) dependency,
@@ -60,13 +70,13 @@ Another thing one can do is "make install" inside the library, or run
 an optional dependency on libcdio).
 
 Microsoft Windows
--------
+-----------------
 
 Building under Microsoft Windows is supported for cygwin
-(http://www.cygwin.com). You need to have the cygwin libiconv-devel
+(<http://www.cygwin.com>). You need to have the cygwin libiconv-devel
 package installed.
 
-For MinGW (http://www.mingw.org/) also works provided you have
+For MinGW (<http://www.mingw.org/>) also works provided you have
 libiconv installed.
 
 Support for Microsoft compilers (e.g. Visual C) is not officially
@@ -77,21 +87,19 @@ Pete Batard in his rufus project. You may be able to use their project
 files as a starting point.
 
 XBOX
--------
+-----
 
-Consult the xboxmediacenter team (www.xboxmediacenter.de)
-
+Consult the [xboxmediacenter team](https://www.xboxmediacenter.de)
 
 BSD, FreeBSD, NetBSD
----
+---------------------
 
-Unless you use --without-versioned-libs (not recommended), you need to
-use GNU make or remake (http://bashdb.sf.net/remake). GNU make can be
+Unless you use `--without-versioned-libs` (not recommended), you need to
+use GNU make or [remake](http://bashdb.sf.net/remake). GNU make can be
 found under the name "gmake".
 
 If you use another make you are likely to get problems linking libcdio
 and libiso9660.
-
 
 Solaris
 -------
@@ -106,16 +114,18 @@ because you have enable vcd-info and it is installed, then the only
 way I know how to get around is to use configure with --disable-shared.
 
 OS Support
----------------
+-----------
 
 Support for Operating Systems's is really based on the desire, ability
 and willingness of others to help out. I use GNU/Linux so that
 probably works best. Before a release I'll test on servers I have
-available. I also announce a pending release on libcdio-devel@gnu.org
+available. I also announce a pending release on <libcdio-devel@gnu.org>
 and ask others to test out.
 
 Specific libcdio configure options and environment variables
----------------
+------------------------------------------------------------
+
+```shell
   --disable-cxx            Disable C++ bindings (default enabled)
   --enable-cpp-progs       make C++ example programs (default enabled)
   --disable-example-progs  Don't build libcdio sample programs
@@ -136,8 +146,11 @@ Specific libcdio configure options and environment variables
   --enable-vcd-info        include Video CD Info from libvcd
   --enable-maintainer-mode create documentation and manual packages.
                            For this you need texinfo and help2man installed
+```
 
 Optional Packages:
+
+```shell
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --without-cd-drive      don't build program cd-drive (default with)
@@ -159,15 +172,18 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
   --with-libiconv-prefix[=DIR]  search for libiconv in DIR/include and DIR/lib
   --without-libiconv-prefix     don't search for libiconv in includedir and libdir
+```
 
 Some influential environment variables:
+
+```shell
   CC          C compiler command
   CFLAGS      C compiler flags
-  LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a
-              nonstandard directory <lib dir>
-  LIBS        libraries to pass to the linker, e.g. -l<library>
-  CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
-              you have headers in a nonstandard directory <include dir>
+  LDFLAGS     linker flags, e.g. `-L` __lib_dir__  if you have libraries in a
+              nonstandard directory __lib dir__
+  LIBS        libraries to pass to the linker, e.g. -l __library__
+  CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I __include dir__ if
+              you have headers in a nonstandard directory __include dir__
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
   CPP         C preprocessor
@@ -179,3 +195,4 @@ Some influential environment variables:
               C compiler flags for VCDINFO, overriding pkg-config
   VCDINFO_LIBS
               linker flags for VCDINFO, overriding pkg-config
+```
