@@ -1808,7 +1808,11 @@ iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn)
   return p_statbuf;
 }
 iso9660_stat_t *
+#ifdef __DARWIN_C_ANSI
+iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
+#else
 iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn) __attribute__ ((alias ("iso9660_fs_find_lsn")));
+#endif
 
 /*!
    Given a directory pointer, find the filesystem entry that contains
