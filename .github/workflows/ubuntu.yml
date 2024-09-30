@@ -1,18 +1,22 @@
-name: Run tests
+name: libcdio (ubuntu)
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Setup
+      - name: Install OS dependencies
         run: sudo apt-get install -y help2man
       - name: Build
         run: |
           set -x
           ./autogen.sh
           make V=1
-      - name: Run tests
+      - name: Run libcdio tests
         run: make check
