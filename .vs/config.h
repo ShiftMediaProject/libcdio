@@ -1,4 +1,4 @@
-/* config.h.in.  Generated from configure.ac by autoheader.  */
+/* config.h for Visual Studio compilation  */
 
 /* compiler does lsbf in struct bitfields */
 #undef BITFIELD_LSBF
@@ -37,7 +37,7 @@
 #define HAVE_ERRNO_H 1
 
 /* Define to 1 if you have the <fcntl.h> header file. */
-#undef HAVE_FCNTL_H
+#define HAVE_FCNTL_H 1
 
 /* Define 1 if you have FreeBSD CD-ROM support */
 #undef HAVE_FREEBSD_CDROM
@@ -59,7 +59,7 @@
 
 /* Define 1 if you want ISO-9660 Joliet extension support. You must have also
    libiconv installed to get Joliet extension support. */
-#undef HAVE_JOLIET
+#define HAVE_JOLIET 1
 
 /* Define if you have <langinfo.h> and nl_langinfo(CODESET). */
 #undef HAVE_LANGINFO_CODESET
@@ -91,17 +91,23 @@
 /* Define to 1 if you have the `memset' function. */
 #define HAVE_MEMSET 1
 
+/* Define to 1 if you have the Windows SCSI layer. */
+#define HAVE_NTDDSCSI_H 1
+
+/* Define to 1 if you have the Windows CD-ROM layer. */
+#define HAVE_NTDDCDRM_H 1
+
 /* Define to 1 if you have the `snprintf' function. */
-#undef HAVE_SNPRINTF
+#define HAVE_SNPRINTF 1
 
 /* Define 1 if you have Solaris CD-ROM support */
 #undef HAVE_SOLARIS_CDROM
 
 /* Define to 1 if you have the <stdbool.h> header file. */
-#undef HAVE_STDBOOL_H
+#define HAVE_STDBOOL_H 1
 
 /* Define to 1 if you have the <stdint.h> header file. */
-#undef HAVE_STDINT_H
+#define HAVE_STDINT_H 1
 
 /* Define to 1 if you have the <stdio.h> header file. */
 #define HAVE_STDIO_H 1
@@ -119,7 +125,7 @@
 #undef HAVE_SYS_CDIO_H
 
 /* Define to 1 if you have the <sys/stat.h> header file. */
-#undef HAVE_SYS_STAT_H
+#define HAVE_SYS_STAT_H 1
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #define HAVE_SYS_TYPES_H 1
@@ -134,13 +140,13 @@
 #undef HAVE_TZSET
 
 /* Define to 1 if you have the <unistd.h> header file. */
-#undef HAVE_UNISTD_H
+#define HAVE_UNISTD_H 1
 
 /* Define this if you have libvcdinfo installed */
 #undef HAVE_VCDINFO
 
 /* Define to 1 if you have the `vsnprintf' function. */
-#undef HAVE_VSNPRINTF
+#define HAVE_VSNPRINTF 1
 
 /* Define 1 if you have MinGW CD-ROM support */
 #define HAVE_WIN32_CDROM 1
@@ -179,10 +185,9 @@
    first (like Motorola and SPARC, unlike Intel and VAX). */
 #undef WORDS_BIGENDIAN
 
-/* Define to empty if `const' does not conform to ANSI C. */
-#undef const
-
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
-#define inline
+#define inline __inline
 
+/* Some parts of libcdio reference alloca(), which isn't portable */
+#define alloca  _alloca
