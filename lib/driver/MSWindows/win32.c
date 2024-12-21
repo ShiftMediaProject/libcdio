@@ -382,7 +382,7 @@ free_win32 (void *p_user_data)
    Reads an audio device into data starting from lsn.
    Returns 0 if no error.
  */
-static int
+static driver_return_code_t
 read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
 		    unsigned int i_blocks)
 {

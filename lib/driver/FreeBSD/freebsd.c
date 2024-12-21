@@ -863,7 +863,7 @@ cdio_get_devices_freebsd (void)
   Return a string containing the default CD device if none is specified.
  */
 char *
-cdio_get_default_device_freebsd()
+cdio_get_default_device_freebsd(void)
 {
 #ifndef HAVE_FREEBSD_CDROM
   return NULL;
