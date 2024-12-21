@@ -134,8 +134,8 @@ driver_return_code_t close_tray_win32ioctl (const char *psz_win32_drive);
    Reads an audio device using the DeviceIoControl method into data
    starting from lsn.  Returns 0 if no error.
 */
-int read_audio_sectors_win32ioctl (_img_private_t *p_obj, void *p_data, lsn_t lsn,
-				   unsigned int nblocks);
+driver_return_code_t read_audio_sectors_win32ioctl (_img_private_t *p_obj,
+				  void *p_data, lsn_t lsn, unsigned int nblocks);
 /*!
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.

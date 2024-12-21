@@ -789,7 +789,7 @@ audio_read_subchannel_netbsd(void *p_user_data, cdio_subchannel_t *subchannel)
   Return a string containing the default CD device.
  */
 char *
-cdio_get_default_device_netbsd()
+cdio_get_default_device_netbsd(void)
 {
   return strdup(DEFAULT_CDIO_DEVICE);
 }

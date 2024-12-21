@@ -198,7 +198,7 @@ GetRegistryEntryProperties ( io_service_t service )
  * ProbeStorageDevices - Probe devices to detect changes.
  */
 static bool
-ProbeStorageDevices()
+ProbeStorageDevices(void)
 {
   io_service_t  next_service;
   mach_port_t   master_port;

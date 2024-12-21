@@ -281,13 +281,10 @@ else
   AC_MSG_RESULT($msg)
 fi
 
-dnl Enable the creation of shared libraries under Win32.
-AC_LIBTOOL_WIN32_DLL
-
-dnl AM_PROG_LIBTOOL tests whether we have GNU ld
+dnl LT_INIT tests whether we have GNU ld
 dnl this must come before checking --with-versioned-libs
 dnl which requires GNU ld.
-AM_PROG_LIBTOOL
+LT_INIT
 
 dnl system
 

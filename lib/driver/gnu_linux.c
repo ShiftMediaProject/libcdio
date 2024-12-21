@@ -373,6 +373,23 @@ audio_stop_linux (void *p_user_data)
   return ioctl(p_env->gen.fd, CDROMSTOP);
 }
 
+/*!
+  Release and free resources associated with cd for linux driver.
+ */
+static void
+free_linux (void *p_user_data)
+{
+#ifdef __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
+  _img_private_t *p_env = p_user_data;
+  if (p_env->last_changed_timestamp) {
+    free(p_env->last_changed_timestamp);
+    p_env->last_changed_timestamp = 0;
+  }
+#endif
+
+  cdio_generic_free(p_user_data);
+}
+
 static bool
 is_mmc_supported(void *user_data)
 {
@@ -1634,23 +1651,6 @@ no_tuple:;
   return 1;
 }
 #endif
-
-/*!
-  Release and free resources associated with cd for linux driver.
- */
-static void
-free_linux (void *p_user_data)
-{
-#ifdef __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
-  _img_private_t *p_env = p_user_data;
-  if (p_env->last_changed_timestamp) {
-    free(p_env->last_changed_timestamp);
-    p_env->last_changed_timestamp = 0;
-  }
-#endif
-
-  cdio_generic_free(p_user_data);
-}
 
 /*!
   Initialization routine. This is the only thing that doesn't
