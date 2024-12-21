@@ -1,4 +1,4 @@
-#   Copyright (C) 2003-2004, 2006, 2008, 2011-2013, 2016, 2019
+#   Copyright (C) 2003-2004, 2006, 2008, 2011-2013, 2016, 2019, 2024
 #   2023 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -23,10 +23,14 @@
 AUTOMAKE_OPTIONS = dist-bzip2
 
 EXTRA_DIST = \
-	MSVC/README MSVC/cd-info.vcproj \
-	MSVC/config.h \
-	MSVC/libcdio.sln \
-	MSVC/libcdio.vcproj  \
+	.vs/cd-info.vcxproj \
+	.vs/cd-info.vcxproj.filters \
+	.vs/config.h \
+	.vs/libcdio.vcxproj \
+	.vs/libcdio.vcxproj.filters \
+	.vs/README.txt \
+	.vs/set_version.ps1 \
+	.vs/unistd.h \
 	NEWS.md \
 	README.md \
 	README-libcdio.md \
@@ -34,6 +38,7 @@ EXTRA_DIST = \
 	example/README \
 	libcdio++.pc.in \
 	libcdio.pc.in \
+	libcdio.sln \
 	libiso9660++.pc.in \
 	libiso9660.pc.in \
 	libudf.pc.in \

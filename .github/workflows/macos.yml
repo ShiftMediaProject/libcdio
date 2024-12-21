@@ -1,26 +1,17 @@
-name: libcdio (macos)
+name: MacOS, gcc
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
-  test:
+  build-and-test:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - name: Setup
-        run: |
-          brew install automake
-          brew install libtool
-          brew install help2man
-          brew install texinfo
+        run: brew install automake libtool help2man texinfo
       - name: Build
         run: |
-          set -x
           ./autogen.sh
-          make V=1
-      - name: Run libcdio tests
+          make -j4
+      - name: Test
         run: make check
