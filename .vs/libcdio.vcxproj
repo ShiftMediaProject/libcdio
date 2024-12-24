@@ -90,7 +90,7 @@
     <ClCompile>
       <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <DisableSpecificWarnings>4018;4133;4333;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
     </ClCompile>
     <Lib />
     <PreBuildEvent>
@@ -102,7 +102,7 @@
     <ClCompile>
       <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <DisableSpecificWarnings>4018;4133;4333;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
     </ClCompile>
     <PreBuildEvent>
       <Command>powershell.exe -File "$(ProjectDir)set_version.ps1"</Command>
@@ -149,7 +149,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <DisableSpecificWarnings>4018;4133;4333;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
       <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -160,7 +160,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <DisableSpecificWarnings>4018;4133;4333;4996</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
       <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>

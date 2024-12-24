@@ -77,7 +77,7 @@
 #define windows_error(loglevel,i_err) {                                 \
   char error_msg[80];                                                   \
   long int count;                                                       \
-  count = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                      \
+  count = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,                     \
                         NULL, i_err, MAKELANGID(LANG_NEUTRAL,            \
                                                 SUBLANG_DEFAULT),        \
                         error_msg, sizeof(error_msg), NULL);             \

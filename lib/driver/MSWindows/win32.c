@@ -73,6 +73,7 @@
 
 #if defined (_MSC_VER) || defined (_XBOX)
 #undef IN
+extern const char* is_cdrom_aspi(const char drive_letter);
 #else
 #include "aspi32.h"
 #endif
@@ -209,7 +210,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
   if ( mci_error ) {
     char error[256];
 
-    mciGetErrorString(mci_error, error, 256);
+    mciGetErrorStringA(mci_error, error, 256);
     cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
