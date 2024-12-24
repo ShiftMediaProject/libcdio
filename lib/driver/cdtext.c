@@ -202,7 +202,7 @@ const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE + 1] =
 const char *
 cdtext_field2str(cdtext_field_t i)
 {
-  if (i >= MAX_CDTEXT_FIELDS)
+  if (i < 0 || i >= MAX_CDTEXT_FIELDS)
     return "INVALID";
   else
     return cdtext_field[i];
@@ -214,7 +214,7 @@ cdtext_field2str(cdtext_field_t i)
 const char *
 cdtext_genre2str(cdtext_genre_t i)
 {
-  if (i >= MAX_CDTEXT_GENRE_CODE)
+  if (i < 0 || i >= MAX_CDTEXT_GENRE_CODE)
     return "INVALID";
   else
     return cdtext_genre[i];
@@ -226,7 +226,7 @@ cdtext_genre2str(cdtext_genre_t i)
 const char *
 cdtext_lang2str(cdtext_lang_t i)
 {
-  if (i <= CDTEXT_LANGUAGE_WALLON)
+  if (i >= 0 && i <= CDTEXT_LANGUAGE_WALLON)
     return cdtext_language[i];
   else if (i >= CDTEXT_LANGUAGE_ZULU && i <= CDTEXT_LANGUAGE_AMHARIC)
     return cdtext_language[i];
