@@ -88,6 +88,8 @@ _register_mapping (_img_private_t *env, lsn_t start_lsn, uint32_t sec_count,
   track_info_t  *this_track=&(env->tocent[env->gen.i_tracks]);
   _mapping_t *_map = calloc(1, sizeof (_mapping_t));
 
+  if (_map == NULL)
+    return;
   _map->start_lsn  = start_lsn;
   _map->sec_count  = sec_count;
   _map->img_offset = img_offset;
@@ -384,6 +386,8 @@ parse_nrg (_img_private_t *p_env, const char *psz_nrg_name,
 
 	  /* We include an extra 0 byte so these can be used as C strings.*/
 	  p_env->psz_mcn = calloc(1, CDIO_MCN_SIZE+1);
+	  if (p_env->psz_mcn == NULL)
+	    return false;
 	  memcpy(p_env->psz_mcn, &(_dao_common->psz_mcn), CDIO_MCN_SIZE);
 	  p_env->psz_mcn[CDIO_MCN_SIZE] = '\0';
 
@@ -1270,7 +1274,7 @@ cdio_is_nrg(const char *psz_nrg)
   _img_private_t *p_env  = calloc(1, sizeof (_img_private_t));
   bool is_nrg = false;
 
-  if (psz_nrg == NULL) {
+  if (p_env == NULL || psz_nrg == NULL) {
     is_nrg = false;
     goto exit;
   }
@@ -1361,6 +1365,9 @@ cdio_open_nrg (const char *psz_source)
   _funcs.set_arg               = _set_arg_image;
 
   _data                   = calloc(1, sizeof (_img_private_t));
+  if (_data == NULL) {
+    return NULL;
+  }
   _data->gen.init         = false;
 
   _data->gen.i_tracks     = 0;

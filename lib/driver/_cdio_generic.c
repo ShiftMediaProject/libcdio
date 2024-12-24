@@ -253,6 +253,8 @@ cdio_add_device_list(char **device_list[], const char *drive,
       /* Drive not in list. Add it. */
       (*num_drives)++;
       *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
+      if (NULL == *device_list)
+        return;
       cdio_debug("Adding drive %s to list of devices", drive);
       (*device_list)[*num_drives-1] = strdup(drive);
       }
@@ -264,6 +266,8 @@ cdio_add_device_list(char **device_list[], const char *drive,
     } else {
       *device_list = malloc((*num_drives) * sizeof(char *));
     }
+    if (NULL == *device_list)
+      return;
     cdio_debug("Adding NULL to end of drive list of size %d", (*num_drives)-1);
     (*device_list)[*num_drives-1] = NULL;
   }

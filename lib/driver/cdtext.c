@@ -491,6 +491,8 @@ cdtext_t
   cdtext_t *p_cdtext;
 
   p_cdtext = (cdtext_t *) malloc(sizeof(struct cdtext_s));
+  if (p_cdtext == NULL)
+    return NULL;
 
   for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
     for (j=0; j<CDTEXT_NUM_TRACKS_MAX; j++) {

@@ -1034,6 +1034,9 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.set_speed              = set_drive_speed_mmc;
 
   _data                 = calloc(1, sizeof (_img_private_t));
+  if (NULL == _data) {
+    goto error_exit;
+  }
   _data->access_mode    = str_to_access_mode_win32(psz_access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
