@@ -77,7 +77,7 @@
 #define windows_error(loglevel,i_err) {                                 \
   char error_msg[80];                                                   \
   long int count;                                                       \
-  count = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                      \
+  count = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,                     \
                         NULL, i_err, MAKELANGID(LANG_NEUTRAL,            \
                                                 SUBLANG_DEFAULT),        \
                         error_msg, sizeof(error_msg), NULL);             \
@@ -584,6 +584,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
     sizeof(SCSI_PASS_THROUGH_WITH_BUFFERS) + u_buf;
 
   p_sptwb = malloc(u_swb_len);
+  if (!p_sptwb) return DRIVER_OP_ERROR;
 
   p_env->gen.scsi_mmc_sense_valid = 0;
   memset(p_sptwb, 0, u_swb_len);

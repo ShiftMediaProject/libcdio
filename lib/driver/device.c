@@ -895,7 +895,7 @@ cdio_have_atapi(CdIo_t *p_cdio)
 bool
 cdio_have_driver(driver_id_t driver_id)
 {
-  if (driver_id >= sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0]))
+  if (driver_id < 0 || driver_id >= sizeof(CdIo_all_drivers)/sizeof(CdIo_all_drivers[0]))
     return false;
   return (*CdIo_all_drivers[driver_id].have_driver)();
 }
@@ -914,7 +914,9 @@ cdio_is_device(const char *psz_source, driver_id_t driver_id)
       }
     }
   }
-  if (CdIo_all_drivers[driver_id].is_device == NULL) return false;
+  if (driver_id < DRIVER_UNKNOWN || driver_id >= DRIVER_DEVICE ||
+      CdIo_all_drivers[driver_id].is_device == NULL)
+      return false;
   return (*CdIo_all_drivers[driver_id].is_device)(psz_source);
 }
 

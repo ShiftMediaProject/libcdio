@@ -136,7 +136,7 @@ mciSendCommand_aspi(int id, UINT msg, DWORD flags, void *arg)
   if ( mci_error ) {
     char error[256];
 
-    mciGetErrorString(mci_error, error, 256);
+    mciGetErrorStringA(mci_error, error, 256);
     cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
@@ -152,7 +152,7 @@ have_aspi( HMODULE *hASPI,
            long (**lpSendCommand)( void* ) )
 {
   /* check if aspi is available */
-  *hASPI = LoadLibrary( "wnaspi32.dll" );
+  *hASPI = LoadLibraryA( "wnaspi32.dll" );
 
   if( *hASPI == NULL ) {
     cdio_warn("Unable to load ASPI DLL");

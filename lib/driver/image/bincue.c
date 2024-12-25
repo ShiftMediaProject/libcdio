@@ -854,6 +854,8 @@ parse_cuefile (_img_private_t *cd, const char *psz_cue_name)
         if (cd) {
           if (NULL == cd->gen.cdtext) {
             cd->gen.cdtext = cdtext_init ();
+            if (NULL == cd->gen.cdtext)
+              goto err_exit;
             cd->gen.cdtext->block[cd->gen.cdtext->block_i].language_code = CDTEXT_LANGUAGE_ENGLISH;
           }
           cdtext_set (cd->gen.cdtext, cdtext_key, (uint8_t*) strtok(NULL, "\"\t\n\r"),
@@ -1336,6 +1338,7 @@ cdio_open_cue (const char *psz_cue_name)
   if (NULL == psz_cue_name) return NULL;
 
   p_data                 = calloc(1, sizeof (_img_private_t));
+  if (NULL == p_data) return NULL;
   p_data->gen.init       = false;
   p_data->psz_cue_name   = NULL;
 

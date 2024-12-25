@@ -73,6 +73,7 @@
 
 #if defined (_MSC_VER) || defined (_XBOX)
 #undef IN
+extern const char* is_cdrom_aspi(const char drive_letter);
 #else
 #include "aspi32.h"
 #endif
@@ -209,7 +210,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
   if ( mci_error ) {
     char error[256];
 
-    mciGetErrorString(mci_error, error, 256);
+    mciGetErrorStringA(mci_error, error, 256);
     cdio_warn("mciSendCommand() error: %s", error);
   }
   return(mci_error == 0);
@@ -1033,6 +1034,9 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.set_speed              = set_drive_speed_mmc;
 
   _data                 = calloc(1, sizeof (_img_private_t));
+  if (NULL == _data) {
+    goto error_exit;
+  }
   _data->access_mode    = str_to_access_mode_win32(psz_access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
