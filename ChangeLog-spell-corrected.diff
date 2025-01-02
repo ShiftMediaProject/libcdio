@@ -1,0 +1,2328 @@
+--- ChangeLog	2025-01-01 20:41:58.487111821 -0500
++++ ChangeLog.spell-corrected	2025-01-01 20:58:59.433825699 -0500
+@@ -14,7 +14,7 @@
+ 2024-12-24  Pete Batard <pete@akeo.ie>
+ 
+ 	* .vs/libcdio.vcxproj, lib/driver/MSWindows/aspi32.c,
+-	lib/driver/MSWindows/win32.c, lib/driver/MSWindows/win32_ioctl.c: 
++	lib/driver/MSWindows/win32.c, lib/driver/MSWindows/win32_ioctl.c:
+ 	Use non widestring API calls for MSVC where required When compiling for MSVC with Unicode enabled, the compiler tries to
+ 	use widestring API calls unless otherwise specified. So make sure we
+ 	enforce the use of non widestring (A suffixed) calls when we pass
+@@ -35,7 +35,7 @@
+ 	{MSVC => .vs}/config.h, .vs/libcdio.vcxproj,
+ 	.vs/libcdio.vcxproj.filters, .vs/set_version.ps1, .vs/unistd.h,
+ 	MSVC/README, MSVC/cd-info.vcproj, MSVC/libcdio.sln,
+-	MSVC/libcdio.vcproj, Makefile.am, include/cdio/types.h, libcdio.sln: 
++	MSVC/libcdio.vcproj, Makefile.am, include/cdio/types.h, libcdio.sln:
+ 	Add Visual Studio 2022 project files Move and update the MSVC project files to a .vs/ directory since it
+ 	gets created by Visual Studio.  Also remove the XBox specific
+ 	configuration.
+@@ -113,7 +113,7 @@
+ 
+ 2024-05-21  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/udf/udf_fs.c: Merge mismatch...  remove unneded test, when type becomes unsigned
++	* lib/udf/udf_fs.c: Merge mismatch...  remove unneeded test, when type becomes unsigned
+ 
+ 2024-05-21  R. Bernstein <rocky@gnu.org>
+ 
+@@ -283,7 +283,7 @@
+ 
+ 	* src/cdda-player.c: src/cdda-player.c: always use "%s"-style format
+ 	for printf()-style functions `ncuses-6.3` added printf-style function attributes and now makes it
+-	easier to catch cases when user input is used in palce of format
++	easier to catch cases when user input is used in place of format
+ 	string when built with CFLAGS=-Werror=format-security:     cdda-player.c:1032:31:       error: format not a string literal and no format arguments
+ 	     [-Werror=format-security] 1032 |         mvprintw(i_line++, 0,
+ 	          line); |                               ^~~~ Let's wrap all the missing places with "%s" format.
+@@ -596,7 +596,7 @@
+ 2019-01-14  Thomas Schmitt <scdbackup@gmx.net>
+ 
+ 	* src/cd-info.c, test/Makefile.am, test/cdda_4_5.right,
+-	test/check_cue.sh.in, test/data/Makefile.am, test/data/cdda_4_5.cue: 
++	test/check_cue.sh.in, test/data/Makefile.am, test/data/cdda_4_5.cue:
+ 	Added test about cdda_4_5.cue which checks for proper display of
+ 	track start number > 1
+ 
+@@ -768,7 +768,7 @@
+ 
+ 	* conf9AaqoM/subs.awk, conf9AaqoM/subs1.awk, config_extract.sh,
+ 	example/read-disc-struct.c, example/read-disc-struct.sh,
+-	test/driver/abs_path.dSYM/Contents/Info.plist: 
++	test/driver/abs_path.dSYM/Contents/Info.plist:
+ 	fc94b050dcd361b6f18dbef3886384ee520a4d4b
+ 
+ 2018-06-05  Pete Batard <pete@akeo.ie>
+@@ -835,7 +835,7 @@
+ 
+ 2018-05-18  R. Bernstein <rocky@gnu.org>
+ 
+-	* configure.ac: Remove some obsolte macros
++	* configure.ac: Remove some obsolete macros
+ 
+ 2018-02-16  rocky <rocky@gnu.org>
+ 
+@@ -910,7 +910,7 @@
+ 
+ 2017-12-20  R. Bernstein <rocky@gnu.org>
+ 
+-	* src/Makefile.am, test/check_common_fn.in, test/driver/realpath.c: 
++	* src/Makefile.am, test/check_common_fn.in, test/driver/realpath.c:
+ 	Correct realpath for memleaks and MinGW; fix src/Makefile clean
+ 	target
+ 
+@@ -1022,7 +1022,7 @@
+ 
+ 2017-12-02  R. Bernstein <rocky@gnu.org>
+ 
+-	* example/C++/eject.cpp, example/eject.c, lib/driver/device.c: 
++	* example/C++/eject.cpp, example/eject.c, lib/driver/device.c:
+ 	Remove memory leak in cdio_eject_media_drive
+ 
+ 2017-12-01  R. Bernstein <rocky@gnu.org>
+@@ -1164,7 +1164,7 @@
+ 2017-11-20  R. Bernstein <rocky@gnu.org>
+ 
+ 	* include/cdio/ds.h, lib/driver/device.c, lib/iso9660/iso9660_fs.c,
+-	test/testisocd.c: Reduce memory leaks...  remove depricated things in dh.h Note: a reworking of ds.h is needed to handle data which has alloc
++	test/testisocd.c: Reduce memory leaks...  remove deprecated things in dh.h Note: a reworking of ds.h is needed to handle data which has alloc
+ 	memory.
+ 
+ 2017-11-20  R. Bernstein <rocky@gnu.org>
+@@ -1223,7 +1223,7 @@
+ 
+ 2017-11-18  R. Bernstein <rocky@gnu.org>
+ 
+-	* include/cdio/types.h, lib/driver/netbsd.c, src/cdda-player.c: 
++	* include/cdio/types.h, lib/driver/netbsd.c, src/cdda-player.c:
+ 	NetBSD fixes
+ 
+ 2017-11-18  R. Bernstein <rocky@gnu.org>
+@@ -1309,7 +1309,7 @@
+ 
+ 2017-09-15  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/osx.c, test/check_cdtext.sh: (High) Sierra compatiablity...  osx.c: Use libcdio version of assert, not OSX's.  check_cdtext.sh:
++	* lib/driver/osx.c, test/check_cdtext.sh: (High) Sierra compatibility...  osx.c: Use libcdio version of assert, not OSX's.  check_cdtext.sh:
+ 	return should only be used inside functions
+ 
+ 2017-08-25  R. Bernstein <rocky@gnu.org>
+@@ -1374,7 +1374,7 @@
+ 
+ 2016-11-20  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/MSWindows/win32_ioctl.c, lib/iso9660/iso9660_fs.c: 
++	* lib/driver/MSWindows/win32_ioctl.c, lib/iso9660/iso9660_fs.c:
+ 	Remove minor print cast warnings From Ozkan Sezer <sezero>
+ 
+ 2016-11-20  R. Bernstein <rocky@gnu.org>
+@@ -1441,9 +1441,9 @@
+ 
+ 2016-07-11  R. Bernstein <rocky@gnu.org>
+ 
+-	* Makefile.am, lib/driver/abs_path.c, lib/driver/cdio_private.h: 
+-	conditional GIT2CL; host stndup replacment GIT2CL only if --maintainer-mode stndump in cdio_private.h for those
+-	systems that don't ahve it Changes suggested by Thomas Schmitt
++	* Makefile.am, lib/driver/abs_path.c, lib/driver/cdio_private.h:
++	conditional GIT2CL; host stndup replacement GIT2CL only if --maintainer-mode stndump in cdio_private.h for those
++	systems that don't have it Changes suggested by Thomas Schmitt
+ 
+ 2016-06-04  Leon Merten Lohse <leon@green-side.de>
+ 
+@@ -1453,7 +1453,7 @@
+ 2016-06-03  Leon Merten Lohse <leon@green-side.de>
+ 
+ 	* test/Makefile.am, test/cdtext-libburnia.right, test/cdtext.right,
+-	test/check_cdtext.sh, test/data/Makefile.am, test/data/cdtext.cue: 
++	test/check_cdtext.sh, test/data/Makefile.am, test/data/cdtext.cue:
+ 	Add dedicated unit test for the CD-Text parser Adds a dedicated test script (bash) for the CD-Text parser, using
+ 	one of the example tools (cdtext-raw) to call libcdio's CD-Text
+ 	parser and display the fields.  Tests are performed for two files,
+@@ -1469,7 +1469,7 @@
+ 	* include/cdio/mmc.h, lib/driver/_cdio_generic.c,
+ 	lib/driver/libcdio.sym, lib/driver/mmc/mmc.c,
+ 	lib/driver/mmc/mmc_private.h: Expose mmc_read_cdtext as a publicly
+-	accessable function Removes some redundant error reporting in mmc_read_cdtext (was
++	accessible function Removes some redundant error reporting in mmc_read_cdtext (was
+ 	mmc_read_cdtext_private) and make the function public.  Also fixes
+ 	some incorrect lengths for isrc and mcn.
+ 
+@@ -1617,7 +1617,7 @@
+ 2015-05-26  R. Bernstein <rocky@gnu.org>
+ 
+ 	* lib/driver/logging.c: Document better the cdio_logv recursion
+-	situtation
++	situation
+ 
+ 2015-05-26  R. Bernstein <rocky@gnu.org>
+ 
+@@ -1685,7 +1685,7 @@
+ 
+ 2014-10-19  R. Bernstein <rocky@gnu.org>
+ 
+-	* doc/how-to-make-a-release.txt, lib/driver/mmc/mmc_hl_cmds.c: 
++	* doc/how-to-make-a-release.txt, lib/driver/mmc/mmc_hl_cmds.c:
+ 	mmc_set_drive_speed: GNU/Linux ioctl treats <= 0 as max speed, so
+ 	we'll do that here as well. Savannah bug #43428
+ 
+@@ -1713,7 +1713,7 @@
+ 2014-09-24  R. Bernstein <rocky@gnu.org>
+ 
+ 	* lib/driver/FreeBSD/freebsd.c, lib/driver/device.c,
+-	lib/driver/image/bincue.c, lib/driver/mmc/mmc.c, src/cd-drive.c: 
++	lib/driver/image/bincue.c, lib/driver/mmc/mmc.c, src/cd-drive.c:
+ 	Silence more gcc warnings
+ 
+ 2014-09-24  R. Bernstein <rocky@gnu.org>
+@@ -1721,7 +1721,7 @@
+ 	* NEWS, lib/driver/Makefile.am, lib/driver/mmc/mmc.c,
+ 	lib/iso9660/Makefile.am, lib/udf/Makefile.am, src/cd-info.c,
+ 	test/Makefile.am: lib/*/Makefile.am: bump version in preparation of
+-	relase 0.93 test/Makefile.am: add proper dependency on test/example
++	release 0.93 test/Makefile.am: add proper dependency on test/example
+ 	NEWS: not coverty work
+ 
+ 2014-09-24  R. Bernstein <rocky@gnu.org>
+@@ -1815,7 +1815,7 @@
+ 
+ 2014-06-20  R. Bernstein <rocky@gnu.org>
+ 
+-	* example/extract.c, lib/driver/image/bincue.c, src/iso-info.c: 
++	* example/extract.c, lib/driver/image/bincue.c, src/iso-info.c:
+ 	Reduce coverty-found errors
+ 
+ 2014-06-20  R. Bernstein <rocky@gnu.org>
+@@ -1855,7 +1855,7 @@
+ 
+ 2014-06-14  enzo1982 <robert.kausch@freac.org>
+ 
+-	* src/getopt.c, src/getopt.h, src/getopt1.c, src/getopt_int.h: 
++	* src/getopt.c, src/getopt.h, src/getopt1.c, src/getopt_int.h:
+ 	Updated getopt to the version included with glibc 2.19.
+ 
+ 2014-06-14  enzo1982 <robert.kausch@freac.org>
+@@ -2023,7 +2023,7 @@
+ 
+ 2013-12-12  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/_cdio_generic.c, test/driver/mmc_read.c: 
++	* lib/driver/_cdio_generic.c, test/driver/mmc_read.c:
+ 	_cdio_generic.c: correct confusing debug message
+ 	test/driver/mmc_read.c: skip until someone understand what to do
+ 	here.
+@@ -2187,7 +2187,7 @@
+ 
+ 2013-10-14  rocky <rocky@gnu.org>
+ 
+-	* include/cdio/udf.h, lib/udf/udf_fs.c: From Pete Batard: * Add udf_get_logical_valume_id to retreive a UDF Logical Volume
++	* include/cdio/udf.h, lib/udf/udf_fs.c: From Pete Batard: * Add udf_get_logical_valume_id to retrieve a UDF Logical Volume
+ 	Identifier string * Fix a possible NULL deref in udf_ff_traverse() * Fix comments that were referencing wrong variable names
+ 
+ 2013-10-09  R. Bernstein <rocky@gnu.org>
+@@ -2305,7 +2305,7 @@
+ 2013-05-28  Brendan O'Dea <bod@debian.org>
+ 
+ 	* src/cd-drive.help2man, src/cd-info.help2man,
+-	src/cd-read.help2man, src/iso-info.help2man, src/iso-read.help2man: 
++	src/cd-read.help2man, src/iso-info.help2man, src/iso-read.help2man:
+ 	Fix NAME paragraph in man pages. Closes #39095
+ 
+ 2013-05-16  R. Bernstein <rocky@gnu.org>
+@@ -2314,7 +2314,7 @@
+ 
+ 2013-05-15  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/image_common.c: Test whther TOC is init'd and init if
++	* lib/driver/image_common.c: Test whether TOC is init'd and init if
+ 	not when asking for track number.
+ 
+ 2013-05-15  R. Bernstein <rocky@gnu.org>
+@@ -2328,7 +2328,7 @@
+ 	test/driver/.gitignore, test/driver/Makefile.am,
+ 	test/driver/track.c.in, test/testpregap.c.in: lib/driver/track.c:
+ 	was returning last_track+1 for leadout LSN, Use
+-	CDIO_CROM_LEADOUT_TRACK instaead. ltest/driver/track.c.in: start
++	CDIO_CROM_LEADOUT_TRACK instead. ltest/driver/track.c.in: start
+ 	test of lib/driver/track.c. cdda.toc: CDRDAO CD-DA image. Trim
+ 	blanks off of varousl files.
+ 
+@@ -2409,7 +2409,7 @@
+ 
+ 2012-11-20  R. Bernstein <rocky@gnu.org>
+ 
+-	* doc/libcdio.texi: Try to clearify LBA versus LSN in libcdio.
++	* doc/libcdio.texi: Try to clarify LBA versus LSN in libcdio.
+ 
+ 2012-11-04  R. Bernstein <rocky@gnu.org>
+ 
+@@ -2580,7 +2580,7 @@
+ 
+ 2012-09-27  R. Bernstein <rocky@gnu.org>
+ 
+-	* configure.ac, test/testisocd2.c.in, test/testpregap.c.in: 
++	* configure.ac, test/testisocd2.c.in, test/testpregap.c.in:
+ 	Recalculate native_top_srcdir one more time
+ 
+ 2012-09-27  rocky <rocky@gnu.org>
+@@ -2640,7 +2640,7 @@
+ 
+ 	* include/cdio/types.h, lib/iso9660/iso9660.c,
+ 	lib/iso9660/iso9660_private.h: Make bool be 8-bit. Rather switch
+-	than find where in ISO9660 there was a discrepency between stdbool
++	than find where in ISO9660 there was a discrepancy between stdbool
+ 	and the type.h definition.
+ 
+ 2012-09-23  R. Bernstein <rocky@gnu.org>
+@@ -2655,7 +2655,7 @@
+ 	* lib/driver/MSWindows/win32_ioctl.c, lib/driver/device.c,
+ 	lib/driver/disc.c, lib/driver/generic.h, lib/driver/image.h,
+ 	lib/driver/image/nrg.c, lib/driver/mmc/mmc.c,
+-	lib/driver/mmc/mmc_ll_cmds.c, lib/driver/read.c, lib/driver/track.c: 
++	lib/driver/mmc/mmc_ll_cmds.c, lib/driver/read.c, lib/driver/track.c:
+ 	Make sure stdbool is used in driver when it is defined. I think this
+ 	fixes bug #37394
+ 
+@@ -2682,8 +2682,8 @@
+ 
+ 	* lib/driver/image/bincue.c, test/driver/mmc_read.c,
+ 	test/driver/mmc_write.c: image/bincue.c: remove gcc warning.
+-	mmc_read.c, mmc_write.c: use usleep if that's avalable; fall back to
+-	"for" loop if sleep, usleep, and MSwindows Sleep isn't avialable.
++	mmc_read.c, mmc_write.c: use usleep if that's available; fall back to
++	"for" loop if sleep, usleep, and MSwindows Sleep isn't available.
+ 
+ 2012-04-29  rocky <rocky@gnu.org>
+ 
+@@ -2843,8 +2843,8 @@
+ 
+ 2012-03-25  R. Bernstein <rocky@gnu.org>
+ 
+-	* example/Makefile.am, lib/driver/gnu_linux.c, lib/driver/track.c: 
+-	track.c, gnu_linux.c: Test for exceding max track limit but allow
++	* example/Makefile.am, lib/driver/gnu_linux.c, lib/driver/track.c:
++	track.c, gnu_linux.c: Test for exceeding max track limit but allow
+ 	specifying the leadout track in some cases.  Makefile.am: need to
+ 	build extract unconditionally since that is used in testing
+ 
+@@ -2925,8 +2925,8 @@
+ 
+ 2012-03-25  R. Bernstein <rocky@gnu.org>
+ 
+-	* example/Makefile.am, lib/driver/gnu_linux.c, lib/driver/track.c: 
+-	track.c, gnu_linux.c: Test for exceding max track limit but allow
++	* example/Makefile.am, lib/driver/gnu_linux.c, lib/driver/track.c:
++	track.c, gnu_linux.c: Test for exceeding max track limit but allow
+ 	specifying the leadout track in some cases.  Makefile.am: need to
+ 	build extract unconditionally since that is used in testing
+ 
+@@ -3009,7 +3009,7 @@
+ 	* example/C++/OO/cdtext.cpp, example/cdtext.c,
+ 	include/cdio++/cdio.hpp, include/cdio++/cdtext.hpp,
+ 	include/cdio++/disc.hpp, include/cdio/cdtext.h,
+-	lib/driver/cdtext.c, lib/driver/libcdio.sym, src/cd-info.c: 
++	lib/driver/cdtext.c, lib/driver/libcdio.sym, src/cd-info.c:
+ 	[renamed] cdtext_languages_available to cdtext_list_languages
+ 	[fixed] C++ CD-Text API [fixed] C++ CD-Text example
+ 
+@@ -3113,7 +3113,7 @@
+ 
+ 2012-03-05  Pete Batard <pbatard@gmail.com>
+ 
+-	* example/extract.c, lib/driver/utf8.c, lib/iso9660/iso9660_fs.c: 
++	* example/extract.c, lib/driver/utf8.c, lib/iso9660/iso9660_fs.c:
+ 	Joliet improvements * support discs with more than one secondary volume descriptors * add Joliet support for extract sample * add fallback to non-Joliet if non-Joliet may be longer
+ 
+ 2012-03-05  Pete Batard <pbatard@gmail.com>
+@@ -3274,12 +3274,12 @@
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/MSWindows/win32.c, lib/udf/udf.c, lib/udf/udf_time.c: 
++	* lib/driver/MSWindows/win32.c, lib/udf/udf.c, lib/udf/udf_time.c:
+ 	More pbatard patches
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/portable.h: Forgot to add back in protable.h
++	* lib/driver/portable.h: Forgot to add back in portable.h
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+ 
+@@ -3292,14 +3292,14 @@
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/MSWindows/win32.c: Reduce complation warnings via
++	* lib/driver/MSWindows/win32.c: Reduce compilation warnings via
+ 	changes in pbatard branch
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+ 
+ 	* lib/driver/MSWindows/aspi32.c, lib/driver/cdtext.c,
+ 	lib/driver/image/bincue.c, lib/driver/image/cdrdao.c,
+-	lib/driver/mmc/mmc.c: Reduce complation warnings via changes in
++	lib/driver/mmc/mmc.c: Reduce compilation warnings via changes in
+ 	pbatard branch
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+@@ -3315,7 +3315,7 @@
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+ 
+-	* test/check_common_fn.in, test/check_legal.regex: 
++	* test/check_common_fn.in, test/check_legal.regex:
+ 	check_legal.regex: allow matching cd-info.exe.  check_common_fn.in:
+ 	don't erase file cd-info_legal.dump if there is an error.
+ 
+@@ -3352,7 +3352,7 @@
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+ 
+-	* include/cdio/ecma_167.h, lib/udf/udf_file.c, lib/udf/udf_fs.c: 
++	* include/cdio/ecma_167.h, lib/udf/udf_file.c, lib/udf/udf_fs.c:
+ 	pbatard flexible array for ecma_167.h header
+ 
+ 2012-03-03  R. Bernstein <rocky@gnu.org>
+@@ -3412,12 +3412,12 @@
+ 	example/isofile2.c, example/isofuzzy.c, example/isolist.c,
+ 	example/isolsn.c, example/mmc1.c, example/mmc2.c, example/mmc2a.c,
+ 	example/mmc3.c, example/sample3.c, example/sample4.c,
+-	example/tracks.c, example/udf1.c, example/udf2.c, example/udffile.c: 
++	example/tracks.c, example/udf1.c, example/udf2.c, example/udffile.c:
+ 	Harmonize source headers: C examples (Patch 4/5)
+ 
+ 2012-03-02  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/iso9660/iso9660_fs.c, test/check_common_fn.in: 
++	* lib/iso9660/iso9660_fs.c, test/check_common_fn.in:
+ 	check_common_fn.in: show command name when we hit an error
+ 
+ 2012-03-02  R. Bernstein <rocky@gnu.org>
+@@ -3767,7 +3767,7 @@
+ 
+ 2011-12-05  R. Bernstein <rocky@gnu.org>
+ 
+-	* include/cdio/Makefile.am, src/util.h, test/check_common_fn.in: 
++	* include/cdio/Makefile.am, src/util.h, test/check_common_fn.in:
+ 	Incorporate patch #7628 for building outside of source tree. Check
+ 	for locale en-US.
+ 
+@@ -3810,14 +3810,14 @@
+ 
+ 2011-11-27  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/image/cdrdao.c, test/data/cdda.cue, test/data/vcd2.toc: 
++	* lib/driver/image/cdrdao.c, test/data/cdda.cue, test/data/vcd2.toc:
+ 	Move a little bit forward in implementing SILENCE in cdrdao.  cdrdao
+ 	tests now work while being a little more strict.
+ 
+ 2011-11-25  R. Bernstein <rocky@gnu.org>
+ 
+ 	* lib/driver/image/cdrdao.c, test/data/Makefile.am: Add Leon Merten
+-	Lohse's cdtext test images.  cdrdao.c reduse severity of not finding
++	Lohse's cdtext test images.  cdrdao.c reduce severity of not finding
+ 	source - may change my mind later about this...
+ 
+ 2011-11-25  rocky <rocky@gnu.org>
+@@ -3867,7 +3867,7 @@
+ 
+ 	* configure.ac, include/cdio/device.h, lib/driver/image/cdrdao.c,
+ 	test/data/Makefile.am, test/data/data5.toc, test/data/data6.toc,
+-	test/data/data7.toc, test/data/t10.toc, test/driver/cdrdao.c.in: 
++	test/data/data7.toc, test/data/t10.toc, test/driver/cdrdao.c.in:
+ 	Don't error out on handling "NO PRE_EMPHASIS" in cdrdao TOC.
+ 	Savannah bug #34826:
+ 
+@@ -3928,7 +3928,7 @@
+ 
+ 2011-10-20  R. Bernstein <rocky@gnu.org>
+ 
+-	* include/cdio/Makefile.am, src/cd-paranoia/Makefile.am: 
++	* include/cdio/Makefile.am, src/cd-paranoia/Makefile.am:
+ 	src/cd-paranoia.h and include/cdio/cdio_config.h are derived files,
+ 	so don't include them in the distribution.
+ 
+@@ -4010,7 +4010,7 @@
+ 2011-10-19  R. Bernstein <rocky@gnu.org>
+ 
+ 	* README.develop, example/sample3.c, include/cdio++/iso9660.hpp,
+-	src/cd-drive.c, src/cd-paranoia/Makefile.am, test/check_legal.regex: 
++	src/cd-drive.c, src/cd-paranoia/Makefile.am, test/check_legal.regex:
+ 	Remove CVS $Id$ line which is no longer automatically updated.
+ 	ios9660.hpp under FS because of Solaris macro conflict as suggested
+ 	by Thomas Schmitt.  cd-drive.c: add some casts to remove gcc
+@@ -4215,7 +4215,7 @@
+ 
+ 2010-11-10  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/cdda_interface/scan_devices.c: Memoery leak reported in
++	* lib/cdda_interface/scan_devices.c: Memory leak reported in
+ 	paranoia-dev. Fix from billy.donahue.
+ 
+ 2010-10-26  R. Bernstein <rocky@gnu.org>
+@@ -4386,7 +4386,7 @@
+ 2010-02-08  R. Bernstein <rocky@gnu.org>
+ 
+ 	* lib/driver/mmc/mmc_cmd_helper.h, lib/driver/mmc/mmc_hl_cmds.c,
+-	lib/driver/mmc/mmc_ll_cmds.c, test/driver/mmc.c: Fix all fo the bugs
++	lib/driver/mmc/mmc_ll_cmds.c, test/driver/mmc.c: Fix all of the bugs
+ 	I introduced "improving" the code of others.  mmc_ll_cmds.c:
+ 	mmc_mode_select and mmc_get_configuration now work.  mmc_hl_cmds.c:
+ 	bug introduced by turning a var into a pointer to that variable.
+@@ -4539,7 +4539,7 @@
+ 
+ 2010-02-03  R. Bernstein <rocky@gnu.org>
+ 
+-	* include/cdio/mmc.h, include/cdio/types.h, lib/driver/gnu_linux.c: 
++	* include/cdio/mmc.h, include/cdio/types.h, lib/driver/gnu_linux.c:
+ 	Add type definition for SCSI sense data.
+ 
+ 2010-02-02  R. Bernstein <rocky@gnu.org>
+@@ -4616,7 +4616,7 @@
+ 
+ 2010-01-28  R. Bernstein <rocky@gnu.org>
+ 
+-	* include/cdio/mmc.h, lib/driver/mmc.c, test/driver/bincue.c.in: 
++	* include/cdio/mmc.h, lib/driver/mmc.c, test/driver/bincue.c.in:
+ 	Regularis some of the mmc Doxygen comments.
+ 
+ 2010-01-27  R. Bernstein <rocky@gnu.org>
+@@ -4751,7 +4751,7 @@
+ 
+ 	* lib/driver/MSWindows/aspi32.c, lib/driver/MSWindows/win32.c,
+ 	test/driver/win32.c: Extend win32 test to check
+-	get_arg("mmc-supported?"). Turn ASPI load failer into an info
++	get_arg("mmc-supported?"). Turn ASPI load failure into an info
+ 	message
+ 
+ 2010-01-18  R. Bernstein <rocky@gnu.org>
+@@ -4769,7 +4769,7 @@
+ 	* example/cdchange.c, example/paranoia.c, lib/driver/aix.c,
+ 	lib/driver/image_common.c, lib/driver/netbsd.c,
+ 	test/driver/gnu_linux.c: driver/*.c: Add response for
+-	get_arg("mmc-supported?") example/*.c: remove compiler wranings.
++	get_arg("mmc-supported?") example/*.c: remove compiler warnings.
+ 
+ 2010-01-17  R. Bernstein <rocky@gnu.org>
+ 
+@@ -4894,7 +4894,7 @@
+ 
+ 2009-12-31  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/mmc.c, test/driver/Makefile.am, test/driver/mmc.c: 
++	* lib/driver/mmc.c, test/driver/Makefile.am, test/driver/mmc.c:
+ 	lib/driver/mmc.c: remove bug in dereferencing NULL pointer. (Found
+ 	in testing ;-) test/driver/mmc.c: MMC command testing code from
+ 	Thomas Schmitt.
+@@ -4916,7 +4916,7 @@
+ 
+ 	* example/cdtext.c, example/mmc1.c, example/mmc2.c,
+ 	example/mmc2a.c, example/mmc3.c, example/paranoia.c,
+-	example/paranoia2.c, example/sample4.c, test/testiso9660.c: 
++	example/paranoia2.c, example/sample4.c, test/testiso9660.c:
+ 	example/* change failures so the record as skipped tests when
+ 	running 'make check'.
+ 
+@@ -4924,7 +4924,7 @@
+ 
+ 	* configure.ac, include/cdio/version.h.in, test/Makefile.am,
+ 	test/driver/.gitignore, test/driver/Makefile.am, test/{testlinux.c
+-	=> driver/gnu_linux.c}, test/{testsolaris.c => driver/solaris.c}: 
++	=> driver/gnu_linux.c}, test/{testsolaris.c => driver/solaris.c}:
+ 	Move driver tests into a separate directory.
+ 
+ 2009-12-26  WIndows XP <rocky@gnu.org>
+@@ -4961,7 +4961,7 @@
+ 
+ 2009-12-25  R. Bernstein <rocky@gnu.org>
+ 
+-	* NEWS, THANKS, lib/driver/gnu_linux.c, lib/driver/solaris.c: 
++	* NEWS, THANKS, lib/driver/gnu_linux.c, lib/driver/solaris.c:
+ 	Recording and retrieval of SCSI sense reply for GNU/Linux.
+ 
+ 2009-12-25  R. Bernstein <rocky@gnu.org>
+@@ -5125,12 +5125,12 @@
+ 
+ 	* config.rpath, lib/driver/FreeBSD/freebsd.c: Perhaps adding a real
+ 	config.rpath will help some of the iconv problems.  Remove a
+-	compiler warning when not compling in FreeBSD.
++	compiler warning when not compiling in FreeBSD.
+ 
+ 2009-10-22  R. Bernstein <rocky@gnu.org>
+ 
+ 	* lib/driver/FreeBSD/freebsd.c, lib/driver/FreeBSD/freebsd.h: Remove
+-	dupicated code caused by mixup with existing get-media-changed code.
++	duplicated code caused by mixup with existing get-media-changed code.
+ 
+ 2009-10-21  R. Bernstein <rocky@gnu.org>
+ 
+@@ -5203,7 +5203,7 @@
+ 
+ 2009-05-14  R. Bernstein <rocky@gnu.org>
+ 
+-	* lib/driver/cdtext.c: Guard against dereferncing a null cdtext
++	* lib/driver/cdtext.c: Guard against dereferencing a null cdtext
+ 	pointer.
+ 
+ 2009-04-23  rocky <rocky@sanchez.(none)>
+@@ -5248,7 +5248,7 @@
+ 
+ 2009-04-19  rocky <rocky@sanchez.(none)>
+ 
+-	* .gitignore, example/C++/.gitignore, example/C++/OO/.gitignore: 
++	* .gitignore, example/C++/.gitignore, example/C++/OO/.gitignore:
+ 	Administrivia
+ 
+ 2009-04-05  rocky <rocky@sanchez.(none)>
+@@ -5330,7 +5330,7 @@
+ 
+ 2008-12-06  R. Bernstein <rocky@sanchez.(none)>
+ 
+-	* example/.gitignore, lib/driver/.gitignore, test/.gitignore: 
++	* example/.gitignore, lib/driver/.gitignore, test/.gitignore:
+ 	Resolve conflicted files.
+ 
+ 2008-12-06  R. Bernstein <rocky@gnu.org>
+@@ -5361,7 +5361,7 @@
+ 	src/cd-paranoia/doc/.gitignore, src/cd-paranoia/doc/en/.cvsignore,
+ 	src/cd-paranoia/doc/en/.gitignore,
+ 	src/cd-paranoia/doc/ja/.cvsignore,
+-	src/cd-paranoia/doc/ja/.gitignore, test/.cvsignore, test/.gitignore: 
++	src/cd-paranoia/doc/ja/.gitignore, test/.cvsignore, test/.gitignore:
+ 	Makefile.am: Redo target for ChangeLog to use git2cl. NEWS: Note
+ 	NetBSD driver added. Reset: git administrivia.
+ 
+@@ -5614,7 +5614,7 @@
+ 	since we don't seem to use this at compile time and it fouls up
+ 	cross compilation.  cd-paranoia has tests at run-time. libcdio inherited this from
+ 	vcdimager which needs it in writing images. It is possible that when
+-	libcdio does writing this may come back. Untill then, simplify.
++	libcdio does writing this may come back. Until then, simplify.
+ 
+ 2008-11-23  R. Bernstein <rocky@gnu.org>
+ 
+@@ -5767,7 +5767,7 @@
+ 	* lib/driver/Makefile.am, lib/driver/gnu_linux.c: Was accessing
+ 	outside of check2list causing wild looping.  Turn all sprintf's to
+ 	snprintf's and check the return.  Turn check1list and check2list looping into a fixed constant number
+-	of iterations rather than rely on a sentinal.
++	of iterations rather than rely on a sentinel.
+ 
+ 2008-06-19  flameeyes <flameeyes>
+ 
+@@ -5775,7 +5775,7 @@
+ 	src/cd-paranoia/buffering_write.c,
+ 	src/cd-paranoia/buffering_write.h, src/cd-paranoia/cd-paranoia.c,
+ 	src/cd-paranoia/pod2c.pl, src/cd-read.c, src/cdda-player.c,
+-	src/iso-info.c, src/iso-read.c, src/mmc-tool.c, test/testparanoia.c: 
++	src/iso-info.c, src/iso-read.c, src/mmc-tool.c, test/testparanoia.c:
+ 	Mark variables and constant as static in source tools, examples and
+ 	tests. Also replace some char pointers with char arrays.
+ 
+@@ -5846,7 +5846,7 @@
+ 	lib/cdda_interface/scsi_interface.c,
+ 	lib/cdda_interface/test_interface.c: Make drive exceptions
+ 	non-static objects that are shared between multiple units.  Also
+-	replace the three Dummy functions wth dummy_exception (also common).  Bump the revision.  This reduces the memory footprint of libcdda_interface of about 200
++	replace the three Dummy functions with dummy_exception (also common).  Bump the revision.  This reduces the memory footprint of libcdda_interface of about 200
+ 	bytes.
+ 
+ 2008-06-13  flameeyes <flameeyes>
+@@ -5910,7 +5910,7 @@
+ 
+ 2008-05-28  rocky <rocky>
+ 
+-	* include/cdio/iso9660.h, lib/iso9660/iso9660.c, test/testiso9660.c: 
++	* include/cdio/iso9660.h, lib/iso9660/iso9660.c, test/testiso9660.c:
+ 	iso9660.h: parameter name change to match implementation.
+ 	iso9660.c: use reentrant version of localtime and gettime (most of
+ 	the time) Patch from Nicolas Boullis.  testiso9660.c: Change a memcmp for a test_compare which gives more
+@@ -6389,7 +6389,7 @@
+ 2007-12-28  rocky <rocky>
+ 
+ 	* NEWS, configure.ac, test/check_cd_read.sh, test/check_cue.sh.in,
+-	test/check_iso.sh.in, test/check_nrg.sh.in, test/check_opts.sh: 
++	test/check_iso.sh.in, test/check_nrg.sh.in, test/check_opts.sh:
+ 	Build outside of source fixes for TEST. We're in 0.80 land now.
+ 
+ 2007-12-28  rocky <rocky>
+@@ -6421,7 +6421,7 @@
+ 
+ 	* include/cdio/mmc.h, lib/driver/libcdio.sym, lib/driver/mmc.c: Run
+ 	a Multimedia command (MMC) specifying the CDB length.  The
+-	motivation here is for example ot use in is an undocumented debug
++	motivation here is, for example, to use in is an undocumented debug
+ 	command for LG drives (namely E7), whose length is being
+ 	miscalculated by mmc_get_cmd_len(); it doesn't follow the usual code
+ 	number to length conventions. Patch supplied by SukkoPera.
+@@ -6461,7 +6461,7 @@
+ 2007-11-16  flameeyes <flameeyes>
+ 
+ 	* test/check_cd_read.sh, test/check_cue.sh.in,
+-	test/check_iso.sh.in, test/check_nrg.sh.in, test/check_opts.sh: 
++	test/check_iso.sh.in, test/check_nrg.sh.in, test/check_opts.sh:
+ 	check_common_fn is in the current dir (build dir), not in $srcdir.
+ 
+ 2007-11-16  flameeyes <flameeyes>
+@@ -6522,7 +6522,7 @@
+ 	* NEWS, configure.ac, lib/cdda_interface/Makefile.am,
+ 	lib/cdio++/Makefile.am, lib/driver/Makefile.am,
+ 	lib/iso9660/Makefile.am, lib/paranoia/Makefile.am,
+-	lib/udf/Makefile.am, src/Makefile.am, src/cd-paranoia/Makefile.am: 
++	lib/udf/Makefile.am, src/Makefile.am, src/cd-paranoia/Makefile.am:
+ 	Remove := in Makefiles for portability.  autoconf 1.10 complains
+ 	about adding AM_PROC_CC_C_O - pander to it.
+ 
+@@ -6580,7 +6580,7 @@
+ 2007-08-12  rocky <rocky>
+ 
+ 	* configure.ac, lib/iso9660/iso9660_fs.c, test/.cvsignore,
+-	test/Makefile.am, test/testisocd.c, test/testisocd2.c.in: 
++	test/Makefile.am, test/testisocd.c, test/testisocd2.c.in:
+ 	iso9660_fs.c: remove some (but not all) of the redundancy
+ 	testisocd2.c.in: a test of working with an ISO 9660 image.
+ 
+@@ -6602,7 +6602,7 @@
+ 2007-08-11  flameeyes <flameeyes>
+ 
+ 	* lib/driver/osx.c: Workaround a missing callback, failures are
+-	called immediately, sucesses are queued and might not be called
++	called immediately, successes are queued and might not be called
+ 	properly.
+ 
+ 2007-08-09  flameeyes <flameeyes>
+@@ -6720,7 +6720,7 @@
+ 2007-03-09  rocky <rocky>
+ 
+ 	* src/cd-paranoia/doc/en/cd-paranoia.1.in: More potential cdparanoia
+-	-> cd-paranoia changes. Note how this differes from cdparanoia (i.e.
++	-> cd-paranoia changes. Note how this differs from cdparanoia (i.e.
+ 	not much).
+ 
+ 2007-03-09  rocky <rocky>
+@@ -6729,7 +6729,7 @@
+ 
+ 2007-03-07  rocky <rocky>
+ 
+-	* example/cdchange.c, lib/driver/gnu_linux.c: 
++	* example/cdchange.c, lib/driver/gnu_linux.c:
+ 	lib/driver/gnu_linux.c: bug #19221 (possibly): memory Leak opening
+ 	an inaccessible device.  cdchange.c: a stray character got added to
+ 	the file
+@@ -6901,7 +6901,7 @@
+ 
+ 	* example/.cvsignore, example/Makefile.am, example/mmc3.c,
+ 	include/cdio/mmc.h, lib/driver/Makefile.am, lib/driver/libcdio.sym,
+-	lib/driver/mmc.c, lib/driver/mmc_private.h, lib/iso9660/Makefile.am: 
++	lib/driver/mmc.c, lib/driver/mmc_private.h, lib/iso9660/Makefile.am:
+ 	Add routine to get tray status (open/closed) and sample program.
+ 	Seems broken at least on SuSE 10.1 if not other GNU/Linux's though.
+ 
+@@ -7017,7 +7017,7 @@
+ 
+ 2006-04-15  rocky <rocky>
+ 
+-	* example/C++/Makefile.am, example/C++/isofile.cpp: 
++	* example/C++/Makefile.am, example/C++/isofile.cpp:
+ 	iso3.cpp->isofile.cpp
+ 
+ 2006-04-15  rocky <rocky>
+@@ -7042,7 +7042,7 @@
+ 
+ 	* example/C++/Makefile.am, example/C++/OO/Makefile.am,
+ 	example/Makefile.am, example/README, example/{iso3.c => isofile.c},
+-	example/{iso2.c => isofile2.c}, example/{iso1.c => isolist.c}: 
++	example/{iso2.c => isofile2.c}, example/{iso1.c => isolist.c}:
+ 	iso1.c->isolist.c iso2.c -> isofile2.c iso3.c -> isofile.c
+ 
+ 2006-04-15  rocky <rocky>
+@@ -7058,7 +7058,7 @@
+ 
+ 2006-04-14  rocky <rocky>
+ 
+-	* lib/driver/libcdio.sym, src/cdda-player.c, src/mmc-tool.c: 
++	* lib/driver/libcdio.sym, src/cdda-player.c, src/mmc-tool.c:
+ 	libcdio.sym: add mmc_close_tray cdda-player.c, mmc-tool.c: remove
+ 	possibility of uninitialized return code variables
+ 
+@@ -7155,7 +7155,7 @@
+ 
+ 2006-04-05  rocky <rocky>
+ 
+-	* src/cdda-player.c: Figure out last line from screen paramaters.
++	* src/cdda-player.c: Figure out last line from screen parameters.
+ 	(I'm embarrassed it this wasn't put in earlier.) Play *only* if we
+ 	weren't previously paused or playing.
+ 
+@@ -7178,7 +7178,7 @@
+ 	* include/cdio/device.h, include/cdio/mmc.h,
+ 	lib/driver/MSWindows/win32.c, lib/driver/device.c,
+ 	lib/driver/gnu_linux.c, lib/driver/libcdio.sym, lib/driver/mmc.c,
+-	src/mmc-tool.c: Clarify the difference betweeen speed as it is
++	src/mmc-tool.c: Clarify the difference between speed as it is
+ 	defined in the MMC spec and drive unit speeds. Add a new mmc routine
+ 	for the latter.
+ 
+@@ -7251,7 +7251,7 @@
+ 
+ 2006-03-26  rocky <rocky>
+ 
+-	* include/cdio/cd_types.h, lib/driver/device.c, test/testisocd.c: 
++	* include/cdio/cd_types.h, lib/driver/device.c, test/testisocd.c:
+ 	Bug in get_drive_types_with_cap: Had wrong boolean logic.
+ 
+ 2006-03-26  rocky <rocky>
+@@ -7296,7 +7296,7 @@
+ 2006-03-18  rocky <rocky>
+ 
+ 	* include/cdio/cdda.h, include/cdio/paranoia.h,
+-	lib/cdda_interface/cddap_interface.c, lib/paranoia/paranoia.c: 
++	lib/cdda_interface/cddap_interface.c, lib/paranoia/paranoia.c:
+ 	documentation additions, mostly doxygen. More #defines become
+ 	enumerations.
+ 
+@@ -7344,7 +7344,7 @@
+ 2006-03-18  rocky <rocky>
+ 
+ 	* NEWS, include/cdio/util.h, lib/cdda_interface/utils.c,
+-	lib/driver/gnu_linux.c, lib/driver/util.c, lib/udf/udf_fs.c: 
++	lib/driver/gnu_linux.c, lib/driver/util.c, lib/udf/udf_fs.c:
+ 	Security: replace all uses of strcat and strcpy with strncat and
+ 	strncpy
+ 
+@@ -7401,7 +7401,7 @@
+ 2006-03-17  rocky <rocky>
+ 
+ 	* lib/iso9660/iso9660.c, test/testiso9660.c: More time corrections
+-	in the presense of timezones, daylight savings time, and
++	in the presence of timezones, daylight savings time, and
+ 	HAVE_TM_GMTOFF
+ 
+ 2006-03-17  rocky <rocky>
+@@ -7417,7 +7417,7 @@
+ 
+ 2006-03-17  rocky <rocky>
+ 
+-	* NEWS, lib/iso9660/iso9660.c, test/testiso9660.c: 
++	* NEWS, lib/iso9660/iso9660.c, test/testiso9660.c:
+ 	iso9660_get_{l,d}time() anot accounting for the timezone properly.
+ 	Some other small bugs removed.
+ 
+@@ -7500,7 +7500,7 @@
+ 	lib/cdio++/cdio.cpp, lib/cdio++/cdio_stub.cpp,
+ 	lib/cdio++/iso9660.cpp, lib/cdio++/iso9660_stub.cpp: Move code from
+ 	devices.hpp and iso9660.hpp headers into external files - cdio.cpp,
+-	device.cpp, iso9660.cpp configure.ac, C++/OO/Makefile.am: Found some bugs libraries acces in
++	device.cpp, iso9660.cpp configure.ac, C++/OO/Makefile.am: Found some bugs libraries access in
+ 	doing the above move.
+ 
+ 2006-03-07  rocky <rocky>
+@@ -7566,7 +7566,7 @@
+ 	* example/C++/device.cpp, include/cdio++/cdio.hpp,
+ 	include/cdio++/device.hpp, include/cdio++/iso9660.hpp,
+ 	include/cdio/iso9660.h, lib/cdio++/Makefile.am,
+-	lib/cdio++/{stub.cpp => cdio_stub.cpp}, lib/cdio++/iso9660_stub.cpp: 
++	lib/cdio++/{stub.cpp => cdio_stub.cpp}, lib/cdio++/iso9660_stub.cpp:
+ 	lib/cdio++/Makeifle.am iso9660.hpp iso9660_stub.cpp: start C++
+ 	libiso9660 library iso9660.h: documentation changes.  device.hpp:
+ 	reduce number of methods stub.cpp->cdio_stub.cpp
+@@ -7606,7 +7606,7 @@
+ 2006-03-02  rocky <rocky>
+ 
+ 	* example/C++/iso1.cpp, example/iso1.c, example/iso3.c: Some small
+-	changes inspired by correspoinding Perl programs.
++	changes inspired by corresponding Perl programs.
+ 
+ 2006-03-01  rocky <rocky>
+ 
+@@ -7691,7 +7691,7 @@
+ 
+ 2006-02-18  rocky <rocky>
+ 
+-	* lib/driver/bsdi.c, lib/driver/device.c, lib/driver/osx.c: 
++	* lib/driver/bsdi.c, lib/driver/device.c, lib/driver/osx.c:
+ 	scsi_mmc_direction_t -> cdio_mmc_direction_t
+ 
+ 2006-02-16  rocky <rocky>
+@@ -7718,8 +7718,8 @@
+ 
+ 2006-02-13  rocky <rocky>
+ 
+-	* example/.cvsignore, lib/udf/udf_time.c, src/.cvsignore: 
+-	udf_time.c: make sure offset is initialzed (Darwin doesn'thave
++	* example/.cvsignore, lib/udf/udf_time.c, src/.cvsignore:
++	udf_time.c: make sure offset is initialized (Darwin doesn'thave
+ 	TIMEZONE var).  .cvsignore: add .gdb_history
+ 
+ 2006-02-13  rocky <rocky>
+@@ -7778,7 +7778,7 @@
+ 2006-02-02  rocky <rocky>
+ 
+ 	* example/udf2.c, include/cdio++/cdio.hpp, include/cdio/device.h,
+-	lib/driver/device.c, lib/driver/libcdio.sym: 
++	lib/driver/device.c, lib/driver/libcdio.sym:
+ 	cdio_driver_return_code_to_str -> cdio_driver_errmsg
+ 
+ 2006-02-01  rocky <rocky>
+@@ -7792,7 +7792,7 @@
+ 
+ 2006-01-26  rocky <rocky>
+ 
+-	* lib/udf/udf_file.c, lib/udf/udf_fs.c, lib/udf/udf_private.h: 
++	* lib/udf/udf_file.c, lib/udf/udf_fs.c, lib/udf/udf_private.h:
+ 	Commit some of the temporary UDF stuff. It will either be completed
+ 	or disabled later.
+ 
+@@ -7903,12 +7903,12 @@
+ 
+ 2006-01-18  rocky <rocky>
+ 
+-	* include/cdio++/device.hpp: Add a default value for drive paramater
++	* include/cdio++/device.hpp: Add a default value for drive parameter
+ 	of CloseTray().
+ 
+ 2006-01-18  rocky <rocky>
+ 
+-	* example/C++/OO/eject.cpp: Add close status message. Remove uneeded
++	* example/C++/OO/eject.cpp: Add close status message. Remove unneeded
+ 	driver_id parameter. Fix a grammatical mistake.
+ 
+ 2006-01-17  rocky <rocky>
+@@ -8149,7 +8149,7 @@
+ 
+ 2005-11-07  pjcreath <pjcreath>
+ 
+-	* lib/cdda_interface/cddap_interface.c, lib/paranoia/paranoia.c: 
++	* lib/cdda_interface/cddap_interface.c, lib/paranoia/paranoia.c:
+ 	Cleaned up TRACE_PARANOIA and added some messages for the skip case.
+ 
+ 2005-11-07  rocky <rocky>
+@@ -8345,7 +8345,7 @@
+ 2005-10-28  rocky <rocky>
+ 
+ 	* lib/driver/MSWindows/win32.c: Use MMC routine for reading data
+-	blocks. At leat on XP home it seems to work better than generic read
++	blocks. At least on XP home, it seems to work better than generic read
+ 	which is a cooked read.
+ 
+ 2005-10-27  rocky <rocky>
+@@ -8396,7 +8396,7 @@
+ 
+ 2005-10-25  pjcreath <pjcreath>
+ 
+-	* configure.ac, example/Makefile.am, src/cd-paranoia/Makefile.am: 
++	* configure.ac, example/Makefile.am, src/cd-paranoia/Makefile.am:
+ 	Fixed Darwin builds broken by dependency tracking.
+ 
+ 2005-10-25  rocky <rocky>
+@@ -8426,7 +8426,7 @@
+ 
+ 	* example/udf1.c, lib/udf/udf_fs.c: Remove memory leak and invalid
+ 	write references thanks to valgrind.  Now lists all files correctly
+-	- at least in the absense of directories under /.
++	- at least in the absence of directories under /.
+ 
+ 2005-10-24  pjcreath <pjcreath>
+ 
+@@ -8493,13 +8493,13 @@
+ 
+ 2005-10-23  rocky <rocky>
+ 
+-	* lib/cdda_interface/low_interface.h: Rmove references to external
++	* lib/cdda_interface/low_interface.h: Remove references to external
+ 	(SCSI) routines that don't in fact exist.
+ 
+ 2005-10-23  rocky <rocky>
+ 
+ 	* lib/cdda_interface/cddap_interface.c: Patch by Erik Lunchpail to
+-	accomodate systems (e.g. MinGW) that don't have drand48 but have
++	accommodate systems (e.g. MinGW) that don't have drand48 but have
+ 	rand.
+ 
+ 2005-10-21  rocky <rocky>
+@@ -8532,7 +8532,7 @@
+ 2005-10-21  rocky <rocky>
+ 
+ 	* include/cdio/mmc.h, lib/driver/gnu_linux.c,
+-	lib/driver/libcdio.sym, lib/driver/mmc.c, lib/driver/mmc_private.h: 
++	lib/driver/libcdio.sym, lib/driver/mmc.c, lib/driver/mmc_private.h:
+ 	Try to regularize naming better. More mmc_ -> cdio_mmc_ Add more
+ 	debug variables to be able to get at enum values in a debugger.
+ 
+@@ -8627,7 +8627,7 @@
+ 
+ 	* include/cdio/ecma_167.h: Shortten some field names, add udf_
+ 	prefixes to aid with namespace problem; turn logical volume
+-	descriptor content use into something more useable.
++	descriptor content use into something more usable.
+ 
+ 2005-10-17  rocky <rocky>
+ 
+@@ -8641,7 +8641,7 @@
+ 2005-10-16  rocky <rocky>
+ 
+ 	* include/cdio/ecma_167.h: Datatypes closer to matching terms used
+-	in ECMA 167 spec. Combine/remove duplicate tag identifer
++	in ECMA 167 spec. Combine/remove duplicate tag identifier
+ 	definitions.
+ 
+ 2005-10-16  rocky <rocky>
+@@ -8841,7 +8841,7 @@
+ 2005-09-21  rocky <rocky>
+ 
+ 	* example/C++/paranoia.cpp, example/paranoia.c,
+-	include/cdio/cdda.h, include/cdio/paranoia.h, test/testparanoia.c: 
++	include/cdio/cdda.h, include/cdio/paranoia.h, test/testparanoia.c:
+ 	Move lower-level cdrom_drive_t from paranoia.h into cdda.h This may
+ 	cause some incompatibilty in applications that did #include
+ 	<cdio/cdda.h> without #include <cdio/paranoia.h> As of now it's okay to just #include <cdio/paranoia.h> or include
+@@ -8883,7 +8883,7 @@
+ 2005-09-18  rocky <rocky>
+ 
+ 	* src/cd-info.c, src/cd-read.c: The type of (option) opt needs to be
+-	int not char and this is noticable on ppc where char is unsigned by
++	int not char and this is noticeable on ppc where char is unsigned by
+ 	default.  Furthermore, poptGetNextOpt() returns an int, not a char.  Bug noticed and patch all thanks to Nicolas Boullis.
+ 
+ 2005-09-18  rocky <rocky>
+@@ -8920,7 +8920,7 @@
+ 
+ 2005-09-16  rocky <rocky>
+ 
+-	* configure.ac, example/C++/Makefile.am, example/Makefile.am: 
++	* configure.ac, example/C++/Makefile.am, example/Makefile.am:
+ 	configure.ac: make it explicit that --without-cd-paranoia also means
+ 	without the library If --without-cd-paranoia don't try to build paranoia programs in
+ 	example and example/C++.  Thanks to Elio Blanca for reporting the problems.
+@@ -9033,7 +9033,7 @@
+ 
+ 2005-07-10  rocky <rocky>
+ 
+-	* README: Note existance and libcdio use in gmerlin and mplayerxp.
++	* README: Note existence and libcdio use in gmerlin and mplayerxp.
+ 
+ 2005-07-09  rocky <rocky>
+ 
+@@ -9089,7 +9089,7 @@
+ 
+ 2005-06-26  rocky <rocky>
+ 
+-	* src/cd-paranoia/cd-paranoia.c, src/cd-paranoia/usage.txt.in: 
++	* src/cd-paranoia/cd-paranoia.c, src/cd-paranoia/usage.txt.in:
+ 	cd-paranoia: Add option --mmc-timeout (-m) to set MMC timeout.
+ 
+ 2005-06-26  rocky <rocky>
+@@ -9249,14 +9249,14 @@
+ 2005-04-23  rocky <rocky>
+ 
+ 	* lib/driver/_cdio_generic.c, lib/driver/generic.h,
+-	lib/driver/gnu_linux.c, lib/driver/osx.c, lib/driver/solaris.c: 
++	lib/driver/gnu_linux.c, lib/driver/osx.c, lib/driver/solaris.c:
+ 	Patch from Burkhard Plaum: 1. In the function is_cdrom_linux(...) in the file
+ 	   lib/driver/gnu_linux.c, the CDROMREADTOCHDR ioctl gets called, which
+ 	   fails when the drive is empty. The CDROM_GET_CAPABILITY ioctl always
+ 	   succeeds for CDrom drives and fails for hard disks etc.  2. For some reason, at least my (GNU/Linux 2.6.10) Kernel fails to    open empty drives, when only O_RDONLY is used. Changing the open
+-	   flag to O_RDONLY|O_NONBLOCK, the call succeeds also for emtpy
++	   flag to O_RDONLY|O_NONBLOCK, the call succeeds also for empty
+ 	   drives.  By the way, the cdrom header file in the kernel says
+-	   explicitely, that O_RDONLY|O_NONBLOCK should used whenever a cdrom
++	   explicitly, that O_RDONLY|O_NONBLOCK should used whenever a cdrom
+ 	is touched.  rocky: also made a change to eject to continue even if we can't get
+ 	the drive status -- which we can't with an empty CD-ROM drive.
+ 
+@@ -9376,7 +9376,7 @@
+ 
+ 2005-03-31  rocky <rocky>
+ 
+-	* src/cdda-player.c: Impliment -l (list tracks).
++	* src/cdda-player.c: Implement -l (list tracks).
+ 
+ 2005-03-29  rocky <rocky>
+ 
+@@ -9535,7 +9535,7 @@
+ 
+ 	* lib/driver/_cdio_stream.c, lib/driver/read.c, src/cd-drive.c,
+ 	src/cd-info.c, src/iso-info.c: src/* gl_default_log_handler defined
+-	only once.  lib/dirver/*.c: looks to me like a cosmetic change but
++	only once.  lib/driver/*.c: looks to me like a cosmetic change but
+ 	supposedly it helps on Fedora Core 4 test1 Bug # 12363: See:
+ 	http://savannah.gnu.org/bugs/?func=detailitem&item_id=12363
+ 
+@@ -9636,7 +9636,7 @@
+ 2005-03-13  rocky <rocky>
+ 
+ 	* lib/driver/cdio_private.h, lib/driver/osx.c: A hacky OSX close
+-	drive routine. It doesn't handle the actual drive paramater because
++	drive routine. It doesn't handle the actual drive parameter because
+ 	we don't really know how to pass that to druti.
+ 
+ 2005-03-13  rocky <rocky>
+@@ -9751,7 +9751,7 @@
+ 2005-03-07  rocky <rocky>
+ 
+ 	* include/cdio/device.h, lib/driver/cdio_private.h,
+-	lib/driver/device.c, lib/driver/gnu_linux.c, lib/driver/libcdio.sym: 
++	lib/driver/device.c, lib/driver/gnu_linux.c, lib/driver/libcdio.sym:
+ 	Start of a working close_tray routine.  Add another routines which
+ 	returns driver id to help reduce driver scans.  Reduce unneeded
+ 	driver scanning my skipping DRIVER_UNKNOWN.
+@@ -9794,7 +9794,7 @@
+ 
+ 2005-03-06  rocky <rocky>
+ 
+-	* include/cdio/audio.h, lib/driver/audio.c, lib/driver/libcdio.sym: 
++	* include/cdio/audio.h, lib/driver/audio.c, lib/driver/libcdio.sym:
+ 	Add cdio_audio_get_msf_seconds
+ 
+ 2005-03-06  rocky <rocky>
+@@ -9824,7 +9824,7 @@
+ 
+ 2005-03-06  rocky <rocky>
+ 
+-	* lib/driver/solaris.c: Don't rely on mmc backward compatability.
++	* lib/driver/solaris.c: Don't rely on mmc backward compatibility.
+ 
+ 2005-03-06  rocky <rocky>
+ 
+@@ -9838,7 +9838,7 @@
+ 	* example/C++/iso1.cpp, example/C++/mmc1.cpp, example/C++/mmc2.cpp,
+ 	example/mmc1.c, example/mmc2.c, include/cdio/ds.h,
+ 	lib/driver/gnu_linux.c, lib/driver/mmc.c, lib/driver/mmc_private.h,
+-	src/util.c: Don't rely on compatability with 0.72. Use new type
++	src/util.c: Don't rely on compatibility with 0.72. Use new type
+ 	names.
+ 
+ 2005-03-05  rocky <rocky>
+@@ -9892,7 +9892,7 @@
+ 2005-03-05  rocky <rocky>
+ 
+ 	* include/cdio/device.h, lib/driver/cdio_private.h,
+-	lib/driver/device.c, lib/driver/gnu_linux.c, lib/driver/solaris.c: 
++	lib/driver/device.c, lib/driver/gnu_linux.c, lib/driver/solaris.c:
+ 	get_last_session returns lsn_t not session number.  Add
+ 	get_track_last_session for Solaris. Correct it's play_msf.
+ 
+@@ -10040,7 +10040,7 @@
+ 
+ 2005-03-01  rocky <rocky>
+ 
+-	* lib/driver/_cdio_linux.c, lib/driver/audio.c, src/cd-info.c: 
++	* lib/driver/_cdio_linux.c, lib/driver/audio.c, src/cd-info.c:
+ 	Corrections to audio. First glimpse at working (on GNU/Linux) audio
+ 	controls.
+ 
+@@ -10151,7 +10151,7 @@
+ 
+ 2005-02-25  rocky <rocky>
+ 
+-	* lib/driver/_cdio_generic.c, lib/driver/_cdio_osx.c: 
++	* lib/driver/_cdio_generic.c, lib/driver/_cdio_osx.c:
+ 	_cdio_generic.c: OSX does return CDIO_CDROM_CDI_TRACK.  _cdio_osx.c: fixup read_data_blocks. May have to complicate more if
+ 	we need to make a distinction between Form 1 and Form 2. Revise for
+ 	current name/variable conventions.
+@@ -10162,7 +10162,7 @@
+ 
+ 2005-02-24  rocky <rocky>
+ 
+-	* lib/driver/cdtext.c: Guard against deferencing NULL pointer.
++	* lib/driver/cdtext.c: Guard against dereferencing NULL pointer.
+ 
+ 2005-02-24  rocky <rocky>
+ 
+@@ -10187,7 +10187,7 @@
+ 
+ 2005-02-22  rocky <rocky>
+ 
+-	* lib/iso9660/iso9660.c, test/isofs-m1.right, test/monvoisin.right: 
++	* lib/iso9660/iso9660.c, test/isofs-m1.right, test/monvoisin.right:
+ 	iso9660_get_dtime hack: we've seen it happen that everything except
+ 	gmtoff is zero and the expected date is the beginning of the epoch.
+ 	So we accept 6 numbers being zero. I'm also not sure if using the of
+@@ -10208,7 +10208,7 @@
+ 
+ 	* include/cdio/iso9660.h, lib/iso9660/iso9660.c,
+ 	lib/iso9660/rock.c, src/cd-info.c, src/util.c: Add routine for
+-	extracing ISO 9660 long time format and probably correct the
++	extracting ISO 9660 long time format and probably correct the
+ 	short-time format a little.  Handle Rock-Ridge time and be able to display it.  This pretty much
+ 	completes the bulk of handling Rock-Ridge extensions.
+ 
+@@ -10327,7 +10327,7 @@
+ 
+ 2005-02-19  rocky <rocky>
+ 
+-	* src/cd-info.c, src/cd-read.c, src/iso-info.c, src/iso-read.c: 
++	* src/cd-info.c, src/cd-read.c, src/iso-info.c, src/iso-read.c:
+ 	cd-info.c: tolerate CDDB options even when we don't support CDDB.  Better error reporting of bad options.
+ 
+ 2005-02-19  rocky <rocky>
+@@ -10372,7 +10372,7 @@
+ 
+ 2005-02-18  rocky <rocky>
+ 
+-	* lib/iso9660/iso9660_fs.c, lib/iso9660/rock.c, src/cd-info.c: 
++	* lib/iso9660/iso9660_fs.c, lib/iso9660/rock.c, src/cd-info.c:
+ 	iso9660_fs.c: reallocate filename when Rock-Ridge name is bigger.  rock.c: variable name changes cd-info.c: don't translate file name when there are Rock-Ridge
+ 	Extensions.
+ 
+@@ -10383,7 +10383,7 @@
+ 
+ 2005-02-17  rocky <rocky>
+ 
+-	* lib/driver/cd_types.c, lib/iso9660/iso9660_fs.c, src/cd-info.c: 
++	* lib/driver/cd_types.c, lib/iso9660/iso9660_fs.c, src/cd-info.c:
+ 	Remove more of the no longer needed distinction (that we sometimes
+ 	got wrong) of Mode 1 vs Mode 2 data reading.
+ 
+@@ -10467,7 +10467,7 @@
+ 
+ 	* include/cdio/iso9660.h: Add type definitions for achar, dchar and
+ 	ISO 9660 7.1.1 - ISO 7.3.3 types and use them. This frees up space
+-	for better comments about he feild names of a PVD or SVD.
++	for better comments about he field names of a PVD or SVD.
+ 
+ 2005-02-12  rocky <rocky>
+ 
+@@ -10529,7 +10529,7 @@
+ 
+ 2005-02-10  rocky <rocky>
+ 
+-	* include/cdio/mmc.h, lib/driver/_cdio_sunos.c, lib/driver/mmc.c: 
++	* include/cdio/mmc.h, lib/driver/_cdio_sunos.c, lib/driver/mmc.c:
+ 	Use solaris ioctl for blocksize set/get. Prototype corrections.
+ 
+ 2005-02-10  rocky <rocky>
+@@ -10555,7 +10555,7 @@
+ 
+ 	* example/.cvsignore, example/Makefile.am, example/README,
+ 	example/{iso4.c => isofuzzy.c}, include/cdio/mmc.h,
+-	lib/driver/mmc.c, lib/driver/mmc_private.h, test/check_fuzzyiso.sh: 
++	lib/driver/mmc.c, lib/driver/mmc_private.h, test/check_fuzzyiso.sh:
+ 	Add mode_sense6() and mode_sense10() MMC commands. Use them to
+ 	hopefully clean up code a little. Remove some unused MMC "private"
+ 	commands.  iso4 -> isofuzzy
+@@ -10599,7 +10599,7 @@
+ 
+ 2005-02-07  rocky <rocky>
+ 
+-	* lib/driver/MSWindows/win32_ioctl.c, lib/driver/_cdio_linux.c: 
++	* lib/driver/MSWindows/win32_ioctl.c, lib/driver/_cdio_linux.c:
+ 	Break out DVD detection. More verbose comments about the issues
+ 	here.
+ 
+@@ -10636,7 +10636,7 @@
+ 	lib/driver/libcdio.sym, lib/driver/portable.h,
+ 	lib/paranoia/overlap.c, lib/paranoia/p_block.c,
+ 	lib/paranoia/p_block.h, lib/paranoia/paranoia.c: Various portability
+-	fixes mosty for MSVC which doesn't have drand and doesn't allow
++	fixes mostly for MSVC which doesn't have drand and doesn't allow
+ 	dynamic local arrays.  v_fragment -> v_fragment_t libcdio.sym: more
+ 	external symbols defined /lib/_cdio_linux.c: harmless type mismatch
+ 	example/sample2.c -> example/device.c
+@@ -10712,7 +10712,7 @@
+ 2005-02-05  rocky <rocky>
+ 
+ 	* include/cdio/cdda.h, lib/cdda_interface/scan_devices.c: Another
+-	"cooked" name bites the dust. Soem doxygen cleanup too.
++	"cooked" name bites the dust. Some doxygen cleanup too.
+ 
+ 2005-02-05  rocky <rocky>
+ 
+@@ -10733,7 +10733,7 @@
+ 
+ 2005-02-05  rocky <rocky>
+ 
+-	* include/cdio/xa.h, lib/iso9660/iso9660_fs.c, lib/iso9660/xa.c: 
++	* include/cdio/xa.h, lib/iso9660/iso9660_fs.c, lib/iso9660/xa.c:
+ 	xa.h: add enumeration for debugging rest: better understanding of
+ 	      when there might be XA and when there might not be. Don't give a
+ 	      warnings about missing XA attributes when the format isn't supposed
+@@ -10743,7 +10743,7 @@
+ 
+ 	* lib/cdda_interface/Makefile.am,
+ 	lib/cdda_interface/{cooked_interface.c => cddap_interface.c},
+-	lib/cdda_interface/interface.c, lib/cdda_interface/low_interface.h: 
++	lib/cdda_interface/interface.c, lib/cdda_interface/low_interface.h:
+ 	cooked -> cddap. It has been observed that the use of "cooked"
+ 	causes confusion and derision among the small-minded; and the code
+ 	doesn't use cooked reading anyway.
+@@ -10757,7 +10757,7 @@
+ 
+ 2005-02-05  rocky <rocky>
+ 
+-	* Makefile.am, package/.cvsignore, package/libcdio-suse.spec.in: 
++	* Makefile.am, package/.cvsignore, package/libcdio-suse.spec.in:
+ 	Remove SuSE spec - it is not likely to be very general purpose.  It
+ 	is also not the real one which needs to be modified for each version
+ 	and vcdimager/libcdio/libcddb collection and undergoes Language
+@@ -10765,7 +10765,7 @@
+ 
+ 2005-02-05  rocky <rocky>
+ 
+-	* lib/driver/MSWindows/aspi32.c, lib/driver/MSWindows/win32_ioctl.c: 
++	* lib/driver/MSWindows/aspi32.c, lib/driver/MSWindows/win32_ioctl.c:
+ 	scsi_mmc  -> mmc
+ 
+ 2005-02-05  rocky <rocky>
+@@ -10779,7 +10779,7 @@
+ 	* include/cdio/cdda.h, include/cdio/iso9660.h,
+ 	include/cdio/sector.h, lib/cdda_interface/common_interface.c,
+ 	lib/driver/sector.c, lib/iso9660/iso9660.c: Make debugger-helping
+-	enums extern'd and define onces elsewhere.
++	enums extern'd and define once elsewhere.
+ 
+ 2005-02-05  rocky <rocky>
+ 
+@@ -10792,7 +10792,7 @@
+ 
+ 2005-02-05  rocky <rocky>
+ 
+-	* lib/cdda_interface/interface.c, lib/cdda_interface/scan_devices.c: 
++	* lib/cdda_interface/interface.c, lib/cdda_interface/scan_devices.c:
+ 	Remove d->interface.
+ 
+ 2005-02-05  rocky <rocky>
+@@ -10815,7 +10815,7 @@
+ 
+ 2005-02-04  rocky <rocky>
+ 
+-	* lib/driver/MSWindows/win32.h, lib/driver/MSWindows/win32_ioctl.c: 
++	* lib/driver/MSWindows/win32.h, lib/driver/MSWindows/win32_ioctl.c:
+ 	const removal to match proper run_scsi_cmd prototype.  Bug in
+ 	reporting TOC lsn's. Thanks to Bobbin007.
+ 
+@@ -10831,7 +10831,7 @@
+ 
+ 2005-02-03  rocky <rocky>
+ 
+-	* configure.ac, lib/cdda_interface/scan_devices.c: Test for presense
++	* configure.ac, lib/cdda_interface/scan_devices.c: Test for presence
+ 	of lstat (optionally used in scan_devices of cdda_interface).
+ 
+ 2005-02-03  rocky <rocky>
+@@ -10930,7 +10930,7 @@
+ 
+ 2005-01-30  rocky <rocky>
+ 
+-	* libcdio_cdda.pc.in, libcdio_paranoia.pc.in, libiso9660.pc.in: 
++	* libcdio_cdda.pc.in, libcdio_paranoia.pc.in, libiso9660.pc.in:
+ 	libcdio_*: names probably need to be something other that libcdio
+ 	which is already in use.  libsio9660: minor title change
+ 
+@@ -10984,7 +10984,7 @@
+ 	src/cd-paranoia/doc/en/Makefile.am, src/cd-paranoia/doc/{ =>
+ 	en}/cd-paranoia.1.in, src/cd-paranoia/doc/jp/.cvsignore,
+ 	src/cd-paranoia/doc/jp/Makefile.am,
+-	src/cd-paranoia/doc/{cd-paranoia.1.jp.in => jp/cd-paranoia.1.in}: 
++	src/cd-paranoia/doc/{cd-paranoia.1.jp.in => jp/cd-paranoia.1.in}:
+ 	Put Japanese man page in man/jp.
+ 
+ 2005-01-28  rocky <rocky>
+@@ -11020,7 +11020,7 @@
+ 
+ 2005-01-27  rocky <rocky>
+ 
+-	* Makefile.am, lib/driver/Makefile.am, lib/iso9660/Makefile.am: 
++	* Makefile.am, lib/driver/Makefile.am, lib/iso9660/Makefile.am:
+ 	Attempt to get library version numbers correct for release.
+ 
+ 2005-01-27  rocky <rocky>
+@@ -11080,7 +11080,7 @@
+ 
+ 2005-01-25  rocky <rocky>
+ 
+-	* Makefile.am, package/.cvsignore, package/libcdio-suse.spec.in: 
++	* Makefile.am, package/.cvsignore, package/libcdio-suse.spec.in:
+ 	SuSE spec file from Stanislav Brabec
+ 
+ 2005-01-25  rocky <rocky>
+@@ -11198,13 +11198,13 @@
+ 
+ 2005-01-23  rocky <rocky>
+ 
+-	* lib/cdda_interface/common_interface.c, lib/cdda_interface/utils.h: 
++	* lib/cdda_interface/common_interface.c, lib/cdda_interface/utils.h:
+ 	Nope. Didn't get it right this time either with the byteswapping.
+ 	However we've at least reduced the customness.
+ 
+ 2005-01-23  rocky <rocky>
+ 
+-	* lib/cdda_interface/common_interface.c, lib/cdda_interface/utils.h: 
++	* lib/cdda_interface/common_interface.c, lib/cdda_interface/utils.h:
+ 	Use common byte-swapping routines and remove cdparanoia-specific
+ 	ones.  (This time, for sure!)
+ 
+@@ -11215,20 +11215,20 @@
+ 2005-01-22  rocky <rocky>
+ 
+ 	* lib/driver/image.h, lib/driver/image/cdrdao.c, test/Makefile.am,
+-	test/check_cue.sh.in, test/vcd_demo.toc, test/vcd_demo_toc.right: 
++	test/check_cue.sh.in, test/vcd_demo.toc, test/vcd_demo_toc.right:
+ 	Improve cdrdao to handle MSF-length.  Remove vcd_demo_toc.right since the cd-info output is now the same
+ 	as vcd_demo.right vcd_demo.toc adjusted accordingly.
+ 
+ 2005-01-22  rocky <rocky>
+ 
+-	* src/cd-drive.c, src/cd-info.c, src/iso-info.c, src/iso-read.c: 
++	* src/cd-drive.c, src/cd-info.c, src/iso-info.c, src/iso-read.c:
+ 	Version information now includes build.
+ 
+ 2005-01-22  rocky <rocky>
+ 
+ 	* include/cdio/version.h.in, src/cd-paranoia/version.h,
+ 	test/check_paranoia.sh.in: check_paranoia.sh.in: Add a more
+-	agressive paranoia test.  *version.h*: Include build name in version listings.
++	aggressive paranoia test.  *version.h*: Include build name in version listings.
+ 
+ 2005-01-22  rocky <rocky>
+ 
+@@ -11368,7 +11368,7 @@
+ 	lib/driver/_cdio_stdio.c, lib/driver/_cdio_stdio.h,
+ 	lib/driver/_cdio_stream.c, lib/driver/_cdio_stream.h,
+ 	lib/driver/_cdio_sunos.c, lib/driver/cdio_private.h,
+-	lib/driver/generic.h, lib/driver/image.h, lib/iso9660/iso9660_fs.c: 
++	lib/driver/generic.h, lib/driver/image.h, lib/iso9660/iso9660_fs.c:
+ 	Move a set_speed and set_blocksize (via MMC)from driver-specific
+ 	places to generic.  Add _t to yet another type.
+ 
+@@ -11388,11 +11388,11 @@
+ 
+ 	* lib/cdda_interface/scan_devices.c: Even though this may not be
+ 	nstrictly the way the original cdda_interface does things, add a
+-	spaces between the vendor, model, and revison number.
++	spaces between the vendor, model, and revision number.
+ 
+ 2005-01-19  rocky <rocky>
+ 
+-	* src/cd-paranoia/cd-paranoia.c: Accomodate Windows that sometimes
++	* src/cd-paranoia/cd-paranoia.c: Accommodate Windows that sometimes
+ 	gives an argc that seems one greater than what's not NULL in argv.
+ 	And it is probably a good idea anyway to test for null strings
+ 	before calling strdup()
+@@ -11431,7 +11431,7 @@
+ 
+ 2005-01-18  rocky <rocky>
+ 
+-	* src/cd-paranoia/cd-paranoia.c, src/cd-paranoia/usage.txt.in: 
++	* src/cd-paranoia/cd-paranoia.c, src/cd-paranoia/usage.txt.in:
+ 	--force-generic-device -g is an alias for --force-cdrom-device -d
+ 
+ 2005-01-18  rocky <rocky>
+@@ -11539,7 +11539,7 @@
+ 2005-01-16  rocky <rocky>
+ 
+ 	* include/cdio/cdda.h: Redo bit masks for test flags. Should
+-	accomodate what is in (even if not working) in cdparanoia.
++	accommodate what is in (even if not working) in cdparanoia.
+ 
+ 2005-01-16  rocky <rocky>
+ 
+@@ -11623,7 +11623,7 @@
+ 
+ 2005-01-14  rocky <rocky>
+ 
+-	* lib/cdda_interface/interface.c, lib/cdda_interface/scan_devices.c: 
++	* lib/cdda_interface/interface.c, lib/cdda_interface/scan_devices.c:
+ 	The sense I'm getting is that while the bigendianp detection is
+ 	clever, it isn't complete. It may be that we need to use this along
+ 	in conjunctin with the endianness of the OS. That is instead of
+@@ -11652,7 +11652,7 @@
+ 
+ 2005-01-13  rocky <rocky>
+ 
+-	* lib/cdda_interface/common_interface.c, lib/cdda_interface/utils.h: 
++	* lib/cdda_interface/common_interface.c, lib/cdda_interface/utils.h:
+ 	Put back original cdparanoia byte-swapping routines until we smoke
+ 	out what's going wrong on cygwin.
+ 
+@@ -11709,13 +11709,13 @@
+ 2005-01-12  rocky <rocky>
+ 
+ 	* src/cd-paranoia/Makefile.am: I really don't understand how
+-	Makefile's. Put in an explict dependency between usage.h and
++	Makefile's. Put in an explicit dependency between usage.h and
+ 	usage.txt since the generic one isn't sufficient.
+ 
+ 2005-01-11  rocky <rocky>
+ 
+ 	* src/cd-paranoia/Makefile.am: Install program and manpage according
+-	to name specificed in --with-cdparnoia-name
++	to name specified in --with-cdparnoia-name
+ 
+ 2005-01-11  rocky <rocky>
+ 
+@@ -11814,7 +11814,7 @@
+ 
+ 2005-01-09  rocky <rocky>
+ 
+-	* lib/cdda_interface/cooked_interface.c, lib/driver/_cdio_sunos.c: 
++	* lib/cdda_interface/cooked_interface.c, lib/driver/_cdio_sunos.c:
+ 	Fix a bad bug where we were requesting potentially a huge number of
+ 	blocks (-1 unsigned). Fix both the driver to disallow such a
+ 	nonsensical thing as well as just don't make the request.
+@@ -11843,7 +11843,7 @@
+ 	* configure.ac, include/cdio/cdda.h,
+ 	lib/cdda_interface/cooked_interface.c,
+ 	lib/cdda_interface/drive_exceptions.h,
+-	lib/cdda_interface/interface.c, lib/cdda_interface/scan_devices.c: 
++	lib/cdda_interface/interface.c, lib/cdda_interface/scan_devices.c:
+ 	Put back some of the GNU/Linux-ism for detecting drive endian-ness.  The data-driven endian correction isn't working correctly.  Ultimately though this code should move down into libcdio (and get
+ 	removed from here.)
+ 
+@@ -11875,7 +11875,7 @@
+ 2005-01-06  rocky <rocky>
+ 
+ 	* include/cdio/cdda.h: Doxygen documentatoin on more routines.
+-	Remove some things that aren't useable any more.
++	Remove some things that aren't usable any more.
+ 
+ 2005-01-06  rocky <rocky>
+ 
+@@ -12044,7 +12044,7 @@
+ 2005-01-01  rocky <rocky>
+ 
+ 	* lib/driver/_cdio_linux.c, lib/driver/image/nrg.c: NRG: get track
+-	flags working.  linux: small clanup in track flags. more to come.
++	flags working.  linux: small cleanup in track flags. more to come.
+ 
+ 2005-01-01  rocky <rocky>
+ 
+@@ -12088,7 +12088,7 @@
+ 	lib/driver/_cdio_generic.c, lib/driver/_cdio_linux.c,
+ 	lib/driver/cdio.c, lib/driver/cdio_private.h, lib/driver/generic.h,
+ 	lib/driver/image/bincue.c, lib/driver/image/cdrdao.c,
+-	lib/driver/image_common.h, lib/driver/libcdio.sym, src/cd-info.c: 
++	lib/driver/image_common.h, lib/driver/libcdio.sym, src/cd-info.c:
+ 	Start to fill in cdio_get_preemphasis, cdio_get_copy_permit, and
+ 	cdio_get_channels. Internals reworked a little for this.
+ 
+@@ -12133,7 +12133,7 @@
+ 
+ 2004-12-22  rocky <rocky>
+ 
+-	* test/.cvsignore: Add derived paranoia regession test.
++	* test/.cvsignore: Add derived paranoia regression test.
+ 
+ 2004-12-22  rocky <rocky>
+ 
+@@ -12262,8 +12262,8 @@
+ 	src/cd-paranoia/utils.h, src/cd-paranoia/version.h, src/util.c,
+ 	test/Makefile.am: BIG REORGANIZATION.  Reorganize directory structure for inclusion of cd-paranoia. Works
+ 	for GNU/Linux. Other OS's may be broken. Regression test output
+-	needs to be adjusted too.  Move: lib/driver (split off of lib) lib/iso9660 (split off of lib) Add from paranoia: lib/cdda_interface lib/paranoia src/paranoia Also made some small changes to capability indentification to show
+-	more reading capabilties and show that.  cd-info now shows the total disc size.
++	needs to be adjusted too.  Move: lib/driver (split off of lib) lib/iso9660 (split off of lib) Add from paranoia: lib/cdda_interface lib/paranoia src/paranoia Also made some small changes to capability identification to show
++	more reading capabilities and show that.  cd-info now shows the total disc size.
+ 
+ 2004-12-17  rocky <rocky>
+ 
+@@ -12373,7 +12373,7 @@
+ 
+ 2004-11-21  rocky <rocky>
+ 
+-	* NEWS, configure.ac, include/cdio/iso9660.h, lib/iso9660.c: 
++	* NEWS, configure.ac, include/cdio/iso9660.h, lib/iso9660.c:
+ 	configure.ac: in 72cvs now.  iso9660.{c,h}: "new" is a reserved word in C++. Don't use it as a
+ 	parameter name
+ 
+@@ -12473,7 +12473,7 @@
+ 
+ 2004-11-15  rocky <rocky>
+ 
+-	* include/cdio/util.h, lib/Makefile.am, lib/libcdio.sym, lib/util.c: 
++	* include/cdio/util.h, lib/Makefile.am, lib/libcdio.sym, lib/util.c:
+ 	rename to_bcd8 and from_bcd8 to cdio_to_bcd8 and cdio_from_bcd8.
+ 	(N. Boullis) lib/Makefile.am: avoid non-GNU ld options when
+ 	--without-versioned-libs is in effect.
+@@ -12523,7 +12523,7 @@
+ 
+ 2004-11-12  rocky <rocky>
+ 
+-	* lib/Makefile.am: Guidence from Nicolas Boullis on how to library
++	* lib/Makefile.am: Guidance from Nicolas Boullis on how to library
+ 	versioning works or should work.
+ 
+ 2004-11-08  rocky <rocky>
+@@ -12533,7 +12533,7 @@
+ 
+ 2004-11-07  rocky <rocky>
+ 
+-	* NEWS, lib/image/bincue.c, lib/image/cdrdao.c, lib/portable.h: 
++	* NEWS, lib/image/bincue.c, lib/image/cdrdao.c, lib/portable.h:
+ 	Hoist common "portable" definitions into portable.h NEWS -
+ 	rearrange.
+ 
+@@ -12551,7 +12551,7 @@
+ 
+ 2004-11-07  rocky <rocky>
+ 
+-	* lib/MSWindows/aspi32.c, lib/MSWindows/win32_ioctl.c: 
++	* lib/MSWindows/aspi32.c, lib/MSWindows/win32_ioctl.c:
+ 	win32_ioctl.c: minor comment or function name changes.  aspi32.c:
+ 	use length definitions better.
+ 
+@@ -12709,7 +12709,7 @@
+ 
+ 2004-10-30  rocky <rocky>
+ 
+-	* configure.ac, lib/iso9660.c, lib/iso9660_fs.c, src/iso-info.c: 
++	* configure.ac, lib/iso9660.c, lib/iso9660_fs.c, src/iso-info.c:
+ 	configure.ac, iso9660.c: test for tzname variable.  configure.ac,
+ 	iso9660_fs.c: test for nls_langinfo() and #include <langinfo.h>
+ 	iso-info.c: some OS's need 2 args for multi-arg defines.
+@@ -12744,7 +12744,7 @@
+ 
+ 2004-10-28  rocky <rocky>
+ 
+-	* include/cdio/Makefile.am: cdio.h accidently got removed.
++	* include/cdio/Makefile.am: cdio.h accidentally got removed.
+ 
+ 2004-10-28  rocky <rocky>
+ 
+@@ -12794,7 +12794,7 @@
+ 
+ 	* lib/FreeBSD/freebsd.c, lib/MSWindows/win32.c, lib/_cdio_linux.c,
+ 	lib/_cdio_osx.c, lib/_cdio_sunos.c, src/cd-info.c: Various
+-	valgrind-detected memory leaks and unitialized variable errors.
++	valgrind-detected memory leaks and uninitialized variable errors.
+ 
+ 2004-10-26  rocky <rocky>
+ 
+@@ -12821,7 +12821,7 @@
+ 
+ 	* example/iso2.c, include/cdio/cdio.h, include/cdio/iso9660.h,
+ 	lib/_cdio_generic.c, lib/_cdio_stream.c, lib/cdio.c, lib/generic.h,
+-	lib/image/bincue.c, lib/iso9660.c, lib/iso9660_fs.c, src/cd-info.c: 
++	lib/image/bincue.c, lib/iso9660.c, lib/iso9660_fs.c, src/cd-info.c:
+ 	First attempt to extent Joliet to CD reading portion.
+ 
+ 2004-10-24  rocky <rocky>
+@@ -12854,7 +12854,7 @@
+ 	* Makefile.am, configure.ac, doc/Makefile.am, doc/doxygen/{Doxyfile
+ 	=> Doxyfile.in}, src/iso-info.c: configure.ac: test for intl and
+ 	iconv needed for Joliet support iso-info.c: add --no-joliet option
+-	Doxyfile*, configure.ac: Automatically update some ofthe Doxyfile
++	Doxyfile*, configure.ac: Automatically update some of the Doxyfile
+ 	information
+ 
+ 2004-10-24  rocky <rocky>
+@@ -12877,7 +12877,7 @@
+ 2004-10-23  rocky <rocky>
+ 
+ 	* NEWS, configure.ac, doc/glossary.texi, include/cdio/iso9660.h,
+-	lib/iso9660.c, lib/iso9660_fs.c, src/iso-info.c, test/testbincue.c: 
++	lib/iso9660.c, lib/iso9660_fs.c, src/iso-info.c, test/testbincue.c:
+ 	First cut at Joliet support for ISO 9660 images. More work is needed
+ 	to integrate this into CD reading.
+ 
+@@ -12984,9 +12984,9 @@
+ 	lib/_cdio_generic.c, lib/_cdio_linux.c, lib/_cdio_osx.c,
+ 	lib/_cdio_sunos.c, lib/cdio.c, lib/cdio_private.h, lib/cdtext.c,
+ 	lib/cdtext_private.h, lib/image/bincue.c, lib/image/cdrdao.c,
+-	lib/image/nrg.c, lib/scsi_mmc.c, lib/sector.c, lib/util.c: 
++	lib/image/nrg.c, lib/scsi_mmc.c, lib/sector.c, lib/util.c:
+ 	configure.ac: now in 0.71cvs *.c: lint-like changes. Tested on Sun's
+-	     SUNPRO cc compiler.  Removed feild initialization lingo (even if it
++	     SUNPRO cc compiler.  Removed field initialization lingo (even if it
+ 	is C99).
+ 
+ 2004-09-02  rocky <rocky>
+@@ -13032,7 +13032,7 @@
+ 
+ 2004-08-30  rocky <rocky>
+ 
+-	* lib/_cdio_osx.c, src/cd-info.c: _cdio_osx.c: wasnt' returning
++	* lib/_cdio_osx.c, src/cd-info.c: _cdio_osx.c: wasn't returning
+ 	CDIO_INVALID_TRACK on TOC read error.  cd-info.c: abort sooner if we
+ 	can't read the TOC.
+ 
+@@ -13128,7 +13128,7 @@
+ 
+ 2004-08-27  rocky <rocky>
+ 
+-	* include/cdio/cdio.h, lib/cdio.c, src/cd-drive.c, src/cd-info.c: 
++	* include/cdio/cdio.h, lib/cdio.c, src/cd-drive.c, src/cd-info.c:
+ 	Add a couple of routines to pass back the driver used in getting a
+ 	drive.  Speeds up a little the task of opening the drive. Is now
+ 	used in cd-drive and cd-info.
+@@ -13141,20 +13141,20 @@
+ 
+ 2004-08-27  rocky <rocky>
+ 
+-	* lib/_cdio_osx.c: Wrong access for setting drive capabilites to
++	* lib/_cdio_osx.c: Wrong access for setting drive capabilities to
+ 	unknown.
+ 
+ 2004-08-27  rocky <rocky>
+ 
+ 	* include/cdio/cdio.h, include/cdio/scsi_mmc.h, lib/cdio.c,
+-	lib/cdio_private.h, lib/scsi_mmc.c, src/cd-drive.c, src/cd-info.c: 
++	lib/cdio_private.h, lib/scsi_mmc.c, src/cd-drive.c, src/cd-info.c:
+ 	Expose hwinfo call as a cdio command. It was SCSI-MMC. This may help
+ 	on OSX.
+ 
+ 2004-08-27  rocky <rocky>
+ 
+ 	* lib/_cdio_linux.c, lib/scsi_mmc.c: scsi_mmc.c: more aggressive
+-	about getting drive capabilites. Try to get length first. Also try
++	about getting drive capabilities. Try to get length first. Also try
+ 	CAPABILITIES_PAGEs as well as ALL_PAGEs.
+ 
+ 2004-08-27  rocky <rocky>
+@@ -13222,7 +13222,7 @@
+ 
+ 2004-08-16  rocky <rocky>
+ 
+-	* lib/_cdio_linux.c, lib/_cdio_osx.c, lib/_cdio_sunos.c: 
++	* lib/_cdio_linux.c, lib/_cdio_osx.c, lib/_cdio_sunos.c:
+ 	_cdio_osx.c: first attempt at issuing general SCSI-MMC passthrough
+ 	command.  others: small changes.
+ 
+@@ -13242,7 +13242,7 @@
+ 
+ 2004-08-13  rocky <rocky>
+ 
+-	* lib/_cdio_osx.c: Compilaton fixes.
++	* lib/_cdio_osx.c: Compilation fixes.
+ 
+ 2004-08-12  rocky <rocky>
+ 
+@@ -13261,7 +13261,7 @@
+ 
+ 	* example/sample10.c, lib/MSWindows/win32.c, lib/Makefile.am,
+ 	lib/_cdio_bsdi.c, lib/_cdio_generic.c, lib/_cdio_linux.c,
+-	lib/_cdio_sunos.c, lib/cdio_private.h, lib/generic.h, src/util.c: 
++	lib/_cdio_sunos.c, lib/cdio_private.h, lib/generic.h, src/util.c:
+ 	lib/*.c: create and use get_cdtext_generic.  lib/generic.h: prototypes for _cdio_generic.c (move out of
+ 	_cdio_private.h) example/sample10.c, src/util.c: small print format improvement
+ 
+@@ -13271,7 +13271,7 @@
+ 
+ 2004-08-10  rocky <rocky>
+ 
+-	* lib/MSWindows/win32.c, lib/MSWindows/win32.h, src/util.c: 
++	* lib/MSWindows/win32.c, lib/MSWindows/win32.h, src/util.c:
+ 	Compilation fixes for Win32 and cd-text breakage.
+ 
+ 2004-08-10  rocky <rocky>
+@@ -13438,7 +13438,7 @@
+ 2004-08-06  rocky <rocky>
+ 
+ 	* src/cd-info.c, src/util.c: cd-info.c: should not try to print out
+-	MCN for DVD's - they don't have any such thing.  util.c: wasn't reading right/write parms when showing write
++	MCN for DVD's - they don't have any such thing.  util.c: wasn't reading right/write params when showing write
+ 	        capabilities.  now also show DVD+RW and DVD-RW capabilities.
+ 
+ 2004-08-05  rocky <rocky>
+@@ -13475,7 +13475,7 @@
+ 2004-08-03  imacintosh <imacintosh>
+ 
+ 	* lib/_cdio_sunos.c: Now uses DKIOCGMEDIAINFO to get discmode and
+-	handles Soalris media
++	handles Solaris media
+ 
+ 2004-08-01  rocky <rocky>
+ 
+@@ -13492,7 +13492,7 @@
+ 
+ 2004-08-01  rocky <rocky>
+ 
+-	* lib/FreeBSD/freebsd.c, lib/FreeBSD/freebsd_cam.c, lib/scsi_mmc.c: 
++	* lib/FreeBSD/freebsd.c, lib/FreeBSD/freebsd_cam.c, lib/scsi_mmc.c:
+ 	scsi_mmc.c: doc change FreeBSD: use generic routines more often. Initialize TOC before
+ 	getting drive capabilities (seems to be desired, not completely sure
+ 	or sure why this would be so.)
+@@ -13570,7 +13570,7 @@
+ 
+ 2004-07-28  rocky <rocky>
+ 
+-	* example/sample8.c, include/cdio/cdio.h, lib/cdio.c, src/cd-info.c: 
++	* example/sample8.c, include/cdio/cdio.h, lib/cdio.c, src/cd-info.c:
+ 	Add discmode to string array. Simplifies some code a bit.
+ 
+ 2004-07-28  rocky <rocky>
+@@ -13674,7 +13674,7 @@
+ 
+ 2004-07-26  rocky <rocky>
+ 
+-	* lib/MSWindows/aspi32.c, lib/scsi_mmc.c, lib/scsi_mmc_private.h: 
++	* lib/MSWindows/aspi32.c, lib/scsi_mmc.c, lib/scsi_mmc_private.h:
+ 	get_dvd_physical common routine now works.
+ 
+ 2004-07-26  rocky <rocky>
+@@ -13686,9 +13686,9 @@
+ 
+ 2004-07-26  rocky <rocky>
+ 
+-	* lib/MSWindows/win32.c, lib/scsi_mmc.c, lib/scsi_mmc_private.h: 
++	* lib/MSWindows/win32.c, lib/scsi_mmc.c, lib/scsi_mmc_private.h:
+ 	Start to break out routines into a device-callable routine as well
+-	as a publically callable routine. The device-callable routine will
++	as a publicly callable routine. The device-callable routine will
+ 	be able to change the passthrough routine as M$ has two distinct
+ 	routines for aspi and ioctl.
+ 
+@@ -13810,7 +13810,7 @@
+ 
+ 2004-07-25  rocky <rocky>
+ 
+-	* example/sample8.c, include/cdio/scsi_mmc.h, include/cdio/sector.h: 
++	* example/sample8.c, include/cdio/scsi_mmc.h, include/cdio/sector.h:
+ 	Changes to facilitate DVD detection.
+ 
+ 2004-07-25  rocky <rocky>
+@@ -14087,7 +14087,7 @@
+ 2004-07-16  rocky <rocky>
+ 
+ 	* include/cdio/cdtext.h, lib/cdtext.c, src/cd-info.c,
+-	src/cd-read.c, test/cdda-mcn.right, test/cdda.right, test/cdda.toc: 
++	src/cd-read.c, test/cdda-mcn.right, test/cdda.right, test/cdda.toc:
+ 	Add cdtext display to cd-info and adjust regression tests
+ 	accordingly.  cd-read.c: don't try to print null strings.
+ 
+@@ -14212,13 +14212,13 @@
+ 
+ 2004-07-11  rocky <rocky>
+ 
+-	* lib/image/bincue.c, lib/image/cdrdao.c, lib/image/nrg.c: 
++	* lib/image/bincue.c, lib/image/cdrdao.c, lib/image/nrg.c:
+ 	Initialize cdtext to NULL and other add some initializations that
+ 	should have been done.
+ 
+ 2004-07-11  rocky <rocky>
+ 
+-	* lib/cdtext.c: Correct some string initalization bugs in
++	* lib/cdtext.c: Correct some string initialization bugs in
+ 	cdtext_keywords. We switched from binary search to linear search for
+ 	now.
+ 
+@@ -14302,7 +14302,7 @@
+ 	* lib/cdtext.c, lib/image/bincue.c, lib/image/cdrdao.c,
+ 	lib/image/nrg.c, lib/image/nrg.h, lib/image_common.h: mcn -> psz_mcn
+ 	and other psz variables.  bincue.c: a little closer to getting
+-	cuetools parse_cuefile useable.
++	cuetools parse_cuefile usable.
+ 
+ 2004-07-09  rocky <rocky>
+ 
+@@ -14402,7 +14402,7 @@
+ 2004-06-27  rocky <rocky>
+ 
+ 	* lib/_cdio_sunos.c: Compilation fix. Remove magic number 100. Use
+-	common mmc routine for drive capabilites.
++	common mmc routine for drive capabilities.
+ 
+ 2004-06-27  rocky <rocky>
+ 
+@@ -14633,12 +14633,12 @@
+ 
+ 2004-06-19  rocky <rocky>
+ 
+-	* include/cdio/iso9660.h, lib/iso9660_fs.c, src/iso-info.c: 
++	* include/cdio/iso9660.h, lib/iso9660_fs.c, src/iso-info.c:
+ 	iso9660_iso_... -> iso9660_ifs_...
+ 
+ 2004-06-19  rocky <rocky>
+ 
+-	* include/cdio/iso9660.h, lib/iso9660_fs.c, src/iso-info.c: 
++	* include/cdio/iso9660.h, lib/iso9660_fs.c, src/iso-info.c:
+ 	iso9660*.{c,h}: Add PVD read for ISO 9660 images.  iso-info now shows this info.
+ 
+ 2004-06-18  rocky <rocky>
+@@ -14771,7 +14771,7 @@
+ 
+ 2004-06-06  rocky <rocky>
+ 
+-	* include/cdio/cdio.h: Doc fixes and some paramater name renamings.
++	* include/cdio/cdio.h: Doc fixes and some parameter name renamings.
+ 
+ 2004-06-06  rocky <rocky>
+ 
+@@ -14965,7 +14965,7 @@
+ 
+ 2004-05-31  rocky <rocky>
+ 
+-	* lib/_cdio_generic.c, lib/_cdio_linux.c, lib/_cdio_sunos.c: 
++	* lib/_cdio_generic.c, lib/_cdio_linux.c, lib/_cdio_sunos.c:
+ 	Hopefully improve names. "user_data" comes from user. "env" an
+ 	environment is really what this is. "obj" is just to vague.
+ 
+@@ -15064,7 +15064,7 @@
+ 2004-05-16  rocky <rocky>
+ 
+ 	* lib/FreeBSD/freebsd.c, lib/MSWindows/aspi32.c,
+-	lib/MSWindows/win32.c, lib/image/cdrdao.c, src/cd-info.c: 
++	lib/MSWindows/win32.c, lib/image/cdrdao.c, src/cd-info.c:
+ 	MSWindows/*: get access mode working better. ASPI support is faulty
+ 	though freebsd.c: it's "ioctl" not "IOCTL"; cdrdao: it's cdrdao, not "toc"
+ 	cd-info: slightly better error message?
+@@ -15136,8 +15136,8 @@
+ 	test/check_opts5.right, test/check_opts6.right,
+ 	test/check_opts7.right, test/data7.toc, test/isofs-m1.right,
+ 	test/monvoisin.right, test/svcd_ogt_test_ntsc.right,
+-	test/svcdgs.right, test/vcd_demo_vcdinfo.right, test/videocd.right: 
+-	Ouptut of LSN has one more place just to be sure.  cd-info.c: use new msf_to_str routine.
++	test/svcdgs.right, test/vcd_demo_vcdinfo.right, test/videocd.right:
++	Output of LSN has one more place just to be sure.  cd-info.c: use new msf_to_str routine.
+ 
+ 2004-05-09  rocky <rocky>
+ 
+@@ -15255,7 +15255,7 @@
+ 
+ 2004-05-07  rocky <rocky>
+ 
+-	* test/check_cd_read.sh, test/check_iso.sh.in, test/check_opts.sh: 
++	* test/check_cd_read.sh, test/check_iso.sh.in, test/check_opts.sh:
+ 	Error reporting improved to make debugging easier.
+ 
+ 2004-05-06  rocky <rocky>
+@@ -15382,7 +15382,7 @@
+ 
+ 2004-04-30  rocky <rocky>
+ 
+-	* lib/MSWindows/aspi32.c, lib/MSWindows/win32.c, lib/_cdio_sunos.c: 
++	* lib/MSWindows/aspi32.c, lib/MSWindows/win32.c, lib/_cdio_sunos.c:
+ 	Compilation fixes after adjustments.
+ 
+ 2004-04-30  rocky <rocky>
+@@ -15397,7 +15397,7 @@
+ 	* lib/FreeBSD/freebsd.c, lib/FreeBSD/freebsd.h,
+ 	lib/FreeBSD/freebsd_cam.c, lib/FreeBSD/freebsd_ioctl.c,
+ 	lib/Makefile.am: Attempt to add FreeBSD CAM access method.  Hope I
+-	havent' broken FreeBSD otherwise.
++	haven't broken FreeBSD otherwise.
+ 
+ 2004-04-30  rocky <rocky>
+ 
+@@ -15458,7 +15458,7 @@
+ 
+ 2004-04-25  rocky <rocky>
+ 
+-	* lib/image/bincue.c, lib/image/nrg.c, lib/image_common.h: 
++	* lib/image/bincue.c, lib/image/nrg.c, lib/image_common.h:
+ 	Regularize and I hope simplify names a bit more.  image/*.c: (bogus)
+ 	eject media now frees resources bincue.c: missing default_devices
+ 	routine in function initialization table.
+@@ -15473,8 +15473,8 @@
+ 2004-04-25  rocky <rocky>
+ 
+ 	* lib/_cdio_linux.c, lib/_cdio_sunos.c, lib/cdio_private.h,
+-	lib/image_common.h, lib/scsi_mmc.h, src/cd-drive.c, src/util.c: 
+-	get_mcn paramater is const.  solaris: failed attempt to get mcn and drive capabilities. Some
++	lib/image_common.h, lib/scsi_mmc.h, src/cd-drive.c, src/util.c:
++	get_mcn parameter is const.  solaris: failed attempt to get mcn and drive capabilities. Some
+ 	boilerplate routines used.  scsi_mmc: more defines.  src/cd-drive.c: bugfix when cdio is null src/util.c: small
+ 	enhancement.
+ 
+@@ -15529,7 +15529,7 @@
+ 
+ 2004-04-24  rocky <rocky>
+ 
+-	* src/cd-info.c: Better formating of drive capabilities.
++	* src/cd-info.c: Better formatting of drive capabilities.
+ 
+ 2004-04-24  rocky <rocky>
+ 
+@@ -15546,7 +15546,7 @@
+ 2004-04-23  rocky <rocky>
+ 
+ 	* lib/Makefile.am, lib/image/bincue.c, lib/image/nrg.c,
+-	lib/{image/common.c => image_common.h}, test/vcd_demo_vcdinfo.right: 
++	lib/{image/common.c => image_common.h}, test/vcd_demo_vcdinfo.right:
+ 	image/common.h -> image_common.h. I'd rather switch than fight. I
+ 	still hate automake.
+ 
+@@ -15570,7 +15570,7 @@
+ 	* README.libcdio, configure.ac, example/sample2.c,
+ 	include/cdio/cdio.h, include/cdio/types.h, lib/_cdio_linux.c,
+ 	lib/cdio.c, lib/cdio_private.h: *.{c,h}: add cdio_get_drive_cap to
+-	 determine what kind of CDROM device we've got.  README.libcdio: suggest stonger making a separate package for
++	 determine what kind of CDROM device we've got.  README.libcdio: suggest stronger making a separate package for
+ 	cd-info configure.ac: we are in 0.69cvs now
+ 
+ 2004-04-21  rocky <rocky>
+@@ -15714,7 +15714,7 @@
+ 
+ 2004-03-13  rocky <rocky>
+ 
+-	* src/iso-info.c: Cater to implimentations that don't impliment
++	* src/iso-info.c: Cater to implementations that don't implement
+ 	Single Unix strftime. Like mingw.
+ 
+ 2004-03-11  rocky <rocky>
+@@ -15757,7 +15757,7 @@
+ 2004-03-07  rocky <rocky>
+ 
+ 	* lib/MSWindows/win32.c: Bug in read_mode2 sectors fixed. With this,
+-	vcd-info, vcdxrip, vlc and xine shoudl be able to read okay on
++	vcd-info, vcdxrip, vlc and xine should be able to read okay on
+ 	win2k!
+ 
+ 2004-03-07  rocky <rocky>
+@@ -15848,7 +15848,7 @@
+ 
+ 2004-03-05  rocky <rocky>
+ 
+-	* doc/doxygen/.cvignore, doc/doxygen/html/.cvsignore: CVS lint.
++	* doc/doxygen/.cvsignore, doc/doxygen/html/.cvsignore: CVS lint.
+ 
+ 2004-03-04  rocky <rocky>
+ 
+@@ -15861,7 +15861,7 @@
+ 2004-03-04  rocky <rocky>
+ 
+ 	* lib/win32ioctl.c: mode2 reading works on win2k via ioctl (so
+-	probaby on WINNT and xp as well.
++	probably on WINNT and xp as well.
+ 
+ 2004-03-03  rocky <rocky>
+ 
+@@ -15951,7 +15951,7 @@
+ 2004-02-28  rocky <rocky>
+ 
+ 	* lib/Makefile.am: libiso9660 has changed - the fs_stat_translate
+-	routines added and that packed attribut on XA. Thus we've got to
++	routines added and that packed attribute on XA. Thus we've got to
+ 	update "current" in libiso9660.
+ 
+ 2004-02-28  rocky <rocky>
+@@ -15983,7 +15983,7 @@
+ 
+ 2004-02-27  rocky <rocky>
+ 
+-	* README, configure.ac, doc/libcdio.texi, lib/Makefile.am: 
++	* README, configure.ac, doc/libcdio.texi, lib/Makefile.am:
+ 	configure.ac, Makefile.am: don't do library symbol version on BSDis
+ 	variants libcdio.texi: minor example improvements.
+ 
+@@ -16149,7 +16149,7 @@
+ 
+ 2004-02-15  rocky <rocky>
+ 
+-	* libcdio.spec.in: Correctons from Manfred Tremmel who I am yet
++	* libcdio.spec.in: Corrections from Manfred Tremmel who I am yet
+ 	again indebted.
+ 
+ 2004-02-14  rocky <rocky>
+@@ -16174,7 +16174,7 @@
+ 
+ 2004-02-14  rocky <rocky>
+ 
+-	* THANKS: Acknowlege what is only right.
++	* THANKS: Acknowledge what is only right.
+ 
+ 2004-02-14  rocky <rocky>
+ 
+@@ -16187,7 +16187,7 @@
+ 2004-02-14  rocky <rocky>
+ 
+ 	* doc/libcdio.texi: Go over.  Add CD-image format, ISO 9660 characters and glossary from vcdimager
+-	documentation.  Numberous small corrections.
++	documentation.  Numerous small corrections.
+ 
+ 2004-02-13  rocky <rocky>
+ 
+@@ -16209,7 +16209,7 @@
+ 
+ 2004-02-11  rocky <rocky>
+ 
+-	* lib/.cvsignore: Igore library version file.
++	* lib/.cvsignore: Ignore library version file.
+ 
+ 2004-02-10  rocky <rocky>
+ 
+@@ -16427,7 +16427,7 @@
+ 
+ 2003-12-24  uid67423 <uid67423>
+ 
+-	* include/cdio/iso9660.h: Documention in comment bug.
++	* include/cdio/iso9660.h: Documentation in comment bug.
+ 
+ 2003-12-03  rocky <rocky>
+ 
+@@ -16443,7 +16443,7 @@
+ 
+ 	* doc/Makefile.am, include/cdio/cd_types.h, include/cdio/cdio.h,
+ 	include/cdio/iso9660.h, include/cdio/logging.h,
+-	include/cdio/sector.h, include/cdio/types.h, include/cdio/xa.h: 
++	include/cdio/sector.h, include/cdio/types.h, include/cdio/xa.h:
+ 	Related to doxygen documentation.
+ 
+ 2003-11-17  rocky <rocky>
+@@ -16492,7 +16492,7 @@
+ 
+ 2003-11-09  rocky <rocky>
+ 
+-	* doc/doxygen/.cvignore: The usual.
++	* doc/doxygen/.cvsignore: The usual.
+ 
+ 2003-11-09  rocky <rocky>
+ 
+@@ -16745,7 +16745,7 @@
+ 
+ 2003-10-03  rocky <rocky>
+ 
+-	* NEWS, include/cdio/cdio.h, lib/_cdio_bincue.c, lib/cdio.c: 
++	* NEWS, include/cdio/cdio.h, lib/_cdio_bincue.c, lib/cdio.c:
+ 	cdio.{c,h}: update initializations for get_devices.
+ 
+ 2003-10-03  rocky <rocky>
+@@ -16865,7 +16865,7 @@
+ 2003-09-28  rocky <rocky>
+ 
+ 	* include/cdio/cdio.h, lib/_cdio_bincue.c, test/cdda.cue,
+-	test/cdda.right: Impliment MCN for bincue.
++	test/cdda.right: Implement MCN for bincue.
+ 
+ 2003-09-27  rocky <rocky>
+ 
+@@ -16918,7 +16918,7 @@
+ 
+ 2003-09-21  rocky <rocky>
+ 
+-	* src/cd-read.c, test/check_cd_read.sh, test/isofs-m1-read.right: 
++	* src/cd-read.c, test/check_cd_read.sh, test/isofs-m1-read.right:
+ 	Make cd-read more user-friendly and do more things:   Add start/end/count options for cd-read,   Input argument doesn't need a specifier (-i or --cue-file) now.    block sizes for various formats have been set correctly now.
+ 
+ 2003-09-21  rocky <rocky>
+@@ -17076,7 +17076,7 @@
+ 
+ 2003-09-15  rocky <rocky>
+ 
+-	* configure.ac: Test for OSX presense of IOKit and CoreFoundation
++	* configure.ac: Test for OSX presence of IOKit and CoreFoundation
+ 	and add to list of libraries.  Change format of drivers reported.
+ 
+ 2003-09-15  rocky <rocky>
+@@ -17263,7 +17263,7 @@
+ 
+ 2003-09-01  rocky <rocky>
+ 
+-	* include/cdio/iso9660.h, include/cdio/xa.h, lib/iso9660_private.h: 
++	* include/cdio/iso9660.h, include/cdio/xa.h, lib/iso9660_private.h:
+ 	Merge in and tidy up with mkisofs's iso9660.h. If that is correct
+ 	(and it probably is), there were erroneous field definitions.
+ 
+@@ -17285,7 +17285,7 @@
+ 2003-09-01  rocky <rocky>
+ 
+ 	* test/check_cue.sh.in, test/check_nrg.sh.in: Was setting options
+-	all wrong and using wrong CDDB subtitution variable.  As Bullwinkle
++	all wrong and using wrong CDDB substitution variable.  As Bullwinkle
+ 	says, "This time, for sure!"
+ 
+ 2003-09-01  rocky <rocky>
+@@ -17362,7 +17362,7 @@
+ 	test/check_cue.sh.in, test/check_nrg.sh.in, test/monvoisin.right,
+ 	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+ 	test/vcd_demo.right, test/videocd.right: Move over reading ISO-9660
+-	filesytems from vcdimager. Handling of XA attributes also moved
++	filesystems from vcdimager. Handling of XA attributes also moved
+ 	over.
+ 
+ 2003-08-31  rocky <rocky>
+@@ -17379,13 +17379,13 @@
+ 
+ 2003-08-31  rocky <rocky>
+ 
+-	* include/cdio/iso9660.h, lib/cd_types.c, lib/iso9660_private.h: 
++	* include/cdio/iso9660.h, lib/cd_types.c, lib/iso9660_private.h:
+ 	cd_types: tighter use of ISO #defines.  Make some of the private
+ 	ones public to reduce "private" use in vcdimager.
+ 
+ 2003-08-31  rocky <rocky>
+ 
+-	* include/cdio/iso9660.h, lib/iso9660.c, src/cd-info.c: 
++	* include/cdio/iso9660.h, lib/iso9660.c, src/cd-info.c:
+ 	iso_directory_record_t -> iso9660_dir_t
+ 
+ 2003-08-31  rocky <rocky>
+@@ -17414,7 +17414,7 @@
+ 
+ 2003-08-29  rocky <rocky>
+ 
+-	* test/check_cue.sh.in, test/check_nrg.sh.in, test/check_opts.sh: 
++	* test/check_cue.sh.in, test/check_nrg.sh.in, test/check_opts.sh:
+ 	Invalid substituiton variable.  Allow cd-info tests to be skipped.
+ 
+ 2003-08-29  rocky <rocky>
+@@ -17444,7 +17444,7 @@
+ 
+ 2003-08-17  rocky <rocky>
+ 
+-	* test/.cvsignore, test/Makefile.am, test/check_sizeof.c: 
++	* test/.cvsignore, test/Makefile.am, test/check_sizeof.c:
+ 	Makefile.am: add check_sizeof and testischar
+ 
+ 2003-08-17  rocky <rocky>
+@@ -17507,7 +17507,7 @@
+ 
+ 2003-08-14  rocky <rocky>
+ 
+-	* src/Makefile.am, src/analyze.c, src/analyze.h, src/cd-info.c: 
++	* src/Makefile.am, src/analyze.c, src/analyze.h, src/cd-info.c:
+ 	First cut at separating disc analysis part from standalone source.
+ 	More modularity is needed.
+ 
+@@ -17598,7 +17598,7 @@
+ 
+ 2003-07-28  rocky <rocky>
+ 
+-	* Makefile.am, configure.ac, doc/Makefile.am, doc/libcdio.texi: 
++	* Makefile.am, configure.ac, doc/Makefile.am, doc/libcdio.texi:
+ 	First feeble attempt at documentation.
+ 
+ 2003-07-27  rocky <rocky>
+@@ -17698,7 +17698,7 @@
+ 	test/check_opts5.right, test/check_opts6.right,
+ 	test/check_opts7.right, test/isofs-m1.right, test/monvoisin.right,
+ 	test/svcd_ogt_test_ntsc.right, test/svcdgs.right,
+-	test/vcd_demo.right, test/videocd.right: Remvoe headers. Run with
++	test/vcd_demo.right, test/videocd.right: Remove headers. Run with
+ 	--no-header now.
+ 
+ 2003-06-07  rocky <rocky>
+@@ -17771,7 +17771,7 @@
+ 2003-05-27  rocky <rocky>
+ 
+ 	* configure.ac, include/cdio/cdio.h, include/cdio/types.h,
+-	lib/Makefile.am, lib/_cdio_win32.c, lib/cdio.c, parse/.cvsignore: 
++	lib/Makefile.am, lib/_cdio_win32.c, lib/cdio.c, parse/.cvsignore:
+ 	Closer to having WIN32 CD-ROM support
+ 
+ 2003-05-27  rocky <rocky>
+@@ -17781,7 +17781,7 @@
+ 2003-05-26  rocky <rocky>
+ 
+ 	* include/cdio/sector.h: more pedantic types (which in fact match
+-	the implimentation).
++	the implementation).
+ 
+ 2003-05-25  rocky <rocky>
+ 
+@@ -17881,9 +17881,9 @@
+ 2003-05-16  rocky <rocky>
+ 
+ 	* include/cdio/cdio.h, lib/_cdio_bsdi.c, lib/_cdio_freebsd.c,
+-	lib/_cdio_linux.c, lib/_cdio_sunos.c, lib/cdio.c, parse/Makefile: 
++	lib/_cdio_linux.c, lib/_cdio_sunos.c, lib/cdio.c, parse/Makefile:
+ 	Bug in eject: need to close internal file descriptor before
+-	ejecting.  eject interface now nulls cdio pointer after a sucessful
++	ejecting.  eject interface now nulls cdio pointer after a successful
+ 	eject.
+ 
+ 2003-05-11  rocky <rocky>
+@@ -17911,7 +17911,7 @@
+ 
+ 2003-04-28  rocky <rocky>
+ 
+-	* test/Makefile.am, test/{check_nrg.sh => check_nrg.sh.in}: 
++	* test/Makefile.am, test/{check_nrg.sh => check_nrg.sh.in}:
+ 	check_nrg.sh is now derived since we may or may not have Video CD
+ 	info displayed.
+ 
+@@ -17936,7 +17936,7 @@
+ 
+ 	* ChangeLog, Makefile.am, src/Makefile.am, src/{cdinfo.c =>
+ 	cd-info.c}, test/check_common_fn, test/check_opts.sh: rename cdinfo
+-	to cd-info to accomodate previously existing cdinfo programs.
++	to cd-info to accommodate previously existing cdinfo programs.
+ 	Thanks to Manfred Tremmel <Manfred.Tremmel@iiv.de> for reporting the
+ 	problem.
+ 
+@@ -18014,7 +18014,7 @@
+ 	=> test}/check_opts7.right, {tests => test}/fsf.right, {tests =>
+ 	test}/isofs-m1.right, {tests => test}/monvoisin.right, {tests =>
+ 	test}/svcd_ogt_test_ntsc.right, {tests => test}/svcdgs.right,
+-	{tests => test}/vcd_demo.right, tests/cdda.cue, tests/isofs-m1.cue: 
++	{tests => test}/vcd_demo.right, tests/cdda.cue, tests/isofs-m1.cue:
+ 	tests -> test All public includes are included via #include
+ 	<cdio/....h> rather than #include "....h" (removed -I $top_srcdir/include/cdio)
+ 
+@@ -18070,7 +18070,7 @@
+ 
+ 2003-04-21  hvr <hvr>
+ 
+-	* Makefile.am, configure.ac, include/cdio/cdio.h.in, libcdio.pc.in: 
++	* Makefile.am, configure.ac, include/cdio/cdio.h.in, libcdio.pc.in:
+ 	added pkg-config(1) support
+ 
+ 2003-04-20  rocky <rocky>
+@@ -18095,7 +18095,7 @@
+ 	tests/check_opts1.right, tests/check_opts2.right,
+ 	tests/check_opts3.right, tests/check_opts4.right,
+ 	tests/check_opts5.right, tests/check_opts6.right,
+-	tests/check_opts7.right, tests/fsf-tompox.right, tests/isofs-m1.cue: 
++	tests/check_opts7.right, tests/fsf-tompox.right, tests/isofs-m1.cue:
+ 	Reduce overall size yet again by replaing isofs-m1 for fsf-tompox.
+ 	cdinfo: Add options for CDDB port and CDDB http enable         fix bug if no CD in cdrom drive.
+ 
+@@ -18213,7 +18213,7 @@
+ 2003-04-14  rocky <rocky>
+ 
+ 	* src/cdinfo.c: libpopt options need to be integers. Change order of
+-	include to accomodate libcddb. Make distcheck now works.
++	include to accommodate libcddb. Make distcheck now works.
+ 
+ 2003-04-14  rocky <rocky>
+ 
+@@ -18250,7 +18250,7 @@
+ 
+ 2003-04-11  rocky <rocky>
+ 
+-	* lib/sector.c, lib/sector.h: Tired of all those unused warings.
++	* lib/sector.c, lib/sector.h: Tired of all those unused warnings.
+ 	Remove the static inline stuff.  It's probably not worth the
+ 	performance gains. (And if it is we can turn into a #define)
+ 
+@@ -18317,7 +18317,7 @@
+ 
+ 2003-04-07  rocky <rocky>
+ 
+-	* lib/types.h: Indention formatting that Emacs prefers.
++	* lib/types.h: Indentation formatting that Emacs prefers.
+ 
+ 2003-04-07  rocky <rocky>
+ 
+@@ -18356,7 +18356,7 @@
+ 
+ 2003-04-06  rocky <rocky>
+ 
+-	* lib/_cdio_stdio.c, lib/_cdio_stream.c, lib/_cdio_stream.h: 
++	* lib/_cdio_stdio.c, lib/_cdio_stream.c, lib/_cdio_stream.h:
+ 	Document some of the interfaces.
+ 
+ 2003-04-06  rocky <rocky>
+@@ -18402,7 +18402,7 @@
+ 
+ 2003-04-06  rocky <rocky>
+ 
+-	* lib/_cdio_linux.c, lib/_cdio_nrg.c, lib/_cdio_sunos.c, lib/cdio.h: 
++	* lib/_cdio_linux.c, lib/_cdio_nrg.c, lib/_cdio_sunos.c, lib/cdio.h:
+ 	Use new sector.h constants. More changes will no doubt follow.
+ 
+ 2003-04-06  rocky <rocky>
+@@ -18421,7 +18421,7 @@
+ 
+ 2003-04-04  rocky <rocky>
+ 
+-	* lib/cdio.c, lib/cdio.h: Documentation improvment: Note that
++	* lib/cdio.c, lib/cdio.h: Documentation improvement: Note that
+ 	get_default_device returns NULL on error.
+ 
+ 2003-04-03  rocky <rocky>
+@@ -18440,7 +18440,7 @@
+ 
+ 	* lib/_cdio_bincue.c, lib/_cdio_bsdi.c, lib/_cdio_generic.c,
+ 	lib/_cdio_linux.c, lib/_cdio_nrg.c, lib/_cdio_sunos.c, lib/cdio.c,
+-	lib/cdio.h, lib/cdio_private.h: More common routiens and structures
++	lib/cdio.h, lib/cdio_private.h: More common routines and structures
+ 	moved to cdio_generic.c or cdio_private.h respectively.
+ 
+ 2003-03-30  rocky <rocky>
+@@ -18518,4 +18518,3 @@
+ 2003-03-24  rocky <rocky>
+ 
+ 	* Initial revision
+-
