@@ -159,14 +159,15 @@ is a freely available specification that is technically identical to ISO 9660.
 @item ECMA-167 (UDF)
 @cindex ECMA-167
 
-@uref{http://www.ecma-international.org/publications/standards/Ecma-167.htm}
+@uref{https://ecma-international.org/publications-and-standards/standards/ecma-167/}
+
 is a freely available specification which is also approved as ISO 13346.
 It serves as the base for UDF.
 
 @item ECMA-168
 @cindex ECMA-168
 
-@uref{http://www.ecma-international.org/publications/standards/Ecma-168.htm}
+@uref{https://ecma-international.org/publications-and-standards/standards/ecma-168/}
 is a freely available specification which is also approved as ISO 13490.
 
 @item FSF
@@ -231,7 +232,7 @@ and Windows NT by Microsoft as an extension of ISO 9600 which allows
 the use of Unicode characters and supports file names up to 64
 characters.
 
-See @uref{http://bmrc.berkeley.edu/people/chaffee/jolspec.html} for
+See @uref{https://pismotec.com/cfs/jolspec.html} for
 the Joliet Specification.
 
 The name Joliet comes from the city in Illinois (U.S) where the
@@ -449,7 +450,7 @@ issue a SCSI command.
 Yet another way of issuing MMC commands for accessing a CD-ROM. As
 with MMC or ASPI, the CD-ROM doesn't necessarily have to be a
 SCSI-attached drive. See also @pxref{MMC,,@acronym{MMC}} and
-@pxref{MMC,,@acronym{ASPI}}.
+@pxref{ASPI,,@acronym{ASPI}}.
 
 @item Session
 
@@ -498,7 +499,7 @@ media can have one or more logical tracks which they describe in their TOC.
 @item UDF
 @cindex UDF
 
-Universal Disc Format was designed as the successor of ISO 9660. It allows recording 
+Universal Disc Format was designed as the successor of ISO 9660. It allows recording
 long file names and advanced file properties. Although intended
 as a format for data exchange its main importance is with DVD video players.
 Video DVDs have to bear a simple UDF filesystem with a prescribed set
