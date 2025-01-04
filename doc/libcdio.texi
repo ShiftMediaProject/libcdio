@@ -93,11 +93,11 @@ I became aware of Video CD's (VCD's). Video CD's are not subject to
 the DMCA and therefore enjoy the protection afforded by copyright but
 no more. But in order for VCD's to be competitive with DVD's, good
 tools -- including GPL tools -- are needed for authoring and playing
-them. And so through VCD's I became aware of the excellent Video CD
+them. And so through VCD's, I became aware of the excellent Video CD
 tools by Herbert Valerio Riedel which form the @kbd{vcdimager}
 package.
 
-Although vcdimager is great for authoring, examining and extracting
+Although vcdimager is great for authoring, examining, and extracting
 parts of a Video CD, it is not a VCD player. And when I looked at the
 state of Video CD handling in existing VCD players: @code{xine},
 @code{MPlayer}, and @code{vlc}, I was a bit disappointed. None handled
@@ -195,14 +195,14 @@ a uniform ASCII representation and send that to a printer, for MMC
 although there are common internal structures defined, there is no
 common syntax for representing the structures or an OS-independent
 library or API for issuing MMC-commands which a programmer would need
-to use. Instead each Operating System has its own interface.  For
+to use. Instead, each Operating System has its own interface.  For
 example Adaptec's ASPI or Microsoft's DeviceIoControl on Microsoft
 Windows, or IOKit for Apple's OS/X, or FreeBSD's CAM. I've been
 positively awed at how many different variations and differing levels
-of complexity there are for doing basically the same thing. How easy
-it is to issue an MMC command from a program varies from easy to very
+of complexity, there are for doing basically the same thing. The ease 
+with which one can issue an MMC command from a program varies from easy to very
 difficult. And mastering the boilerplate code to issue an MMC command
-on one OS really doesn't help much in figuring out how to do it on
+on one OS doesn't help much in figuring out how to do it on
 another OS. So in @value{libcdio} we provide a common (and hopefully
 simple) API to issue MMC commands.
 
@@ -461,18 +461,18 @@ later use when the Internet is not available; people tend request the
 same information since they via programs play the same music.
 
 Obtaining CD meta information when none is encoded in an audio CD is
-useful in media players or making ones own compilations from audio
+useful in media players or making one's own compilations from audio
 CDs.
 
 There are currently two popular CDDB services on the Internet. The
-original database has been renamed Gracenote and is a profit making
+original database has been renamed Gracenote and is a profit-making
 entity. GnuDB (@url{https://gnudb.org} is an open source CD
 information resource that is free for developers and the public to
 use.
 
 As there already is an excellent library for handling CDDB libcddb
 (@url{http://libcddb.sourceforge.net} we suggest using that. Our
-utility program @command{cd-info} will make use it if it is available
+utility program @command{cd-info} will make use of it if it is available
 and it's what we use in our applications that need it.
 
 @node Yellow Book
@@ -508,7 +508,7 @@ data storage formats using this specification, resulting in
 incompatible data CDs. To prevent this, representatives of major
 manufacturers met at the High Sierra Hotel and Casino in Lake Tahoe,
 NV, in 1985, to define a standard for storing data on CDs. This format
-was nicknamed High Sierra Format. In a slightly modified form it was
+was nicknamed High Sierra Format. In a slightly modified form, it was
 later adopted as ISO the ISO 9660 standard. This standard is further
 broken down into 3 "levels", the higher the level, the more
 permissive.
@@ -534,9 +534,9 @@ usable on some systems, notably MS-DOS.
 Level 3 ISO-9660 allows non-contiguous files, useful if the file was
 written in multiple packets with packet-writing software.
 
-There have been a number of extensions to the ISO 9660 CD-ROM file
+There have been extensions to the ISO 9660 CD-ROM file
 format. One extension is Microsoft's Joliet specification, designed to
-resolve a number of deficiencies in the original ISO 9660 Level 1 file
+resolve a deficiencies in the original ISO 9660 Level 1 file
 system, and in particular to support the long file names used in
 Windows 95 and subsequent versions of Windows.
 
@@ -553,11 +553,11 @@ specification that removes the limitation initially put in to deal
 with the limited filename conventions found in Microsoft DOS OS. In
 particular, the Joliet specification allows for long filenames and
 allows for UCS-BE (BigEndian Unicode) encoding of filenames which
-include mixed case letter, accented characters spaces and various
+include mixed case letters, accented characters, spaces, and various
 symbols.
 
 The way all of this is encoded is by adding a second directory and
-filesystem structure in addition to or in parallels to original ISO
+filesystem structure in addition to or in parallel to the original ISO
 9600 filesystem. The root node of the ISO 9660 filesystem is found via
 the @term{Primary Volume Descriptor} or @term{PVD}. The root of the
 Joliet-encode filesystem is found in a Supplementary Volume
@@ -569,14 +569,14 @@ fields getting used and with the filename encoding changed to UCS-BE.
 @subsubsection Rock Ridge Extensions
 @cindex Rock Ridge extensions
 
-Using the Joliet Extension one overcome the limitedness of the
+Using the Joliet Extension one overcomes the limitedness of the
 original ISO-9660 naming scheme. But another and probably better
 method is to use the Rock Ridge Extension. Not only can one store a
 filename as one does in a POSIX OS, but the other file attributes,
 such as the various timestamps (creation, modification, access), file
 attributes (user, group, file mode permissions, device type, symbolic
 links) can be stored. This is much as one would do in XA attributes;
-however the two are not completely interchangeable in the information
+however, the two are not completely interchangeable in the information
 they store: XA does @emph{not} address filename limitations, and the
 Rock Ridge extensions don't indicate if a sector is in Mode 1 or Mode
 2 format.
@@ -587,13 +587,13 @@ of the ISO 9660 standard.
 @node Mode 1
 @subsection Mode 1 (2048 data bytes per sector)
 @cindex Mode 1
-Mode 1 is the data storage mode used by to store computer data. There
+Mode 1 is the data storage mode used to store computer data. There
 are 3 layers of error correction. A Compact Disc using only this format can
 hold at most 650 MB. The data is laid out in basically the same way as
-in and audio CD format, except that the 2,352 bytes of data in each
+in an audio CD format, except that the 2,352 bytes of data in each
 block are broken down further. 2,048 of these bytes are for ``real''
-data. The other 304 bytes are used for an additional level of error
-detecting and correcting code. This is necessary because data CDs
+data. The other 304 bytes are used for an additional level of error-detecting
+and correcting code. This is necessary because data CDs
 cannot tolerate the loss of a handful of bits now and then, the way
 audio CDs can.
 
@@ -604,17 +604,17 @@ sector you call the @code{cdio_read_mode1_sector()} or
 @node Mode 2
 @subsection Mode 2 (2336 data bytes per sector)
 @cindex Mode 2
-Mode 2 data CDs are the same as mode 1 CDs except that the error
-detecting and correcting codes are omitted. So still there are 2
+Mode 2 data CDs are the same as mode 1 CDs except that the error-detecting
+and correcting codes are omitted. So still there are 2
 layers of error correction. A Compact Disc using only this mode can
 thus hold at most 742 MB. Similar to audio CDs, the mode 2 format
 provides a more flexible vehicle for storing types of data that do not
 require high data integrity: for example, graphics and video can use
 this format. But in contrast to the Red Book standard, different modes
-can be mixed together; this is the basis for the extensions to the
+can be mixed; this is the basis for the extensions to the
 original data CD standards known as CD-ROM Extended Architecture, or
 CD-ROM XA.  CD-ROM XA formats currently in use are CD-I Bridge
-formats, Photo CD and Video CD plus Sony's Playstation.
+formats, Photo CD, Video CD, and Sony's PlayStation.
 
 In @value{libcdio} when you you want to read a mode1
 sector you call the @code{cdio_read_mode2_sector()} or
@@ -625,15 +625,15 @@ sector you call the @code{cdio_read_mode2_sector()} or
 @cindex Green Book
 
 This was a CD-ROM format developed by Philips for CD-i (an obsolete
-embedded CD-ROM application allowing limited user user interaction
-with films, games and educational applications). The format is ISO
+embedded CD-ROM application allowing limited user interaction
+with films, games, and educational applications). The format is ISO
 9660 compliant and introduced mode 2 form 2 addressing. It also
 contains XA (Extended Architecture) attributes.
 
-Although some Green Book discs contain CD-i applications which can
+Although some Green Book discs contain CD-i applications that can
 only be played on a CD-i player, others have films or music
 videos. Video CDs in Green-Book format are labeled "Digital Video on
-CD." The Green Book for video is largely superseded by White book
+CD." The Green Book for video is largely superseded by the White book
 CD-ROM which draws on this specification.
 
 
@@ -649,7 +649,7 @@ A Video CD contains one data track recorded in CD-ROM XA Mode 2 Form
 2. It is always the first track on the disc (Track 1). The ISO-9660
 file structure and a CD-i application program are recorded in this
 track, as well as the Video CD Information Area which gives general
-information about the Video Compact Disc. After the data track, video
+information about the Video Compact Disc. After the data track, the video
 is written in one or more subsequent tracks within the same
 session. These tracks are also recorded in Mode 2 Form 2.
 
@@ -668,7 +668,7 @@ sector you call the @code{cdio_read_mode2_sector()} or
 
 In both the @command{cdrdao} and bin/cue formats there is one meta-file with
 extensions @code{.toc} or @code{.cue} respectively and one or more
-files (often with the extension @code{.bin}) which contains the
+files (often with the extension @code{.bin}) which contain the
 content of tracks. The format of the track data is often
 interchangeable between the two formats.  For example, in
 @value{libcdio}'s regression tests we make use of this to reduce the
@@ -677,9 +677,9 @@ size of the test data and just provide alternate meta-data files
 
 In contrast to the first two formats, the NRG format consists of a
 single file. This has the advantage of being a self-contained
-unit: in the other two formats it is possible for the meta file to
-refer to a file that can't be found. A disadvantage of the NRG format
-is that the meta data can't be easily viewed or modified say in a text
+unit: in the other two formats the meta file can refer
+to a file that can't be found. A disadvantage of the NRG format
+is that the metadata can't be easily viewed or modified say in a text
 file as it can be with the first two formats. In conjunction with this
 disadvantage is another disadvantage that the format is not
 documented, so how @value{libcdio} interprets an NRG image is based on
@@ -696,8 +696,8 @@ in @value{libcdio} as the BIN/CUE format.)
 
 The @emph{toc}-file describes what data is written to the media in the
 @acronym{CD-ROM}; it allows control over track/index positions,
-pre-gaps and sub-channel information.  It is a text file, so a text
-editor can be used to create, view or modify it.
+pre-gaps, and sub-channel information.  It is a text file, so a text
+editor can be used to create, view, or modify it.
 
 The @cite{cdrdao(1) manual page}, contains more information about this
 format.
@@ -887,7 +887,7 @@ editor.
 @cindex track
 @cindex gaps
 
-In this section we describe CD properties and terms that we make use
+In this section, we describe CD properties and terms that we make use
 of in @value{libcdio}.
 
 A CD is formatted into a number of @term{tracks}, and a CD can hold at
@@ -906,14 +906,14 @@ second'' lead-in gap and there is supposed to be another ``2 second''
 @term{lead-out} gap at the end (or outer edge) of the CD.
 
 People have discovered that they can put useful data in the @term{lead-in}
-and @term{lead-out} gaps, and their equipment can read this, violating
+and @term{lead-out} gaps and their equipment can read this, violating
 the standards but allowing a CD to store more data.
 
-In order to determine the number of tracks on a CD and where they
+To determine the number of tracks on a CD and where they
 start, commands are used to get this table-of-contents or @term{TOC}
 information. Asking about the start of the @term{lead-out track}
 gives the amount of data stored on the Compact Disk. To make it easy
-to specify this leadout track, special constant 0xAA (decimal 170) is
+to specify this leadout track, a special constant 0xAA (decimal 170) is
 used to indicate it. This is safe since this is higher than the
 largest legal track position. In @value{libcdio},
 @code{CDIO_CDROM_LEADOUT_TRACK} is defined to be this special value.
@@ -926,22 +926,22 @@ largest legal track position. In @value{libcdio},
 @cindex sectors
 @cindex frames
 
-A track is broken up into a number of 2352-byte @emph{blocks} which we
+A track is broken up into several 2352-byte @emph{blocks} which we
 sometimes call @emph{sectors} or @emph{frames}. Whereas tracks may
 have a gap between them, a block or sector does not. (In
 @value{libcdio} the block size constant is defined using
 @code{CDIO_CD_FRAMESIZE_RAW}).
 
 A Compact Disc has a limit on the number of blocks or sectors.  This
-values is defined by constant @code{CDIO_CD_MAX_LSN} in
+value is defined by constant @code{CDIO_CD_MAX_LSN} in
 @file{cdio/sector.h}.
 
-One can addressing a block in one of three formats. The oldest format
-is by it's minute/second/frame number, also referred to as @term{MSF}
+One can address a block in one of three formats. The oldest format
+is by its minute/second/frame number, also referred to as @term{MSF}
 and written in time-like format MM:SS:FF (e.g. 30:01:40). It is best
 suited in audio (Red Book) applications. In @value{libcdio}, the type
 @code{msf_t} can be used to declare variables to hold such
-values. Minute, second and frame values are one byte @emph{and stored
+values. Minute, second, and frame values are one byte @emph{and stored
 BCD notation}.@footnote{Perhaps this is a @value{libcdio} design
 flaw. It was originally done I guess because it was convenient for
 VCDs.} There are @value{libcdio} conversion routines
@@ -959,27 +959,27 @@ confusing. A frame is also sometimes called a sector, analogous to
 hard-disk terminology.
 
 Even more confusing is using this time-like notation for an address or
-for a length. Too often people confuse the MSF notation this with an
+a length. Too often people confuse the MSF notation with an
 amount of time. A ``second'' (or @code{CDIO_CD_FRAMES_PER_SEC} blocks)
 in this notation is only a second of playing time for something
 encoded as CD-DA. It does @emph{not} necessarily represent the amount
-time that it will take to play a of Video CD---usually you need more
+of time that it will take to play a Video CD---usually, you need more
 blocks than this. Nor does it represent the amount of data used to
 play a second of an MP3---usually you need fewer blocks than this. It
 is also not the amount of time your CD-ROM will take to read a
 ``second'' of data off a Compact Disc: for example a 12x CD player
 will read 12x @code{CDIO_CD_FRAMES_PER_SEC}
-@code{CDIO_CD_FRAMSIZE_RAW}-byte blocks in a one second of time.
+@code{CDIO_CD_FRAMSIZE_RAW}-byte blocks in one second.
 
 When programming, unless one is working with a CD-DA (and even here,
 only in a time-like fashion), is generally more cumbersome to use an
-MSF rather than a LBA or LSN described below, since subtraction of two
-MSF's has the awkwardness akin to subtraction using Roman Numerals.
+MSF rather than an LBA or LSN described below, since the subtraction of two
+MSF's have an awkwardness akin to subtraction using Roman Numerals.
 
 A simpler way to address a block is to use a ``Logical Sector Number''
 (@term{LSN}) or a ``Logical Block Address (@term{LBA}). In the MMC-6
-glossary, these are synonymous terms. However historically it has been
-used differently. In libcdio, to convert a LBA into an LSN you just
+glossary, these are synonymous terms. However, historically it has been
+used differently. In libcdio, to convert an LBA into an LSN you
 subtract 150. Both LBA's and LSN's can be negative.
 
 @node Pre-gaps
@@ -1007,13 +1007,13 @@ performer may seamlessly move from one piece of the performance to the
 next, it would be unnatural for the disc to contain silence between
 the two pieces.  Instead, the track number updates with no
 interruption in the performance.  This allows the listener to either
-hear the entire performance without unnatural interruptions, or to
+hear the entire performance without unnatural interruptions or to
 conveniently skip to certain pieces of the performance.  Finally, some
 @acronym{CD-DA} discs--whose behavior will be described below--lack
 track @term{pre-gap}s altogether although they must still include the
 @term{lead-in} and @term{lead-out} gaps.
 
-In order to understand the track @term{pre-gap}s that occur between
+To understand the track @term{pre-gap}s that occur between
 audio tracks, it is necessary to understand how CD players display the
 track number and time.  Embedded in each block of audio data is
 non-audio information known as the @term{Q sub-channel}.  The
@@ -1021,7 +1021,7 @@ non-audio information known as the @term{Q sub-channel}.  The
 it should display while it is playing the block of audio data in which
 the @term{Q sub-channel} data is embedded.  Near the end of some
 tracks, the @term{Q sub-channel} may instruct the CD player to update
-the track number to the next track, and display a count down to the
+the track number to the next track and display a count down to the
 next track, often starting at -2 seconds and proceeding to zero.  This
 is known as an audio track @term{pre-gap}.  It may either contain
 silence, or as previously discussed--in the case of live
@@ -1120,12 +1120,12 @@ contributed by Robert William Fuller (@email{hydrologiccycle@@gmail.com}).
 @node How to use
 @chapter How to use
 
-The @value{libcdio} package comes with a number of small example
+The @value{libcdio} package comes with several small example
 programs in the directory @file{example} which demonstrate different
 aspects of the library and show how to use the library. The source
-code to all of the examples here are contained on the package.
+code for all of the examples here is contained in the package.
 
-Other sources for examples would be the larger utility programs
+Other sources for example would be the larger utility programs
 @command{cd-drive}, @command{cd-info}, @command{cd-read},
 @command{iso-info}, and @command{iso-read} which are all in the
 @file{src} directory of the @value{libcdio} package.  See also
@@ -1298,7 +1298,7 @@ and 9.
 
 For each track, we call a cdio routine to get the logical sector
 number, @code{cdio_get_track_lsn()} on line 17 and print the track
-number and LSN value. Finally we print out the ``lead-out track''
+number and LSN value. Finally, we print out the ``lead-out track''
 information and we finally call @code{cdio_destroy()} in line 23 to
 indicate we're done with the CD.
 
@@ -2387,7 +2387,7 @@ and some things via MMC. GNU/Linux has a rather nice and complete
 ioctl mechanism. On the other hand, the MMC mechanism is more
 universal.  There are other ``access modes'' listed which are not
 really access modes and should probably be redone/rethought.  They are
-just different ways to run the read command. But for completeness
+just different ways to run the read command. But for completeness,
 These are ``READ_CD'' and ``READ_10''.
 
 Writing/burning to a drive is supported via access modes
@@ -2402,12 +2402,12 @@ ioctl and ASPI.
 The ASPI interface specification was developed by Adaptec for sending
 commands to a SCSI host adapter (such as those controlling CD and DVD
 drives) and used on Window 9x/NT and later. Emulation for ATAPI drives
-was added so that the same sets of commands worked those even though
+was added so that the same sets of commands worked, even though
 the drives might not be SCSI nor might there even be a SCSI controller
 attached. The DLL is not part of Microsoft Windows and has to be
 downloaded and installed separately.
 
-However in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
+However, in Windows NT/2K/XP, Microsoft provides their Win32 ioctl
 interface, and has taken steps to make using ASPI more inaccessible
 (e.g. requiring administrative access to use ASPI).
 
