@@ -15,7 +15,7 @@
 This manual documents @code{libcdio}, the GNU CD Input, Output, and Control
 Library.
 
-Copyright @copyright{} 2003-2008, 2010, 2012-2014 Rocky
+Copyright @copyright{} 2003-2008, 2010, 2012-2014, 2025 Rocky
 Bernstein and Herbert Valerio Riedel.
 
 @quotation
@@ -280,47 +280,55 @@ performs low-level block reading of a CD or CD image
 
 @item @code{iso-info}
 
-displays ISO-9660 information from an ISO-9660 image. Below is some
-sample output
+displays ISO-9660 information from an ISO-9660 image. Below is a sample invocation and output.
 
 @smallexample
-iso-info version 0.82 x86_64-unknown-linux-gnu
-Copyright (c) 2003, 2004, 2005, 2007, 2008 R. Bernstein
+$ iso-info -l test/data/joliet.iso
+iso-info version 2.1.1 x86_64-pc-linux-gnu
+Copyright (c) 2003-2005, 2007-2008, 2011-2015, 2017, 2025 R. Bernstein
 This is free software; see the source for copying conditions.
 There is NO warranty; not even for MERCHANTABILITY or FITNESS FOR A
 PARTICULAR PURPOSE.
 __________________________________
-ISO 9660 image: ../test/joliet.iso
-Application: K3B THE CD KREATOR VERSION 0.11.12 (C) 2003 SEBASTIAN TRUEG AND...
-Preparer   : K3b - Version 0.11.12
-Publisher  : Rocky Bernstein
-System     : LINUX
-Volume     : K3b data project
-Volume Set :
+ISO 9660 image: test/data/joliet.iso
+Application : K3B THE CD KREATOR VERSION 0.11.12 (C) 2003 SEBASTIAN TRUEG AND THE K3B TEAM
+Preparer    : K3b - Version 0.11.12
+Publisher   : Rocky Bernstein
+System      : LINUX
+Volume      : K3b data project
+Joliet Level: 3
 __________________________________
 ISO-9660 Information
 /:
- Oct 22 2004 19:44  .
- Oct 22 2004 19:44  ..
- Oct 22 2004 19:44  libcdio
+  d [LSN     31]      2048 Oct 22 2004 18:44:59  .
+  d [LSN     31]      2048 Oct 22 2004 18:44:59  ..
+  d [LSN     32]      2048 Oct 22 2004 18:44:59  libcdio
 
 /libcdio/:
- Oct 22 2004 19:44  .
- Oct 22 2004 19:44  ..
- Mar 12 2004 02:18  COPYING
- Jun 26 2004 07:01  README
- Aug 12 2004 06:22  README.libcdio
- Oct 22 2004 19:44  test
+  d [LSN     32]      2048 Oct 22 2004 18:44:59  .
+  d [LSN     31]      2048 Oct 22 2004 18:44:59  ..
+  - [LSN     34]     17992 Mar 12 2004 02:18:03  COPYING
+  - [LSN     43]      2156 Jun 26 2004 06:01:09  README
+  - [LSN     45]      2849 Aug 12 2004 05:22:23  README.libcdio
+  d [LSN     33]      2048 Oct 22 2004 18:44:59  test
 
 /libcdio/test/:
- Oct 22 2004 19:44  .
- Oct 22 2004 19:44  ..
- Jul 25 2004 06:52  isofs-m1.cue
+  d [LSN     33]      2048 Oct 22 2004 18:44:59  .
+  d [LSN     32]      2048 Oct 22 2004 18:44:59  ..
+  - [LSN     47]        74 Jul 25 2004 05:52:32  isofs-m1.cue
 @end smallexample
 
 @item @code{iso-read}
 
-extracts files from an ISO-9660 image.
+Extracts files from an ISO-9660 image.
+
+Below is a sample invocation and output.
+
+@smallexample
+$ iso-read -i test/data/joliet.iso -e libcdio/README -o /tmp/README
+$ ls -l /tmp/README
+-rw-rw-r-- 1 rocky rocky 2156 Jan  4 10:30 /tmp/README
+@end smallexample
 
 @item @code{mmc-tool}
 
@@ -969,8 +977,8 @@ MSF rather than a LBA or LSN described below, since subtraction of two
 MSF's has the awkwardness akin to subtraction using Roman Numerals.
 
 A simpler way to address a block is to use a ``Logical Sector Number''
-(@term{LSN}) or a ``Logical Block Address (@term{LBA}). In the MMC-5
-glossary these are synonymous terms. However historically it has been
+(@term{LSN}) or a ``Logical Block Address (@term{LBA}). In the MMC-6
+glossary, these are synonymous terms. However historically it has been
 used differently. In libcdio, to convert a LBA into an LSN you just
 subtract 150. Both LBA's and LSN's can be negative.
 
@@ -1224,17 +1232,17 @@ distribution as @file{example/tracks.c}.
  9:  track_t i_tracks        = cdio_get_num_tracks(p_cdio);
 10:  int j, i=first_track_num;
 11:
-12:  printf("CD-ROM Track List (%i - %i)\n", first_track_num, i_tracks);
+12:  printf("CD-ROM Track List (%i - %i)\n", first_track_num, i_first_track+i_tracks-1);
 13
 14:  printf("  #:  LSN\n");
 15:
 16:  for (j = 0; j < i_tracks; i++, j++) @{
 17:    lsn_t lsn = cdio_get_track_lsn(p_cdio, i);
 18:    if (CDIO_INVALID_LSN != lsn)
-19:      printf("%3d: %06d\n", (int) i, lsn);
+19:      printf("%3d: %06d\n", (int) i, (long unsigned int) lsn);
 20:  @}
 21:  printf("%3X: %06d  leadout\n", CDIO_CDROM_LEADOUT_TRACK,
-22:         cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK));
+22:         (long unsigned int) cdio_get_track_lsn(p_cdio, CDIO_CDROM_LEADOUT_TRACK));
 23:  cdio_destroy(p_cdio);
 24:  return 0;
 25: @}
@@ -2288,6 +2296,7 @@ One of the problems with MMC is that there are so many different
 @item MMC 3 --- @url{ftp://ftp.t10.org/t10/drafts/mmc3/}
 @item MMC 4 --- @url{ftp://ftp.t10.org/t10/drafts/mmc4/}
 @item MMC 5 --- @url{ftp://ftp.t10.org/t10/drafts/mmc5/}
+@item MMC 6 --- @url{ftp://ftp.t10.org/t10/drafts/mmc6/}
 @end itemize
 along with the several ``drafts'' of these.
 
@@ -2328,12 +2337,12 @@ commands instead of other OS-specific mechanisms.
 @node Access Modes
 @section Access Modes
 
-There are serveral ways that you can open a CD-ROM drive for
+There are several ways that you can open a CD-ROM drive for
 subsequent use.  Each way is called an @emph{access
 mode}. Historically libcdio only supported a reading kind of
 access.
 
-Adding the abilty to writing to a drive for ``burning'' is being added
+Adding the ability to writing to a drive for ``burning'' is being added
 by Thomas Schmitt, and this is accomplished by opening the drive in a
 read-write mode. Currently writing modes are only supported via the
 MMC command interface. Under this, one can get exclusive read-write

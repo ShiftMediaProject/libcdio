@@ -1,5 +1,5 @@
 Thomas Schmitt has made significant contributions to this glossary.
-See also @uref{http://www.dvdrhelp.com/glossary}.
+See also @uref{https://www.videohelp.com/glossary}.
 
 @table @dfn
 
@@ -100,10 +100,10 @@ CD Text is a technology developed by Sony Corporation and Philips
 Electronics in 1996 that allows storing in an audio CD and its tracks
 information such as artist name, title, songwriter, composer, or
 arranger. Commercially available audio CDs sometimes contain CD Text
-information. 
+information.
 
 Information on how CD Text is stored can be found in in older MMC
-standards.  Specifically, try ``Annex J'' of ``mmc3r10g.pdf''.  
+standards.  Specifically, try ``Annex J'' of ``mmc3r10g.pdf''.
 
 An ``Unofficial CD Text FAQ'' is at
 @url{http://web.ncf.ca/aa571/cdtext.htm}
@@ -127,7 +127,7 @@ The data written on a CD-XA is consistent with and can be in ISO-9660
 file system format and therefore be readable by ISO-9660 file system
 translators. But also a CD-I player can read CD-XA discs even if
 its own `Green Book' file system only resembles ISO 9660 and isn't
-fully compatible. 
+fully compatible.
 
 @item DVD
 @cindex DVD
@@ -153,20 +153,20 @@ a SCSI Command Descriptor Block (CDB).
 @item ECMA-119 (ISO-9660)
 @cindex ECMA-119
 
-(@uref{http://www.ecma-international.org/publications/standards/Ecma-119.htm}
+@uref{http://www.ecma-international.org/publications/standards/Ecma-119.htm}
 is a freely available specification which is technically identical to ISO 9660.
 
 @item ECMA-167 (UDF)
 @cindex ECMA-167
 
-(@uref{http://www.ecma-international.org/publications/standards/Ecma-167.htm}
+@uref{http://www.ecma-international.org/publications/standards/Ecma-167.htm}
 is a freely available specification which is also approved as ISO 13346.
 It serves as base for UDF.
 
 @item ECMA-168
 @cindex ECMA-168
 
-(@uref{http://www.ecma-international.org/publications/standards/Ecma-168.htm}
+@uref{http://www.ecma-international.org/publications/standards/Ecma-168.htm}
 is a freely available specification which is also approved as ISO 13490.
 
 @item FSF
@@ -188,13 +188,13 @@ but offers slightly less in terms of performance.
 @item ISO
 @cindex ISO
 
-International Standards Organization. 
+International Standards Organization.
 
 @item ISO 13346
 @cindex ISO 13346
 
 ISO 13346 / ECMA-167 is a filesystem framework for data exchange on
-overwriteable or pseudo-overwriteable media. It serves as base of UDF.
+overwriteable or pseudo-overwritable media. It serves as base of UDF.
 
 @item ISO 13490
 @cindex ISO 13490
@@ -282,7 +282,7 @@ called a UPC. Another identification number is ISRC.
 @item @anchor{MMC}MMC
 @cindex MMC (Multimedia Commands)
 
-MMC (Multimedia Commands). 
+MMC (Multimedia Commands).
 
 MMC are raw commands for communicating with CDROM drives,
 CD-Rewriters, DVD-Rewriters, etc. The are subset of the larger SCSI
@@ -293,8 +293,8 @@ ATAPI versions of their drives.
 
 The documents @code{libcdio} makes use of are described in the
 Multi-Media Commands standard (MMC). This document generally has a
-numeric level number appended. For example MMC-5 refers to
-``Multi-Media Commands - 5.
+numeric level number appended. For example MMC-6 refers to
+``Multi-Media Commands - 6.
 
 @item @anchor{models-profiles}Media models and profiles
 @cindex Media models and profiles
@@ -348,9 +348,9 @@ They can assume three states:
 @item "Closed" is only readable
 @end table
 CD-RW and DVD-RW can be brought back to blank state,
-or they can be formatted to become overwriteable.
+or they can be formatted to become overwritable.
 
-Overwriteable profiles allow random read-write access with a
+Overwritable profiles allow random read-write access with a
 granularity of 2 kB or 32 kB.
 One can hope for having read-write access via the normal
 POSIX operations lseek(), read(), write() of the operating system.
@@ -371,10 +371,10 @@ priced Blu-ray burners as of year 2010.
 A Mixed Mode is a CD that contains tracks of differing CD-ROM Mode
 formats. In particular the first track may contain both computer data
 (Yellow Book) CD ROM data while the remaining tracks are audio or
-video data. Video CD's can be Mixed Mode CDs. 
+video data. Video CD's can be Mixed Mode CDs.
 
-@item Multisession 
-@cindex Multisession 
+@item Multisession
+@cindex Multisession
 
 A way of writing to a CD , DVD or Blu-ray Disc that allows more data to be
 added to readable discs at a later time. The media must not have been closed
@@ -401,7 +401,7 @@ ISO 9660 image at block 32 so that its descriptors get not overwritten later.
 
 A proprietary CD image file format use by a popular program for
 Microsoft Windows, Ahead Nero. The specification of this format is
-not to our knowledge published. 
+not to our knowledge published.
 
 @item Rock Ridge Extensions
 @cindex Rock Ridge extensions
@@ -413,8 +413,8 @@ file. Rock Ridge is described by unapproved standard IEEE P1282 / RRIP-1.12
 and based on unapproved IEEE P1281 / SUSP-1.10. It has become a de-facto
 standard on X/Open systems like GNU/Linux, FreeBSD, Solaris, et.\ al.
 
-@item @anchor{SCSI}SCSI 
-@cindex SCSI 
+@item @anchor{SCSI}SCSI
+@cindex SCSI
 
 Small Computer System Interface.  A set of ANSI standard electronic
 interfaces (originally developed at Apple Computer) that allow
@@ -432,16 +432,16 @@ organization @url{http://www.t10.org/}.
 The documents @code{libcdio} makes use of are described in SCSI
 standards documents SCSI Primary Commands (SPC), SCSI Block Commands
 (SBC), and Multi-Media Commands (MMC). These documents generally have
-a numeric level number appended. For example SPC-3 refers to 
+a numeric level number appended. For example SPC-3 refers to
 ``SCSI Primary Commands - 3'.
 
-In year 2010 the current versions were SPC-3, SBC-2, MMC-5.
+In year 2025, the current versions were SPC-7 (@url{https://www.t10.org/members/w_spc7.htm}), SBC-5 (@url{https://www.t10.org/members/w_sbc5.htm}), MMC-6 (@url{https://t10.org/members/w_mmc6.htm}).
 
 @item SCSI CDB
 @cindex SCSI CDB
 
 SCSI Command Descriptor Block. The data structure that is used to
-issue a SCSI command. 
+issue a SCSI command.
 
 @item SCSI Pass Through Interface.
 @cindex SCSI Pass Through Interface.
@@ -460,7 +460,7 @@ data sessions.
 @item SVCD
 @cindex Super VCD (SVCD)
 
-Super @acronym{VCD} 
+Super @acronym{VCD}
 
 An improvement of Video CD 2.0 specification which includes most
 notably a switch from @acronym{MPEG}-1 (constant bit rate encoding) to
@@ -471,7 +471,7 @@ graphics and text (@dfn{OGT}) sub-channels for user switchable
 subtitle displaying, closed caption text, and command lists for
 controlling the @acronym{SVCD} virtual machine.
 
-See @uref{http://www.dvdrhelp.com/svcd}
+See @uref{https://www.videohelp.com/glossary?S#SVCD}
 
 @item TOC
 @cindex TOC (CD Table of Contents)
@@ -484,7 +484,7 @@ block address, size, copy protection, linear audio preemphasis, track format
 Session and track information is also available on sequential DVD and
 Blu-ray Discs. Several track properties are fixed to equivalents of CD data.
 
-@item Track 
+@item Track
 @cindex track
 
 A unit of data of a CD. The size of a track can vary; it can occupy
@@ -492,7 +492,7 @@ the entire contents of the CD. Most CD standards however require that
 tracks have a 150 frame (or ``2 second'') lead-in gap.
 
 An abstraction of tracks for CD, DVD and Blu-ray Discs is the Logical Track
-as of MMC specs. Overwriteable media have a single logical track, sequential
+as of MMC specs. Overwritable media have a single logical track, sequential
 media can have one or more logical tracks which they describe in their TOC.
 
 @item UDF
@@ -526,12 +526,12 @@ sectors have a 2336 byte user data area, but parts of it are used for
 error codes and headers when using the mode 2 form 1 or form 2
 configurations.}
 
-@uref{http://www.dvdrhelp.com/vcd}
+@uref{https://www.videohelp.com/glossary?V#VCD}
 
 @item Win32 ASPI
 @cindex ASPI
 
-The ASPI interface specification was developed by Adaptec for 
+The ASPI interface specification was developed by Adaptec for
 sending commands to a SCSI host adapter (such as those controlling CD
 and DVD drives) and used on Window 9x/NT and later. Emulation for
 ATAPI drives was added so that the same sets of commands worked those
@@ -543,6 +543,8 @@ interface, and has take steps to make using ASPI more inaccessible
 (e.g. requiring administrative access to use ASPI).
 
 See also @pxref{MMC,,@acronym{MMC}}.
+
+@uref{https://www.videohelp.com/glossary?A#ASPI}
 
 @item Win32 ioctl driver
 
