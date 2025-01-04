@@ -35,7 +35,7 @@ Version 2.1.1
 - Fix crash reading CD TOC on macOS Ventura. (Robert Kausch)
 - Update freedb references to GnuDB. (Robert Kausch)
 - Fix charset check in Windows cdio_charset_from_utf8 implementation. (Robert Kausch)
-- Add support for reading CD-Text using the Win32 IOCTL driver (Robert Kausch)
+- Add support for reading CD-Text on macOS and Windows (Robert Kausch)
 
 Version 2.1.0
 -------------
