@@ -6,22 +6,22 @@ Here we have a summary of the major changes by release. See the git commit histo
 Version 2.1.1
 -------------
 
-2025-01-03
+2025-01-07
 
 - More checks of potentially NULL buffers. More check of the result of malloc/calloc.
 - Enforce the use of non widestring (A suffixed) calls when we pass char* parameters. (Pete Batard)
-- Use widestring API calls unless otherwise specified. So make sure we
-  char* parameters.  Remove a warning about the declaration of is_cdrom_aspi() and about GetVersion() being deprecated. (Pete Batard)
+- Use widestring API calls unless otherwise specified.
+- Remove a warning about the declaration of is_cdrom_aspi() and about GetVersion() being deprecated. (Pete Batard)
 - Updates for compiling on MSVC. (Pete Batard)
-- Move to github and add CI checks. (rocky for move Pete Batard for CI)
+- Move to github (rocky)
+- Add github CI checks. (Pete Batard)
 - Count empty fields as tracks. (John Ernberg)
 - Add some validity checks to enhance security. (Mansour Gashasbi)
 - Add support for ISO9660 multi extent files. (Pete Batard)
 - Fix Recognition of multi-extent in ISO9660 when Joliet is present. (Thomas Schmitt)
 - Use getmntent/setmntent for reading mounts. (Miguel Borges de Freitas)
 - Use GNU/Linux new ioctl on kernel v5.16 or newer. (Lukas Prediger)
-- Use "%s"-style format in cdda-player.c: to make it catch cases.
-  when user input is used in place of format. (Sergei Trofimovich)
+- Use "%s"-style format in cdda-player.c: to make it catch cases when user input is used in place of format. (Sergei Trofimovich)
 - Remove some memory leaks in C++ code. (Thomas Schmitt)
 - Allow for  DO_NOT_WANT_COMPATIBILITY macro in config.h to disable APIs that are being retired.
 - Fix win32 implementation of .get_track_msf() for CD with first track number > 1 (Thomas Schmitt)
