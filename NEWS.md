@@ -3,6 +3,40 @@ NEWS
 
 Here we have a summary of the major changes by release. See the git commit history or `ChangeLog` for more fine-grained changes.
 
+Version 2.1.1
+-------------
+
+2025-01-07
+
+- More checks of potentially NULL buffers. More check of the result of malloc/calloc.
+- Enforce the use of non widestring (A suffixed) calls when we pass char* parameters. (Pete Batard)
+- Use widestring API calls unless otherwise specified.
+- Remove a warning about the declaration of is_cdrom_aspi() and about GetVersion() being deprecated. (Pete Batard)
+- Updates for compiling on MSVC. (Pete Batard)
+- Move to github (rocky)
+- Add github CI checks. (Pete Batard)
+- Count empty fields as tracks. (John Ernberg)
+- Add some validity checks to enhance security. (Mansour Gashasbi)
+- Add support for ISO9660 multi extent files. (Pete Batard)
+- Fix Recognition of multi-extent in ISO9660 when Joliet is present. (Thomas Schmitt)
+- Use getmntent/setmntent for reading mounts. (Miguel Borges de Freitas)
+- Use GNU/Linux new ioctl on kernel v5.16 or newer. (Lukas Prediger)
+- Use "%s"-style format in cdda-player.c: to make it catch cases when user input is used in place of format. (Sergei Trofimovich)
+- Remove some memory leaks in C++ code. (Thomas Schmitt)
+- Allow for  DO_NOT_WANT_COMPATIBILITY macro in config.h to disable APIs that are being retired.
+- Fix win32 implementation of .get_track_msf() for CD with first track number > 1 (Thomas Schmitt)
+- Fix testing on Windows and remove compilation warnings. (Pete Batard)
+- Add Rock Ridge deep directory support. (Pete Batard)
+- Fix and clean up various Rock Ridge issues and adjust tests. (Pete Batard)
+- Fix double reporting of sizes in cd-info.c. (Pete Batard)
+- CD-Text character set interpretation more tolerant of bad input. Savannah bug 53929.
+- Remove homegrown boolean type in favor of <stdbool.h>. (Thomas Schmitt)
+- Improve pkg-config configuration detection (Lars Wendler)
+- Fix crash reading CD TOC on macOS Ventura. (Robert Kausch)
+- Update freedb references to GnuDB. (Robert Kausch)
+- Fix charset check in Windows cdio_charset_from_utf8 implementation. (Robert Kausch)
+- Add support for reading CD-Text on macOS and Windows (Robert Kausch)
+
 Version 2.1.0
 -------------
 
@@ -102,13 +136,13 @@ Version 0.94
 
 2016-10-27
 
-- CD-TEXT fixes and improvements
+- CD-Text fixes and improvements
   - Expose mmc_read_cdtext as a publicly accessible function
     Removes some redundant error reporting in `mmc_read_cdtext()`
     Also fixes some incorrect lengths for isrc and mcn.
   - Fix inconsistent maximal length in CD-Text extraction
   - Added new low level functions for READ SUB-CHANNEL and
-    READ TOC/PMA/ATIP for CD-TEXT extraction.
+    READ TOC/PMA/ATIP for CD-Text extraction.
   - Add cdtext binary parser and track number to public api
   - Increase track # for short CD-Text fields
 
@@ -369,7 +403,7 @@ version 0.77
     image drivers (strcpy->strncpy).
   - A number ISO 9660 time conversion routines corrected with respect to
     various timezone offsets, daylight savings time, and tm capabilities
-- small `cdda-player` improvements - shows more CD-TEXT, and fix bug in
+- small `cdda-player` improvements - shows more CD-Text, and fix bug in
   non-interactive use (Yes, I sometimes use it.)
 - NRG checking parses file. string tests were invalid on short < 4
   character filenames.

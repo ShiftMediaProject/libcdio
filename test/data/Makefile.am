@@ -56,6 +56,7 @@ check_DATA = \
 	test-udf1.iso  \
 	udf102.iso     \
 	cdtext.cdt     \
+        cdtext-krosis.cdt \
 	cdtext-libburnia.cdt
 
 EXTRA_DIST = $(check_DATA)

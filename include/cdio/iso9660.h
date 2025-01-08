@@ -906,6 +906,7 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
    lsn and return information about it.
 
    @param p_cdio the CD object to read from
+   @param i_lsn an lsn to find
 
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value using iso9660_stat_free().

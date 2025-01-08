@@ -56,7 +56,7 @@ print_version (char *prog_name, const char *version,
   if (no_header == 0) {
     report( stdout,
 	    "%s version %s\n"
-	    "Copyright (c) 2003-2005, 2007-2008, 2011-2015, 2017 "
+	    "Copyright (c) 2003-2005, 2007-2008, 2011-2015, 2017, 2025 "
 	    "R. Bernstein\n",
 	    prog_name, version);
     report( stdout,
