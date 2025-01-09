@@ -10,7 +10,7 @@ Version 2.2.0
 
 Revised to note ABI change in ISO-9660 shared library (`.so`) version
 numbers; bump release version from 2.1.1 to 2.2.0 to note both API and
-ABI changes. These are the last two bullet items under Version 2.1.1
+ABI changes. These are the last three bullet items under Version 2.1.1
 below. Noticed by Jan Alexander Steffens.
 
 
@@ -47,8 +47,9 @@ Version 2.1.1
 - Update freedb references to GnuDB. (Robert Kausch)
 - Fix charset check in Windows cdio_charset_from_utf8 implementation. (Robert Kausch)
 - Add support for reading CD-Text on macOS and Windows (Robert Kausch)
-- API change: some `ecma_167.h` fields were changed from integer (prefix `i_`)  to unsigned in (prefix `u_`)
-- ABI change: `u_su_fields` added to the end of `is_rock_statbuf_t`
+- API change: Rename some fields in `ecma_167.h` from integer (prefix `i_`)  to unsigned (prefix `u_`) to actually match their type
+- ABI change: Add `u_su_fields` to the end of `iso_rock_statbuf_t`
+- ABI change: Add `total_size` in the middle of `iso9660_stat_t`
 
 Version 2.1.0
 -------------
