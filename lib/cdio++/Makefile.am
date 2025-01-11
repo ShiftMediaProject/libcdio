@@ -1,6 +1,4 @@
-#   $Id: Makefile.am,v 1.11 2008/10/29 09:53:00 rocky Exp $
-#
-#   Copyright (C) 2005, 2006, 2007, 2008 Rocky Bernstein <rocky@gnu.org>
+#   Copyright (C) 2005, 2006, 2007, 2008, 2025 Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
 #   it under the terms of the GNU General Public License as published by
@@ -53,7 +51,7 @@ libcdio___la_SOURCES = $(libcdiopp_sources)
 libcdio___la_LDFLAGS = -version-info $(libcdiopp_la_CURRENT):$(libcdiopp_la_REVISION):$(libcdiopp_la_AGE) @LT_NO_UNDEFINED@
 libcdio___la_LIBADD = $(top_builddir)/lib/driver/libcdio.la
 
-libiso9660pp_la_CURRENT = 0
+libiso9660pp_la_CURRENT = 1
 libiso9660pp_la_REVISION = 0
 libiso9660pp_la_AGE = 0
 
