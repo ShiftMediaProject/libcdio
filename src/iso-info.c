@@ -54,9 +54,11 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
-
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>
+#endif
+#ifdef HAVE_INTTYPES_H
+#include <inttypes.h>
 #endif
 
 #if 0
@@ -300,7 +302,8 @@ print_iso9660_recurse (iso9660_t *p_iso, const char psz_path[],
                        psz_iso_name, translated_name);
       } else {
         if ( strcmp (psz_iso_name, ".") && strcmp (psz_iso_name, ".."))
-          printf("%9u %s%s\n", (unsigned int) p_statbuf->size, psz_path,
+          printf("%9" PRIu64 " %s%s\n", p_statbuf->total_size,
+                 psz_path,
                  yep == p_statbuf->rr.b3_rock
                  ? psz_iso_name : translated_name);
       }

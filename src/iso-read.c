@@ -1,6 +1,6 @@
 /*
-  Copyright (C) 2004-2006, 2008, 2012-2013, 2017-2018 Rocky Bernstein
-  <rocky@gnu.org>
+  Copyright (C) 2004-2006, 2008, 2012-2013, 2017-2018, 2021
+   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -211,15 +211,15 @@ static int read_iso_file(const char *iso_name, const char *src,
                          FILE *outfd, size_t *bytes_written)
 {
   iso9660_stat_t *statbuf;
-  int i;
+  uint64_t i;
   iso9660_t *iso;
 
-  iso = iso9660_open (iso_name);
+  iso = iso9660_open_ext (iso_name, ISO_EXTENSION_ALL);
 
   if (NULL == iso) {
     report(stderr,
            "%s: Sorry, couldn't open ISO-9660 image file '%s'.\n",
-           program_name, src);
+           program_name, iso_name);
     return 1;
   }
 
@@ -234,12 +234,13 @@ static int read_iso_file(const char *iso_name, const char *src,
       report(stderr,
              "%s: iso-info may be able to show the contents of %s.\n",
              program_name, iso_name);
+      iso9660_close(iso);
       return 2;
     }
 
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
-  for (i = 0; i < statbuf->size; i += ISO_BLOCKSIZE)
+  for (i = 0; i < statbuf->total_size; i += ISO_BLOCKSIZE)
     {
       char buf[ISO_BLOCKSIZE];
 
@@ -260,12 +261,15 @@ static int read_iso_file(const char *iso_name, const char *src,
       if (ferror (outfd))
         {
           perror ("fwrite()");
+          iso9660_stat_free(statbuf);
+          iso9660_close(iso);
           return 5;
         }
     }
   iso9660_close(iso);
 
-  *bytes_written = statbuf->size;
+  *bytes_written = statbuf->total_size;
+  iso9660_stat_free(statbuf);
   return 0;
 }
 

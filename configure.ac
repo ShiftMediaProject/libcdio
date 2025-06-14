@@ -1,4 +1,5 @@
-dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2018, 2019
+dnl Copyright (C) 2003-2008, 2010, 2011-2014, 2018, 2019,
+dnl 2023-2025
 dnl Rocky Bernstein <rocky@gnu.org>
 dnl
 dnl This program is free software: you can redistribute it and/or modify
@@ -14,18 +15,20 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-define(RELEASE_NUM, 2.1.0)
+define(RELEASE_NUM, 2.1.1)
 define(CDIO_VERSION_STR, $1)
 
-AC_PREREQ(2.61)
+AC_PREREQ([2.71])
 
-AC_INIT([libcdio], [CDIO_VERSION_STR(RELEASE_NUM)], [https://savannah.gnu.org/bugs/?group=libcdio])
+AC_INIT([libcdio],[CDIO_VERSION_STR(RELEASE_NUM)],[https://savannah.gnu.org/bugs/?group=libcdio])
 AC_CONFIG_SRCDIR(src/cd-info.c)
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 
 AC_CANONICAL_HOST
 AC_CONFIG_HEADERS(config.h)
 AC_CONFIG_MACRO_DIR([m4])
+
+PKG_PROG_PKG_CONFIG
 
 # Enable silent build rules by default (Automake v1.11 or later).
 # Disable by either passing --disable-silent-rules to configure or passing V=1 to make
@@ -43,43 +46,43 @@ AM_MAINTAINER_MODE
 AM_SANITY_CHECK
 
 AC_ARG_WITH(cd-drive,
-	AC_HELP_STRING([--without-cd-drive], [don't build program cd-drive (default with)]),
+	AS_HELP_STRING([--without-cd-drive],[don't build program cd-drive (default with)]),
 enable_cd_drive="${withval}", enable_cd_drive=yes)
 
 AC_ARG_WITH(cd-info,
-	AC_HELP_STRING([--without-cd-info], [don't build program cd-info (default with)]),
+	AS_HELP_STRING([--without-cd-info],[don't build program cd-info (default with)]),
 enable_cd_info="${withval}", enable_cd_info=yes)
 
 AC_ARG_WITH(cdda-player,
-	AC_HELP_STRING([--without-cdda-player], [don't build program cdda-player (default with)]),
+	AS_HELP_STRING([--without-cdda-player],[don't build program cdda-player (default with)]),
 enable_cdda_player="${withval}", enable_cdda_player=yes)
 
 AC_ARG_WITH(cd-read,
-	AC_HELP_STRING([--without-cd-read], [don't build program cd-read (default with)]),
+	AS_HELP_STRING([--without-cd-read],[don't build program cd-read (default with)]),
 enable_cd_read="${withval}", enable_cd_read=yes)
 
 AC_ARG_WITH(iso-info,
-	AC_HELP_STRING([--without-iso-info], [don't build program iso-info (default with)]),
+	AS_HELP_STRING([--without-iso-info],[don't build program iso-info (default with)]),
 enable_iso_info="${withval}", enable_iso_info=yes)
 
 AC_ARG_WITH(iso-read,
-	AC_HELP_STRING([--without-iso-read], [don't build program iso-read (default with)]),
+	AS_HELP_STRING([--without-iso-read],[don't build program iso-read (default with)]),
 enable_iso_read="${withval}", enable_iso_read=yes)
 
 AC_ARG_WITH(versioned-libs,
-	AC_HELP_STRING([--without-versioned-libs], [build versioned library symbols (default enabled if you have GNU ld)]),
+	AS_HELP_STRING([--without-versioned-libs],[build versioned library symbols (default enabled if you have GNU ld)]),
 enable_versioned_libs="${withval}", enable_versioned_libs=yes)
 
 AC_ARG_ENABLE([cxx],
-	AC_HELP_STRING([--disable-cxx], [Disable C++ bindings (default enabled)]))
+	AS_HELP_STRING([--disable-cxx],[Disable C++ bindings (default enabled)]))
 AM_CONDITIONAL([ENABLE_CXX_BINDINGS], [test "x$enable_cxx" != "xno"])
 
 AC_ARG_ENABLE(cpp-progs,
-	AC_HELP_STRING([--enable-cpp-progs], [make C++ example programs (default enabled)]))
+	AS_HELP_STRING([--enable-cpp-progs],[make C++ example programs (default enabled)]))
 AM_CONDITIONAL(ENABLE_CPP, test "x$enable_cpp_progs" = "xyes")
 
 AC_ARG_ENABLE(example-progs,
-	AC_HELP_STRING([--disable-example-progs], [Don't build libcdio sample programs]))
+	AS_HELP_STRING([--disable-example-progs],[Don't build libcdio sample programs]))
 
 AM_CONDITIONAL(BUILD_EXAMPLES, test "x$enable_example_progs" != "xno")
 
@@ -116,7 +119,6 @@ else
 	-Wdisabled-optimization
 	-Wendif-labels
 	-Winline
-	-Wmissing-declarations
 	-Wmissing-prototypes
 	-Wnested-externs
 	-Wno-sign-compare
@@ -131,7 +133,7 @@ else
     SAVE_CFLAGS="$CFLAGS"
     CFLAGS="$CFLAGS $OPT"
     AC_MSG_CHECKING([whether $CC understands $OPT])
-    AC_TRY_COMPILE([], [], has_option=yes, has_option=no,)
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[has_option=yes],[has_option=no])
     CFLAGS="$SAVE_CFLAGS"
     AC_MSG_RESULT($has_option)
     if test "x$has_option" = "xyes"; then
@@ -191,8 +193,11 @@ AC_DEFINE(LIBCDIO_CONFIG_H, 1,
 
 dnl headers
 
-AC_HEADER_STDC
-AC_CHECK_HEADERS(alloca.h errno.h fcntl.h glob.h limits.h pwd.h stdbool.h)
+AC_CHECK_INCLUDES_DEFAULT
+AC_PROG_EGREP
+
+AC_CHECK_HEADERS(stdbool.h, [], [AC_MSG_ERROR(["Couldn't find or include stdbool.h"])])
+AC_CHECK_HEADERS(alloca.h errno.h fcntl.h glob.h limits.h pwd.h)
 AC_CHECK_HEADERS(stdarg.h stdbool.h stdio.h sys/cdio.h sys/param.h \
 		 sys/time.h sys/timeb.h sys/utsname.h)
 AC_STRUCT_TIMEZONE
@@ -212,10 +217,10 @@ AC_C_INLINE
 
 ## ISOC99_PRAGMA
 AC_MSG_CHECKING([whether $CC supports ISOC99 _Pragma()])
-AC_TRY_COMPILE([],[_Pragma("pack(1)")], [
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[_Pragma("pack(1)")]])],[
   ISOC99_PRAGMA=yes
   AC_DEFINE(HAVE_ISOC99_PRAGMA, [], [Supports ISO _Pragma() macro])
-],ISOC99_PRAGMA=no)
+],[ISOC99_PRAGMA=no])
 AC_MSG_RESULT($ISOC99_PRAGMA)
 
 ## Check for Windows header files
@@ -259,10 +264,10 @@ dnl empty_array_size
 AC_MSG_CHECKING([how to create empty arrays])
 
 empty_array_size="xxxx"
-AC_TRY_COMPILE([],[struct { int foo; int bar[]; } doo;], empty_array_size="")
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[struct { int foo; int bar[]; } doo;]])],[empty_array_size=""],[])
 
 if test "x$empty_array_size" = "xxxx"; then
- AC_TRY_COMPILE([],[struct { int foo; int bar[0]; } doo;], empty_array_size="0")
+ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[struct { int foo; int bar[0]; } doo;]])],[empty_array_size="0"],[])
 fi
 
 if test "x$empty_array_size" = "xxxx"; then
@@ -276,13 +281,10 @@ else
   AC_MSG_RESULT($msg)
 fi
 
-dnl Enable the creation of shared libraries under Win32.
-AC_LIBTOOL_WIN32_DLL
-
-dnl AM_PROG_LIBTOOL tests whether we have GNU ld
+dnl LT_INIT tests whether we have GNU ld
 dnl this must come before checking --with-versioned-libs
 dnl which requires GNU ld.
-AM_PROG_LIBTOOL
+LT_INIT
 
 dnl system
 
@@ -413,25 +415,14 @@ case $host_os in
         AC_CHECK_HEADERS(linux/version.h linux/major.h)
         AC_CHECK_HEADERS(linux/cdrom.h, [have_linux_cdrom_h="yes"])
 	if test "x$have_linux_cdrom_h" = "xyes"; then
-	   AC_TRY_COMPILE(,[
+	   AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
 #include <linux/cdrom.h>
 struct cdrom_generic_command test;
-int has_timeout=sizeof(test.timeout);],
-            [AC_DEFINE([HAVE_LINUX_CDROM_TIMEOUT], [1],
-                   [Define 1 if timeout is in cdrom_generic_command struct])])
+int has_timeout=sizeof(test.timeout);]])],[AC_DEFINE([HAVE_LINUX_CDROM_TIMEOUT], [1],
+                   [Define 1 if timeout is in cdrom_generic_command struct])],[])
 	   AC_DEFINE([HAVE_LINUX_CDROM], [1],
                      [Define 1 if you have Linux-type CD-ROM support])
 	   cd_drivers="${cd_drivers}, GNU/Linux"
-	fi
-	;;
-     bsdi*)
-        AC_CHECK_HEADERS(dvd.h, [have_bsdi_dvd_h="yes"])
-	if test "x$have_bsdi_dvd_h" = "xyes" ; then
-     	  AC_DEFINE([HAVE_BSDI_CDROM], [1],
-                    [Define 1 if you have BSDI-type CD-ROM support])
-	 LIBS="$LIBS -ldvd -lcdrom"
-         LIBCDIO_LIBS="$LIBCDIO_LIBS  -lcdrom"
-	  cd_drivers="${cd_drivers}, BSDI"
 	fi
 	;;
      sunos*|sun*|solaris*)
@@ -508,15 +499,7 @@ int has_timeout=sizeof(test.timeout);],
                   [Define 1 if you have NetBSD CD-ROM support])
  	# LIBS="$LIBS -lcam"
   	cd_drivers="${cd_drivers}, NetBSD "
-	enable_cdda_player="no"
 	;;
-     os2*)
-       AC_DEFINE([HAVE_OS2_CDROM], [1],
-                  [Define 1 if you have OS/2 CD-ROM support])
-       LT_NO_UNDEFINED="-no-undefined"
-       LDFLAGS="$LDFLAGS -Zbin-files"
-       cd_drivers="${cd_drivers}, OS2 "
-       ;;
      *)
 	AC_MSG_WARN([Don't have OS CD-reading support for ${host_os}...])
 	AC_MSG_WARN([Will use generic support.])
@@ -623,7 +606,7 @@ fi
 AC_SUBST(HAVE_JOLIET)
 
 AC_ARG_ENABLE(rock,
-	AC_HELP_STRING([--enable-rock], [include Rock-Ridge extension support (default enabled)]),
+	AS_HELP_STRING([--enable-rock],[include Rock-Ridge extension support (default enabled)]),
 	enable_rock=$enableval, enable_rock=yes)
 if test "x${enable_rock}" != "xno"; then
    AC_DEFINE(HAVE_ROCK, [1],
@@ -635,7 +618,7 @@ AC_SUBST(MINGW32)
 AM_CONDITIONAL(ENABLE_ROCK, test "x$enable_rock" = "xyes")
 
 AC_ARG_ENABLE(cddb,
-	AC_HELP_STRING([--enable-cddb], [include CDDB lookups in cd_info (default enabled)]),
+	AS_HELP_STRING([--enable-cddb],[include CDDB lookups in cd_info (default enabled)]),
 	enable_cddb=$enableval, enable_cddb=check)
 if test "x$enable_cddb" != "xno"; then
    PKG_CHECK_MODULES(CDDB, libcddb >= 1.0.1, [
@@ -648,8 +631,18 @@ if test "x$enable_cddb" != "xno"; then
     AC_CHECK_FUNC(gethostbyname, , AC_CHECK_LIB(nsl, gethostbyname))
 fi
 
-
 AC_SUBST(CDDB_LIBS)
+
+AC_ARG_ENABLE(compatibility,
+	AS_HELP_STRING([--disable-compatibility],[disable the use of obsoleted APIs (default enabled)]),
+	enable_compatibility=$enableval, enable_compatibility=yes)
+if test "x${enable_compatibility}" != "xyes"; then
+   AC_DEFINE(DO_NOT_WANT_COMPATIBILITY, [],
+   [Define this if you do not need compability with obsoleted libcdio APIs.])
+   DO_NOT_WANT_COMPATIBILITY=1
+fi
+
+AC_SUBST(DO_NOT_WANT_COMPATIBILITY)
 
 # We have to disable cdda_player unless we have either ncurses.h or
 # curses.h
@@ -678,7 +671,7 @@ AM_CONDITIONAL(BUILD_CDDA_PLAYER, test "x$enable_cdda_player" = "xyes")
 AC_SUBST(CDDA_PLAYER_LIBS)
 
 AC_ARG_ENABLE(vcd_info,
-	AC_HELP_STRING([--enable-vcd-info], [include Video CD Info from libvcd]),
+	AS_HELP_STRING([--enable-vcd-info],[include Video CD Info from libvcd]),
 		enable_vcd_info=${enableval},
 		enable_vcd_info=no)
 if test "x$enable_vcd_info" = "xyes"; then

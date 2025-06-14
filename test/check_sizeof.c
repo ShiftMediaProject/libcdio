@@ -43,7 +43,7 @@
       printf ("failed!\n==> sizeof (%s) == %d (but should be %d)\n", \
               #typnam, (int)sizeof(typnam), (int)(typnam##_SIZEOF)); \
       fail++; \
-  } else { pass++; printf ("ok!\n"); } \
+  } else printf ("ok!\n"); \
 }
 
 #define CHECK_SIZEOF_STRUCT(typnam) { \
@@ -52,12 +52,12 @@
       printf ("failed!\n==> sizeof (struct %s) == %d (but should be %d)\n", \
               #typnam, (int)sizeof(struct typnam), (int)(struct_##typnam##_SIZEOF)); \
       fail++; \
-  } else { pass++; printf ("ok!\n"); } \
+  } else printf ("ok!\n"); \
 }
 
 int main (int argc, const char *argv[])
 {
-  unsigned fail = 0, pass = 0;
+  unsigned fail = 0;
 
   /* <cdio/types.h> */
   CHECK_SIZEOF(msf_t);

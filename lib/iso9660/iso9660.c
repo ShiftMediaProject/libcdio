@@ -377,7 +377,9 @@ iso9660_set_ltime_with_timezone(const struct tm *p_tm,
 
   if (!p_tm) return;
 
+#if defined(__GNUC__) && !defined(__DARWIN_C_ANSI)
 #pragma GCC diagnostic ignored "-Wformat-truncation"
+#endif
   snprintf(_pvd_date, 17,
            "%4.4d%2.2d%2.2d" "%2.2d%2.2d%2.2d" "%2.2d",
            p_tm->tm_year + 1900, p_tm->tm_mon + 1, p_tm->tm_mday,
@@ -723,7 +725,7 @@ iso9660_dir_add_entry_su(void *dir,
   unsigned int offset = 0;
   uint32_t dsize = from_733(idr->size);
   int length, su_offset;
-  struct tm temp_tm;
+  struct tm temp_tm = { 0 };
   cdio_assert (sizeof(iso9660_dir_t) == 33);
 
   if (!dsize && !idr->length)

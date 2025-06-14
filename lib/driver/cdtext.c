@@ -202,7 +202,7 @@ const char *cdtext_language[MAX_CDTEXT_LANGUAGE_CODE + 1] =
 const char *
 cdtext_field2str(cdtext_field_t i)
 {
-  if (i >= MAX_CDTEXT_FIELDS)
+  if (i < 0 || i >= MAX_CDTEXT_FIELDS)
     return "INVALID";
   else
     return cdtext_field[i];
@@ -214,7 +214,7 @@ cdtext_field2str(cdtext_field_t i)
 const char *
 cdtext_genre2str(cdtext_genre_t i)
 {
-  if (i >= MAX_CDTEXT_GENRE_CODE)
+  if (i < 0 || i >= MAX_CDTEXT_GENRE_CODE)
     return "INVALID";
   else
     return cdtext_genre[i];
@@ -226,7 +226,7 @@ cdtext_genre2str(cdtext_genre_t i)
 const char *
 cdtext_lang2str(cdtext_lang_t i)
 {
-  if (i <= CDTEXT_LANGUAGE_WALLON)
+  if (i >= 0 && i <= CDTEXT_LANGUAGE_WALLON)
     return cdtext_language[i];
   else if (i >= CDTEXT_LANGUAGE_ZULU && i <= CDTEXT_LANGUAGE_AMHARIC)
     return cdtext_language[i];
@@ -491,6 +491,8 @@ cdtext_t
   cdtext_t *p_cdtext;
 
   p_cdtext = (cdtext_t *) malloc(sizeof(struct cdtext_s));
+  if (p_cdtext == NULL)
+    return NULL;
 
   for (i=0; i<CDTEXT_NUM_BLOCKS_MAX; i++) {
     for (j=0; j<CDTEXT_NUM_TRACKS_MAX; j++) {
@@ -713,16 +715,32 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
         /* determine encoding */
         switch (blocksize.charcode){
           case CDTEXT_CHARCODE_ISO_8859_1:
-            /* default */
             charset = (char *) "ISO-8859-1";
             break;
           case CDTEXT_CHARCODE_ASCII:
-            charset = (char *) "ASCII";
+            /* ASCII is a subset of ISO-8859-1. Some CDs announce it but then
+             * have 8-bit characters in their text. Trying ISO-8859-1 gives
+             * more hope for a readable result than telling iconv to be picky.
+             */
+            charset = (char *) "ISO-8859-1";
             break;
           case CDTEXT_CHARCODE_SHIFT_JIS:
             charset = (char *) "SHIFT_JIS";
             break;
+          default:
+            /* Do not let charset pass here as NULL */
+            cdio_warn("CD-TEXT: Unknown character set code %u.\n",
+                      (unsigned int) blocksize.charcode);
+            charset = (char *) "ISO-8859-1";
         }
+
+        cdio_debug("CD-TEXT character set: code=%u , name=%s , chosen=%s\n",
+                   (unsigned int) blocksize.charcode,
+                   blocksize.charcode == 0 ? "ISO-8859-1" :
+                   blocksize.charcode == 1 ? "ASCII" :
+                   blocksize.charcode == 0x80 ? "SHIFT_JIS" :
+                   "",
+                   charset);
 
         /* set track numbers */
         p_cdtext->block[i_block].first_track = blocksize.i_first_track;
@@ -783,7 +801,7 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
             buffer[i_buf++] = pack.text[j];
             if(pack.db_chars)
               buffer[i_buf++] = pack.text[j+1];
-          } else if(i_buf > 0) {
+          } else {
             /* if end of string */
 
             /* check if the buffer contains only the Tab Indicator */
@@ -799,38 +817,41 @@ cdtext_data_init(cdtext_t *p_cdtext, uint8_t *wdata, size_t i_data)
                 buffer[i_buf++] = 0;
             }
 
-            switch (pack.type) {
-              case CDTEXT_PACK_TITLE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_TITLE, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_PERFORMER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_PERFORMER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_SONGWRITER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_SONGWRITER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_COMPOSER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_COMPOSER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_ARRANGER:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_ARRANGER, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_MESSAGE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_MESSAGE, buffer, cur_track, charset);
-                break;
-              case CDTEXT_PACK_DISCID:
-                if (cur_track == 0)
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_DISCID, buffer, cur_track, NULL);
-                break;
-              case CDTEXT_PACK_GENRE:
-                cdtext_set(p_cdtext, CDTEXT_FIELD_GENRE, buffer, cur_track, "ASCII");
-                break;
-              case CDTEXT_PACK_UPC:
-                if (cur_track == 0)
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_UPC_EAN, buffer, cur_track, "ASCII");
-                else
-                  cdtext_set(p_cdtext, CDTEXT_FIELD_ISRC, buffer, cur_track, "ISO-8859-1");
-                break;
+            if ( ! CDTEXT_COMPARE_CHAR(buffer, '\0', pack.db_chars)) {
+              /* implies cur_track is in valid range */
+              switch (pack.type) {
+                case CDTEXT_PACK_TITLE:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_TITLE, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_PERFORMER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_PERFORMER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_SONGWRITER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_SONGWRITER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_COMPOSER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_COMPOSER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_ARRANGER:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_ARRANGER, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_MESSAGE:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_MESSAGE, buffer, cur_track, charset);
+                  break;
+                case CDTEXT_PACK_DISCID:
+                  if (cur_track == 0)
+                    cdtext_set(p_cdtext, CDTEXT_FIELD_DISCID, buffer, cur_track, NULL);
+                  break;
+                case CDTEXT_PACK_GENRE:
+                  cdtext_set(p_cdtext, CDTEXT_FIELD_GENRE, buffer, cur_track, "ASCII");
+                  break;
+                case CDTEXT_PACK_UPC:
+                  if (cur_track == 0)
+                    cdtext_set(p_cdtext, CDTEXT_FIELD_UPC_EAN, buffer, cur_track, "ASCII");
+                  else
+                    cdtext_set(p_cdtext, CDTEXT_FIELD_ISRC, buffer, cur_track, "ISO-8859-1");
+                  break;
+              }
             }
             i_buf = 0;
             ++cur_track;

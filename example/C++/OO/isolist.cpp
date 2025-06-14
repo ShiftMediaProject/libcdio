@@ -1,7 +1,5 @@
 /*
-  $Id: isolist.cpp,v 1.2 2008/03/24 15:30:57 karl Exp $
-
-  Copyright (C) 2006, 2008 Rocky Bernstein <rocky@gnu.org>
+  Copyright (C) 2006, 2008, 2021 Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -32,7 +30,7 @@
 
 /* Set up a CD-DA image to test on which is in the libcdio distribution. */
 #define ISO9660_IMAGE_PATH "../../../"
-#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/copying.iso"
+#define ISO9660_IMAGE ISO9660_IMAGE_PATH "test/data/copying.iso"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -107,6 +105,9 @@ main(int argc, const char *argv[])
 	printf ("%s [LSN %6d] %8u %s%s\n",
 		2 == p_s->p_stat->type ? "d" : "-",
 		p_s->p_stat->lsn, p_s->p_stat->size, psz_path, filename);
+
+	/* stat_vector.clear() currently does not dispose the objects */
+	delete(p_s);
       }
 
     stat_vector.clear();

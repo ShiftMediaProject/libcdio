@@ -210,7 +210,7 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
         fprintf(stderr, "  Unable to create file\n");
         goto out;
       }
-      i_file_length = p_statbuf->size;
+      i_file_length = p_statbuf->total_size;
       for (i = 0; i_file_length > 0; i++) {
         memset(buf, 0, ISO_BLOCKSIZE);
         lsn = p_statbuf->lsn + i;
@@ -221,8 +221,8 @@ static int iso_extract_files(iso9660_t* p_iso, const char *psz_path)
         }
         fwrite(buf, (size_t)MIN(i_file_length, ISO_BLOCKSIZE), 1, fd);
         if (ferror(fd)) {
-	  fprintf(stderr, "  Error writing file %s: %s\n", psz_iso_name,
-		  strerror(errno));
+          fprintf(stderr, "  Error writing file %s: %s\n", psz_iso_name,
+          strerror(errno));
           goto out;
         }
         i_file_length -= ISO_BLOCKSIZE;

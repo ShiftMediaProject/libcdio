@@ -58,8 +58,8 @@
 
 #define my_exit(rc)				\
   fclose (p_outfd);				\
-  free(p_statbuf);				\
-  iso9660_close(p_iso);				\
+  iso9660_stat_free(p_statbuf);	\
+  iso9660_close(p_iso);			\
   return rc;					\
 
 int
@@ -109,35 +109,35 @@ main(int argc, const char *argv[])
   if (!(p_outfd = fopen (psz_fname, "wb")))
     {
       perror ("fopen()");
-      free(p_statbuf);
+      iso9660_stat_free(p_statbuf);
       iso9660_close(p_iso);
       return 3;
     }
 
   /* Copy the blocks from the ISO-9660 filesystem to the local filesystem. */
   {
-    const unsigned int i_blocks = CEILING(p_statbuf->size, ISO_BLOCKSIZE);
-    for (i = 0; i < i_blocks ; i++) 
+    const unsigned int i_blocks = CEILING(p_statbuf->total_size, ISO_BLOCKSIZE);
+    for (i = 0; i < i_blocks ; i++)
     {
       char buf[ISO_BLOCKSIZE];
       const lsn_t lsn = p_statbuf->lsn + i;
 
       memset (buf, 0, ISO_BLOCKSIZE);
-      
+
       if ( ISO_BLOCKSIZE != iso9660_iso_seek_read (p_iso, buf, lsn, 1) )
       {
 	fprintf(stderr, "Error reading ISO 9660 file %s at LSN %lu\n",
 		psz_fname, (long unsigned int) lsn);
 	my_exit(4);
       }
-      
+
       fwrite (buf, ISO_BLOCKSIZE, 1, p_outfd);
-      
+
       if (ferror (p_outfd))
-	{
-	  perror ("fwrite()");
-	  my_exit(5);
-	}
+      {
+	perror("fwrite()");
+	my_exit(5);
+      }
     }
   }
   
@@ -146,7 +146,7 @@ main(int argc, const char *argv[])
   /* Make sure the file size has the exact same byte size. Without the
      truncate below, the file will a multiple of ISO_BLOCKSIZE.
    */
-  if (ftruncate (fileno (p_outfd), p_statbuf->size))
+  if (ftruncate (fileno (p_outfd), p_statbuf->total_size))
     perror ("ftruncate()");
 
   printf("Extraction of file '%s' from %s successful.\n", 

@@ -1,0 +1,29 @@
+check_multiextent.sh uses three different ISOs with nearly identical content.
+All three images exercise libcdio's capability to present multiple extents with
+the same names as one single file. They were produced by a GNU xorriso binary
+which was built for an artificially small extent size, so that the payload file
+of 55 KB is split into seven extents. Normally multiple extents emerge only for
+data files of 4 GiB or larger.
+
+test/data/multi_extent_8k.iso
+  is a minimally sized xorriso image without a Joliet tree, so that libcdio
+  will choose to interpret the Rock Ridge information of the ISO 9660 tree.
+
+test/data/multi_extent_8k_emul_toc_padded.iso
+  is a xorriso image with the same content as multi_extent_8k.iso but larger
+  size, because two default properties of a native xorriso run have not been
+  disabled when it was produced.
+  These properties are:
+  - a second superblock which would survive when another session would be added
+    and so would provide an opportunity to mount the state of the first
+    session. This would also enable xorriso to show a history of all sessions
+    if more than one is present.
+  - traditional end padding of 300 KiB which would prevent the Linux readahead
+    bug which can cause i/o errors when the ISO is presented to Linux on a CD
+    that was written with write type Track-At-Once.
+
+test/data/multi_extent_8k_joliet.iso
+  is much like multi_extent_8k.iso but does not offer Rock Ridge information in
+  its ISO 9660 tree. Instead it contains a Joliet tree which libcdio prefers
+  over ISO 9660.
+

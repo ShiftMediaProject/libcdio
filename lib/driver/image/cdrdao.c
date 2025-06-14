@@ -1343,6 +1343,8 @@ cdio_open_cdrdao (const char *psz_cue_name)
   if (NULL == psz_cue_name) return NULL;
 
   p_data                  = calloc(1, sizeof (_img_private_t));
+  if (NULL == p_data) return NULL;
+
   p_data->gen.init        = false;
   p_data->psz_cue_name    = NULL;
   p_data->gen.data_source = NULL;

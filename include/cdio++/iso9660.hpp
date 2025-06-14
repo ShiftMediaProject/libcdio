@@ -1,5 +1,6 @@
 /*
-    Copyright (C) 2006, 2008, 2011-2012, 2016-2017 Rocky Bernstein <rocky@gnu.org>
+    Copyright (C) 2006, 2008, 2011-2012, 2016-2017, 2021 Rocky
+    Bernstein <rocky@gnu.org>
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +30,6 @@
 #include <vector>               // vector class library
 #include <cstdlib>
 #include <cstring>
-using namespace std;
 
 /** ISO 9660 class.
 */
@@ -46,12 +46,12 @@ public:
 
     PVD()
     {
-      memset(&pvd, 0, sizeof(pvd));
+      std::memset(&pvd, 0, sizeof(pvd));
     }
 
     PVD(iso9660_pvd_t *p_new_pvd)
     {
-      memcpy(&pvd, p_new_pvd, sizeof(pvd));
+      std::memcpy(&pvd, p_new_pvd, sizeof(pvd));
     };
 
     /*!
@@ -115,7 +115,7 @@ public:
   public:
 
     iso9660_stat_t *p_stat;
-    typedef vector< ISO9660::Stat *> stat_vector_t;
+    typedef std::vector< ISO9660::Stat *> stat_vector_t;
 
     Stat(iso9660_stat_t *p_new_stat)
     {
@@ -124,7 +124,7 @@ public:
 
     Stat(const Stat& copy_in)
     {
-      free(p_stat);
+      iso9660_stat_free(p_stat);
       p_stat = (iso9660_stat_t *)
         calloc( 1, sizeof(iso9660_stat_t)
                 + strlen(copy_in.p_stat->filename)+1 );
@@ -133,7 +133,7 @@ public:
 
     const Stat& operator= (const Stat& right)
     {
-      free(p_stat);
+      iso9660_stat_free(p_stat);
       this->p_stat = right.p_stat;
       return right;
     }
@@ -153,7 +153,7 @@ public:
   {
   public:
 
-    typedef vector< ISO9660::Stat *> stat_vector_t;
+    typedef std::vector< ISO9660::Stat *> stat_vector_t;
 
     /*!
       Given a directory pointer, find the filesystem entry that contains
@@ -207,7 +207,7 @@ public:
   {
   public:
 
-    typedef vector< ISO9660::Stat *> stat_vector_t;
+    typedef std::vector< ISO9660::Stat *> stat_vector_t;
 
     IFS()
     {
@@ -384,7 +384,10 @@ public:
             (iso9660_stat_t *) _cdio_list_node_data (p_entnode);
           stat_vector.push_back(new ISO9660::Stat(p_statbuf));
         }
-	iso9660_filelist_free(p_stat_list);
+	/* explicitely not iso9660_filelist_free(p_stat_list) because the
+	   p_statbuf objects live on in stat_vector.
+	 */
+	_cdio_list_free(p_stat_list, false, (CdioDataFree_t) NULL);
         return true;
       } else {
         return false;
@@ -419,7 +422,7 @@ public:
 
 };
 
-typedef vector< ISO9660::Stat *> stat_vector_t;
-typedef vector <ISO9660::Stat *>::iterator stat_vector_iterator_t;
+typedef std::vector< ISO9660::Stat *> stat_vector_t;
+typedef std::vector <ISO9660::Stat *>::iterator stat_vector_iterator_t;
 
 #endif /* CDIO_ISO9660_HPP_ */

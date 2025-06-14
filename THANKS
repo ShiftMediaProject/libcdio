@@ -55,8 +55,12 @@ Manfred Tremmel <Manfred.Tremmel at iiv.de>:
   RPM spec file and inclusion of libcdio into
   http://packman.links2linux.de/
 
+Mansour Gashasbi <gashasbi@gmail.com>
+  Security checks for heap and buffer overflows
+
 Michael Kukat <michael at unixiron.org>,
   for the hints in extractnrg.pl
+
 
 Natalia Portillo
   OSX BluRay support on OSX 10 and other OSX fixes

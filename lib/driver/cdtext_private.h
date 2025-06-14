@@ -29,7 +29,9 @@
 
 
 typedef enum {
-  CDTEXT_LEN_BINARY_MAX     = 9216,
+  CDTEXT_LEN_BINARY_MAX     = 8 * 256 * 18, /* Maximum CD-TEXT payload:
+                                               8 blocks, 256 packs, 18 bytes
+                                             */
   CDTEXT_LEN_TEXTDATA       = 12,
   CDTEXT_LEN_PACK           = 18,
   CDTEXT_LEN_BLOCKSIZE      = 36,

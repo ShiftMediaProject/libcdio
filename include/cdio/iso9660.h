@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2003-2008, 2012-2013, 2017
+    Copyright (C) 2003-2008, 2012-2013, 2017, 2023-2024
                   Rocky Bernstein <rocky@gnu.org>
     Copyright (C) 2000 Herbert Valerio Riedel <hvr@gnu.org>
 
@@ -27,7 +27,7 @@
  * filesystem library; applications include this.
  *
  * See also the ISO-9660 specification. The freely available European
- * equivalant standard is called ECMA-119.
+ * equivalent standard is called ECMA-119.
 */
 
 
@@ -78,7 +78,7 @@ typedef char     dchar_t;  /*! See section 7.4.1 */
     program; things are done this way so that in a debugger one can to
     refer to the enumeration value names such as in a debugger
     expression and get something. With the more common a \#define
-    mechanism, the name/value assocation is lost at run time.
+    mechanism, the name/value association is lost at run time.
   */
 extern enum iso_enum1_s {
   ISO_PVD_SECTOR      =   16, /**< Sector of Primary Volume Descriptor. */
@@ -162,6 +162,8 @@ extern enum iso_vd_enum_s {
 extern const char ISO_STANDARD_ID[sizeof("CD001")-1];
 
 #define ISO_STANDARD_ID      "CD001"
+
+#define CDIO_EXTENT_BLOCKS(size) ((size + (ISO_BLOCKSIZE - 1)) / ISO_BLOCKSIZE)
 
 #ifdef __cplusplus
 extern "C" {
@@ -393,7 +395,7 @@ typedef struct iso9660_pvd_s  iso9660_pvd_t;
 /*!
   \brief ISO-9660 Supplementary Volume Descriptor.
 
-  This is used for Joliet Extentions and is almost the same as the
+  This is used for Joliet Extensions and is almost the same as the
   the primary descriptor but two unused fields, "unused1" and "unused3
   become "flags and "escape_sequences" respectively.
 */
@@ -529,17 +531,41 @@ typedef CdioList_t CdioISO9660DirList_t;
 */
 struct iso9660_stat_s { /* big endian!! */
 
- iso_rock_statbuf_t rr;              /**< Rock Ridge-specific fields  */
+  iso_rock_statbuf_t rr;              /**< Rock Ridge-specific fields  */
 
   struct tm          tm;              /**< time on entry - FIXME merge with
                                          one of entries above, like ctime? */
   lsn_t              lsn;             /**< start logical sector number */
-  uint32_t           size;            /**< total size in bytes */
-  uint32_t           secsize;         /**< number of sectors allocated */
+
+#ifndef DO_NOT_WANT_COMPATIBILITY
+
+  /* *** Deprecated Legacy API ***
+     Use .total_size and CDIO_EXTENT_BLOCKS.
+   */
+  uint32_t           size;         /**< size of the first extent, in bytes */
+  uint32_t           secsize;      /**< size of the first extent, in sectors */
+
+#endif /* DO_NOT_WANT_COMPATIBILITY */
+
+  /* Multi-extent aware size, in bytes.
+
+     It is guaranteed that the bytes are stored as gapless string in a
+     contiguous sequence of blocks. I.e. they can be read sequentially
+     starting at iso9660_stat_s.lsn.
+     Data files which do not fulfil this promise cause a warning message
+     and are not represented by this type of struct.
+     (Directories are not allowed to have more than one extent and thus cannot
+      legally break the promise.)
+   */
+  uint64_t           total_size;
+
+  /* NB: If you need to access the 'secsize' equivalent for an extent,
+   * you should use CDIO_EXTENT_BLOCKS(iso9660_stat_s.total_size) */
+
   iso9660_xa_t       xa;              /**< XA attributes */
   enum { _STAT_FILE = 1, _STAT_DIR = 2 } type;
   bool               b_xa;
-  char         filename[EMPTY_ARRAY_SIZE]; /**< filename */
+  char               filename[EMPTY_ARRAY_SIZE];    /**< filename */
 };
 
 /** A mask used in iso9660_ifs_read_vd which allows what kinds
@@ -612,7 +638,7 @@ typedef struct _iso9660_s iso9660_t;
     contained in a file format that libiso9660 doesn't know natively
     (or knows imperfectly.)
 
-    Some tolerence allowed for positioning the ISO 9660 image. We scan
+    Some tolerance allowed for positioning the ISO 9660 image. We scan
     for STANDARD_ID and use that to set the eventual offset to adjust
     by (as long as that is <= i_fuzz).
 
@@ -624,7 +650,7 @@ typedef struct _iso9660_s iso9660_t;
                                  uint16_t i_fuzz);
 
   /*!
-    Open an ISO 9660 image for reading with some tolerence for positioning
+    Open an ISO 9660 image for reading with some tolerance for positioning
     of the ISO9660 image. We scan for ISO_STANDARD_ID and use that to set
     the eventual offset to adjust by (as long as that is <= i_fuzz).
 
@@ -740,7 +766,7 @@ typedef struct _iso9660_s iso9660_t;
     tm will reported in GMT.
   */
   bool iso9660_get_dtime (const iso9660_dtime_t *idr_date, bool b_localtime,
-                          /*out*/ struct tm *tm);
+                          /*out*/ struct tm *p_tm);
 
 
   /*!
@@ -831,7 +857,7 @@ typedef struct _iso9660_s iso9660_t;
 
   /*!
     Take psz_path and a version number and turn that into a ISO-9660
-    pathname.  (That's just the pathname followd by ";" and the version
+    pathname.  (That's just the pathname followed by ";" and the version
     number. For example, mydir/file.ext -> MYDIR/FILE.EXT;1 for version
     1. The resulting ISO-9660 pathname is returned.
   */
@@ -880,12 +906,13 @@ iso9660_dir_calc_record_size (unsigned int namelen, unsigned int su_len);
    lsn and return information about it.
 
    @param p_cdio the CD object to read from
+   @param i_lsn an lsn to find
 
    @return stat_t of entry if we found lsn, or NULL otherwise.
    Caller must free return value using iso9660_stat_free().
  */
-#define iso9660_fs_find_lsn  iso9660_find_fs_lsn
 iso9660_stat_t *iso9660_fs_find_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
+iso9660_stat_t *iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
 
 
 /*!
@@ -1176,7 +1203,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
 
     @param p_iso the ISO-9660 file image to get data from
 
-    @param u_file_limit the maximimum number of (non-rock-ridge) files
+    @param u_file_limit the maximum number of (non-rock-ridge) files
     to consider before giving up and returning "dunno".
 
     "dunno" can also be returned if there was some error encountered
@@ -1252,7 +1279,7 @@ lsn_t iso9660_get_dir_extent(const iso9660_dir_t *p_idr);
   void iso9660_set_evd (void *pd);
 
   /*!
-    Return true if ISO 9660 image has extended attrributes (XA).
+    Return true if ISO 9660 image has extended attributes (XA).
   */
   bool iso9660_ifs_is_xa (const iso9660_t * p_iso);
 

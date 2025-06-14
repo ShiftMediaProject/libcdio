@@ -58,6 +58,7 @@ typedef enum {
 
 #include "cdio_assert.h"
 #include "cdio_private.h"
+#include "cdtext_private.h" 
 
 #include <string.h>
 
@@ -198,7 +199,7 @@ GetRegistryEntryProperties ( io_service_t service )
  * ProbeStorageDevices - Probe devices to detect changes.
  */
 static bool
-ProbeStorageDevices()
+ProbeStorageDevices(void)
 {
   io_service_t  next_service;
   mach_port_t   master_port;
@@ -1232,7 +1233,7 @@ read_toc_osx (void *p_user_data)
     CFRange range;
     CFIndex buf_len;
 
-    buf_len = CFDataGetLength( data ) + 1;
+    buf_len = CFDataGetLength( data );
     range = CFRangeMake( 0, buf_len );
 
     if( ( p_env->pTOC = (CDTOC *)malloc( buf_len ) ) != NULL ) {
@@ -1595,6 +1596,70 @@ _get_arg_osx (void *user_data, const char key[])
     }
   }
   return NULL;
+}
+
+/**
+  Read CD-Text binary data.
+*/
+static uint8_t *
+read_cdtext_osx(void *p_user_data)
+{
+  _img_private_t *p_env = p_user_data;
+  dk_cd_read_toc_t cd_read;
+  size_t size = CDTEXT_LEN_BINARY_MAX + 4;
+  uint8_t *data = malloc(size);
+
+  memset( &cd_read, 0, sizeof(cd_read) );
+  memset( data, 0, size );
+
+  cd_read.format       = kCDTOCFormatTEXT;
+  cd_read.formatAsTime = 0;
+
+  cd_read.bufferLength = size;
+  cd_read.buffer       = data;
+
+  if ( ioctl( p_env->gen.fd, DKIOCCDREADTOC, &cd_read ) < 0 )
+  {
+    cdio_debug( "could not read CD-Text, %s", strerror(errno) );
+    free( data );
+    return NULL;
+  }
+
+  return data;
+}
+
+/**
+  Read CD-Text and return cdtext_t structure.
+*/
+static cdtext_t *
+get_cdtext_osx (void *p_user_data)
+{
+  generic_img_private_t *p_env = p_user_data;
+  uint8_t *p_cdtext_data = NULL;
+  size_t  len;
+
+  if (!p_env) return NULL;
+
+  if (p_env->b_cdtext_error) return NULL;
+
+  if (NULL == p_env->cdtext) {
+    p_cdtext_data = read_cdtext_osx (p_env);
+
+    if (NULL != p_cdtext_data) {
+      len = CDIO_MMC_GET_LEN16(p_cdtext_data)-2;
+      p_env->cdtext = cdtext_init();
+
+      if(len <= 0 || 0 != cdtext_data_init (p_env->cdtext, &p_cdtext_data[4], len)) {
+        p_env->b_cdtext_error = true;
+        cdtext_destroy (p_env->cdtext);
+        p_env->cdtext = NULL;
+      }
+
+      free(p_cdtext_data);
+    }
+  }
+
+  return p_env->cdtext;
 }
 
 /**
@@ -1996,8 +2061,8 @@ cdio_open_osx (const char *psz_orig_source)
     .eject_media           = _eject_media_osx,
     .free                  = _free_osx,
     .get_arg               = _get_arg_osx,
-    .get_cdtext            = get_cdtext_generic,
-    .get_cdtext_raw        = read_cdtext_generic,
+    .get_cdtext            = get_cdtext_osx,
+    .get_cdtext_raw        = read_cdtext_osx,
     .get_default_device    = cdio_get_default_device_osx,
     .get_devices           = cdio_get_devices_osx,
     .get_disc_last_lsn     = get_disc_last_lsn_osx,

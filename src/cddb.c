@@ -90,7 +90,7 @@ init_cddb(CdIo_t *p_cdio, cddb_conn_t **pp_conn, cddb_disc_t **pp_cddb_disc,
     cddb_set_email_address(*pp_conn, cddb_opts.email);
   
   if (NULL == cddb_opts.server) 
-    cddb_set_server_name(*pp_conn, "freedb.freedb.org");
+    cddb_set_server_name(*pp_conn, "gnudb.gnudb.org");
   else 
     cddb_set_server_name(*pp_conn, cddb_opts.server);
   

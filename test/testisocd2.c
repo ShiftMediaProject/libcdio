@@ -112,7 +112,7 @@ main(int argc, const char *argv[])
 
       /* Compare the two statbufs. */
       if (p_statbuf->lsn != p_statbuf2->lsn ||
-	  p_statbuf->size != p_statbuf2->size ||
+	  p_statbuf->total_size != p_statbuf2->total_size ||
 	  p_statbuf->type != p_statbuf2->type) {
 
 	  fprintf(stderr, "File stat information between fs_stat and "
@@ -122,7 +122,7 @@ main(int argc, const char *argv[])
       }
 
       if (p_statbuf3->lsn != p_statbuf2->lsn ||
-	  p_statbuf3->size != p_statbuf2->size ||
+	  p_statbuf3->total_size != p_statbuf2->total_size ||
 	  p_statbuf3->type != p_statbuf2->type) {
 	rc = 4;
 	goto exit;

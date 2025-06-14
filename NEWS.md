@@ -1,5 +1,45 @@
-version 2.1.0
-=============
+NEWS
+====
+
+Here we have a summary of the major changes by release. See the git commit history or `ChangeLog` for more fine-grained changes.
+
+Version 2.1.1
+-------------
+
+2025-01-07
+
+- More checks of potentially NULL buffers. More check of the result of malloc/calloc.
+- Enforce the use of non widestring (A suffixed) calls when we pass char* parameters. (Pete Batard)
+- Use widestring API calls unless otherwise specified.
+- Remove a warning about the declaration of is_cdrom_aspi() and about GetVersion() being deprecated. (Pete Batard)
+- Updates for compiling on MSVC. (Pete Batard)
+- Move to github (rocky)
+- Add github CI checks. (Pete Batard)
+- Count empty fields as tracks. (John Ernberg)
+- Add some validity checks to enhance security. (Mansour Gashasbi)
+- Add support for ISO9660 multi extent files. (Pete Batard)
+- Fix Recognition of multi-extent in ISO9660 when Joliet is present. (Thomas Schmitt)
+- Use getmntent/setmntent for reading mounts. (Miguel Borges de Freitas)
+- Use GNU/Linux new ioctl on kernel v5.16 or newer. (Lukas Prediger)
+- Use "%s"-style format in cdda-player.c: to make it catch cases when user input is used in place of format. (Sergei Trofimovich)
+- Remove some memory leaks in C++ code. (Thomas Schmitt)
+- Allow for  DO_NOT_WANT_COMPATIBILITY macro in config.h to disable APIs that are being retired.
+- Fix win32 implementation of .get_track_msf() for CD with first track number > 1 (Thomas Schmitt)
+- Fix testing on Windows and remove compilation warnings. (Pete Batard)
+- Add Rock Ridge deep directory support. (Pete Batard)
+- Fix and clean up various Rock Ridge issues and adjust tests. (Pete Batard)
+- Fix double reporting of sizes in cd-info.c. (Pete Batard)
+- CD-Text character set interpretation more tolerant of bad input. Savannah bug 53929.
+- Remove homegrown boolean type in favor of <stdbool.h>. (Thomas Schmitt)
+- Improve pkg-config configuration detection (Lars Wendler)
+- Fix crash reading CD TOC on macOS Ventura. (Robert Kausch)
+- Update freedb references to GnuDB. (Robert Kausch)
+- Fix charset check in Windows cdio_charset_from_utf8 implementation. (Robert Kausch)
+- Add support for reading CD-Text on macOS and Windows (Robert Kausch)
+
+Version 2.1.0
+-------------
+
 2019-04-17 Holy Wednesday
 
 Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and Edd Barrett. This release introduces an OpenBSD driver, courtesy of Edd Barrett, based on the NetBSD driver.
@@ -13,15 +53,17 @@ Most (all?) of the improvements and bug fixes are thanks to Thomas Schmitt and E
 - Various errors in driver reading turned into warnings. (Edd Barrett and Thomas Schmitt)
 - Some code cleanups and documentation improvements.
 - Bugs:
- * [Bug 53170: I/O leak when we can't read ISO file ](https://savannah.gnu.org/bugs/index.php?53170)
- * [Bug 53928: Cdtext not displayed in case of `CDTEXT_LANGUAGE_UNKNOWN`](https://savannah.gnu.org/bugs/index.php?3929)
- * [Bug 53929: cd-text with invalid characters failing to convert to utf8](https://savannah.gnu.org/bugs/index.php?3928)
 
-version 2.0.0
-=============
+  - [Bug 53170: I/O leak when we can't read ISO file](https://savannah.gnu.org/bugs/index.php?53170)
+  - [Bug 53928: Cdtext not displayed in case of `CDTEXT_LANGUAGE_UNKNOWN`](https://savannah.gnu.org/bugs/index.php?3929)
+  - [Bug 53929: cd-text with invalid characters failing to convert to utf8](https://savannah.gnu.org/bugs/index.php?3928)
+
+Version 2.0.0
+-------------
+
 2017-12-31
 
-This release bumps library version numbers and bumps the major release number. We should have gone from 1.0.0 to 2.0.0 in the last release
+This release bumps library Version numbers and bumps the major release number. We should have gone from 1.0.0 to 2.0.0 in the last release
 since there is an API incompatibility.
 
 In addition...
@@ -40,8 +82,9 @@ if you want to use them with this library. Specifically:
 - `pycdio` (2.0.0 or greater)
 - `rbcdio` (2.0.0 or greater)
 
-version 1.1.0
-=============
+Version 1.1.0
+-------------
+
 2017-12-10  Dr. Gecko
 
 Caveats:
@@ -57,22 +100,22 @@ More work is needed on MacOS and other OS's where I don't have
 
 AIX is left untouched - that is probably heading for removal in the future.
 
+Version 1.0.0
+-------------
 
-version 1.0.0
-=============
 2017-11-21  Thanksgiving
 
 This is an API breaking change
 
 - Remove deprecated items:
-   * OS/2 driver (never really was supported)
-   * BSDI driver remnants
-   * mmc_isrc_track_read_subchannel
-   * CDIO_MIN_DRIVER, CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DRIVER, CDIO_MAX_DEVICE_DRIVER
-   * CdioList, CdioListNode
+  - OS/2 driver (never really was supported)
+  - BSDI driver remnants
+  - mmc_isrc_track_read_subchannel
+  - CDIO_MIN_DRIVER, CDIO_MIN_DEVICE_DRIVER, CDIO_MAX_DRIVER, CDIO_MAX_DEVICE_DRIVER
+  - CdioList, CdioListNode
 - Apple Darwin OS X -> macOS
-- Subdir objects breaks symbol versioning. See https://savannah.gnu.org/bugs/?49907
-- Handle bad iso 9660 better. Fixes Savannah bug https://savannah.gnu.org/bugs/?52091
+- Subdir objects breaks symbol versioning. See <https://savannah.gnu.org/bugs/?49907>
+- Handle bad iso 9660 better. Fixes Savannah bug <https://savannah.gnu.org/bugs/?52091>
 - Apple (High) Sierra compatibility
 - NetBSD patches
 - Fixes for Rock Ridge SUSP (Thomas Schmitt)
@@ -83,51 +126,54 @@ This is an API breaking change
 - Cross-compiling friendliness (Ozkan Sezer)
 - Small texinfo doc fixes (Wieland Hoffmann)
 - Simplify making doc from autogen.sh
-- Bug fix for https://savannah.gnu.org/bugs/?45015 (Thomas Schmitt)
+- Bug fix for <https://savannah.gnu.org/bugs/?45015> (Thomas Schmitt)
 - Bug fixes for #45017,#52265, and #52264
 - Add more compiler warning flags, i.e. -Wshadow, -Wundef, ...
 - Reduce numerous memory leaks (more though remain)
 
-version 0.94
-============
+Version 0.94
+-------------
+
 2016-10-27
 
-- CD-TEXT fixes and improvements
-  * Expose mmc_read_cdtext as a publicly accessable function
+- CD-Text fixes and improvements
+  - Expose mmc_read_cdtext as a publicly accessible function
     Removes some redundant error reporting in `mmc_read_cdtext()`
     Also fixes some incorrect lengths for isrc and mcn.
-  * Fix inconsistent maximal length in CD-Text extraction
-  * Added new low level functions for READ SUB-CHANNEL and
-    READ TOC/PMA/ATIP for CD-TEXT extraction.
-  * Add cdtext binary parser and track number to public api
-  *  Increase track # for short CD-Text fields
+  - Fix inconsistent maximal length in CD-Text extraction
+  - Added new low level functions for READ SUB-CHANNEL and
+    READ TOC/PMA/ATIP for CD-Text extraction.
+  - Add cdtext binary parser and track number to public api
+  - Increase track # for short CD-Text fields
 
 - Eject fixes:
-  * Fix disc eject for Cocoa apps and support ejecting CD-Extra discs
+  - Fix disc eject for Cocoa apps and support ejecting CD-Extra discs
     on OS X.
-  * Make sure device is opened in read/write mode when trying to eject.
+  - Make sure device is opened in read/write mode when trying to eject.
 
 Bugs
-  * Add error reporting from_733_with_err. [Bug #45014](https://savannah.gnu.org/bugs/index.php?45014)
-  * Guard against malformed rock ridge iso. [Bug #45015](https://savannah.gnu.org/bugs/index.php?45015)
-  * Malformed so crashes iso-info [Bug #45013:](https://savannah.gnu.org/bugs/index.php?45013:)
-  * Guard against 0-size calloc [Bug #45016](https://savannah.gnu.org/bugs/index.php?45016)
-  * Fix testudf segfaults/fails on big endian arches. [Bug #43995](https://savannah.gnu.org/bugs/index.php?43995).
-  * add get_last_session to the win32 driver.
+
+- Add error reporting from_733_with_err. [Bug #45014](https://savannah.gnu.org/bugs/index.php?45014)
+- Guard against malformed rock ridge iso. [Bug #45015](https://savannah.gnu.org/bugs/index.php?45015)
+- Malformed so crashes iso-info [Bug #45013:](https://savannah.gnu.org/bugs/index.php?45013:)
+- Guard against 0-size calloc [Bug #45016](https://savannah.gnu.org/bugs/index.php?45016)
+- Fix testudf segfaults/fails on big endian arches. [Bug #43995](https://savannah.gnu.org/bugs/index.php?43995).
+- add get_last_session to the win32 driver.
     Also fixes cd-paranoia behavior. [Bug #43446](https://savannah.gnu.org/bugs/index.php?43446)
-  * GNU/Linux ioctl treats <= 0 as max speed. [Bug #43428](https://savannah.gnu.org/bugs/index.php?43428)
-  * Fixed cdio_free leaking
-  * Recursion checking in cdio_logv()
-  * g++ greater than 4.0 handles "pack" [Bug #48759](https://savannah.gnu.org/bugs/index.php?48759)
-  * `configure` fixes
+- GNU/Linux ioctl treats <= 0 as max speed. [Bug #43428](https://savannah.gnu.org/bugs/index.php?43428)
+- Fixed cdio_free leaking
+- Recursion checking in cdio_logv()
+- g++ greater than 4.0 handles "pack" [Bug #48759](https://savannah.gnu.org/bugs/index.php?48759)
+- `configure` fixes
 
 Updates
-  * Add newer OSX's
-  * Squelch some `clang` error messages
 
+- Add newer OSX's
+- Squelch some `clang` error messages
 
-version 0.93
-============
+Version 0.93
+-------------
+
 2014-09-29
 
 Most of the changes except where noted are courtesy of Robert Kausch
@@ -140,14 +186,17 @@ Most of the changes except where noted are courtesy of Robert Kausch
 - Remove Coverty scan warnings and errors
 - OS/2 driver performance update - KO Myung-Hun
 
-version 0.92 (late SF Release)
+Version 0.92 (late SF Release)
+------------------------------
+
 2013-12-15
 
 - Fix the botched the library release numbers, Bump current, and
   set revision to zero
 
-version 0.91 - don't use
-========================
+Version 0.91 - don't use
+------------------------
+
 2013-12-14
 
 - Report Joliet level on iso-info, and an option to show whether
@@ -159,15 +208,17 @@ version 0.91 - don't use
 - Be able to read an audio CD with exactly 100 tracks
 - Microsoft Windows fixes (mingw, cygwin, Visual Studio)
 - Fix UDF library bug on BigEndian CPUs (POWER, SPARC, HP/UX)
-- libudf: Add udf_get_logical_volume_id() to retreive a UDF Logical Volume
+- libudf: Add udf_get_logical_volume_id() to retrieve a UDF Logical Volume
 - libcdio: Add cdio_default_log_handler
 - libiso9660: Add iso9660_have_rr() to show if Rock-Ridge extensions are present
 
 version 0.90
-============
+-------------
+
 2012-10-27
+
 - CD-Text overhaul and API change (Leon Merten Lohse)
-- Works again (somewhat) on MinGW; tolerence for Microsoft's C compiler (Pete Batard)
+- Works again (somewhat) on MinGW; tolerance for Microsoft's C compiler (Pete Batard)
 - UDF, Joliet and Rock-Ridge fixes (Pete Batard)
 - OSX fixes (Natalia Portillo and Robert William Fuller)
 - paranoia library removed as that is GPL 2-ish. This is now a separate project
@@ -178,7 +229,8 @@ version 0.90
 - bug fixes, more tests, update documentation
 
 version 0.83
-============
+-------------
+
 2011-10-27
 
 - Add retrieval SCSI sense reply from the most-recent MMC command. (Thomas Schmitt)
@@ -200,7 +252,8 @@ version 0.83
 - --no-header on cd-info omits copyright and warranty
 
 version 0.82
-============
+-------------
+
 2009-10-27
 
 - Remove all uses of CDIO_MIN_DRIVER,
@@ -212,7 +265,8 @@ version 0.82
 - Numerous other bug fixes
 
 version 0.81
-============
+-------------
+
 2008-10-27
 
 - license of manual now GFDL 1.2 or later, with no invariant sections.
@@ -242,7 +296,8 @@ version 0.81
 - Add NetBSD driver
 
 version 0.80
-============
+-------------
+
 2008-03-15
 
 - Add get_media_changed for FreeBSD
@@ -257,18 +312,19 @@ version 0.80
 Note: this is probably the last GPL v2 release; GPL v3 on the horizon.
 
 version 0.79
-==============
+-------------
+
 2007-10-27
 
 - iso-read: Add --ignore -k to ignore errors.
 
 - Fix Savannah bugs:
-   * [Bug #18522](https://savannah.gnu.org/bugs/index.php?18522),
-   * [Bug #18563](https://savannah.gnu.org/bugs/index.php?18563),
-   * [Bug #18131](https://savannah.gnu.org/bugs/index.php?18131),
-   * [Bug #19221](https://savannah.gnu.org/bugs/index.php?19221),
-   * [Bug #19880](https://savannah.gnu.org/bugs/index.php?19880),
-   * [Bug #21147](https://savannah.gnu.org/bugs/index.php?21147), and other miscellaneous bugs and memory leaks
+  - [Bug #18522](https://savannah.gnu.org/bugs/index.php?18522),
+  - [Bug #18563](https://savannah.gnu.org/bugs/index.php?18563),
+  - [Bug #18131](https://savannah.gnu.org/bugs/index.php?18131),
+  - [Bug #19221](https://savannah.gnu.org/bugs/index.php?19221),
+  - [Bug #19880](https://savannah.gnu.org/bugs/index.php?19880),
+  - [Bug #21147](https://savannah.gnu.org/bugs/index.php?21147), and other miscellaneous bugs and memory leaks
 
 - `cd-info`: force CDDB disc id to be 32-bits. Problem reported by Eric Shattow.
 - `cd-paranoia`: allow ripping before the first track. Problem reported
@@ -280,21 +336,26 @@ version 0.79
 - improve eject code for OSX
 
 version 0.78.2
-==============
+--------------
+
 2006-10-31
+
 - preprocessor symbol `LIBCDIO_VERSION` number has to be an integer.
   (Bug caused by naming version 0.78._1_)
 
 version 0.78.1
-==============
+--------------
+
 2006-10-27
 
 - Fix bug in libcdio.so version numbering. Also another small bug.
   Thanks to Janos Farkas
 
 version 0.78
-============
+------------
+
 2006-10-27
+
 - add `mmc-tool`
 - add `mmc-close-tray`
 - `libudf`: can now read (extract) file data, at least for ICB strategy
@@ -305,7 +366,8 @@ version 0.78
 - fixes to eject. On GNU/Linux we unmount filesystems first.
 
 version 0.77
-============
+------------
+
 2006-03-17
 
 - Add an object-oriented C++ wrapper. (libcdio++ and libiso9660++)
@@ -323,25 +385,25 @@ version 0.77
 - Start UDF handling
 - increase use of enumerations more and decrease use of #defines
 - OS Support:
-  * DragonFly recognized as FreeBSD,
-  * MinGW better tolerated,
-  * GNU/Linux (and others?) LARGEFILE support
-  * OpenBSD tested (no native CD driver though)
+  - DragonFly recognized as FreeBSD,
+  - MinGW better tolerated,
+  - GNU/Linux (and others?) LARGEFILE support
+  - OpenBSD tested (no native CD driver though)
 
 - Doxygen formatting improvements.
 
 - Misc bugs:
-  * fixed bincue driver caused core dump on set_speed and
+  - fixed bincue driver caused core dump on set_speed and
     set_blocksize; it also called the wrong routine (from NRG) to get a
     list of cd-images.
-  * read.h didn't make sure off_t was defined.
-  * fixed bug in is_device() when driver_id = DRIVER_UNKNOWN or DRIVER_DEVICE.
-  * OSX was freeing too much in listing drives.
-  * get_hwinfo was not respecting fixed-length field boundaries in
+  - read.h didn't make sure off_t was defined.
+  - fixed bug in is_device() when driver_id = DRIVER_UNKNOWN or DRIVER_DEVICE.
+  - OSX was freeing too much in listing drives.
+  - get_hwinfo was not respecting fixed-length field boundaries in
     image drivers (strcpy->strncpy).
-  * A number ISO 9660 time conversion routines corrected with respect to
+  - A number ISO 9660 time conversion routines corrected with respect to
     various timezone offsets, daylight savings time, and tm capabilities
-- small `cdda-player` improvements - shows more CD-TEXT, and fix bug in
+- small `cdda-player` improvements - shows more CD-Text, and fix bug in
   non-interactive use (Yes, I sometimes use it.)
 - NRG checking parses file. string tests were invalid on short < 4
   character filenames.
@@ -349,7 +411,8 @@ version 0.77
 - Security: replace all uses of strcat and strcpy with strncat and strncpy
 
 version 0.76
-============
+-------------
+
 2005-09-23
 
 - Better compatibility with C++
@@ -364,7 +427,8 @@ version 0.76
   used `<cdio/paranoia.h>` but didn't include it.
 
 version 0.75
-============
+-------------
+
 2005-07-11
 
 - audio volume level fix on Microsoft Windows
@@ -380,7 +444,8 @@ version 0.75
   memory leak fixes
 
 version 0.74
-============
+-------------
+
 2005-05-13
 
 - `cd-paranoia` fixes
@@ -391,7 +456,8 @@ version 0.74
 - FreeBSD audio sub-channel time reporting fixed
 
 version 0.73
-============
+-------------
+
 2005-04-15
 
 - Rock Ridge Extension support added
@@ -409,7 +475,8 @@ version 0.73
 - `gcc` 4 fixes
 
 version 0.72
-============
+-------------
+
 2005-01-31
 
 - `cdparanoia` included -  with regression tests and sample library programs
@@ -428,7 +495,8 @@ version 0.72
 - Update documentation
 
 version 0.71
-============
+-------------
+
 2005-11-20
 
 - Some Joliet support.
@@ -445,9 +513,9 @@ version 0.71
 - `iso-info` now shows XA attributes if that is available.
 - Some bug fixes
 
-
 version 0.70
-============
+-------------
+
 2004-09-02
 
 - SCSI MMC interface routine (all except Darwin)
@@ -461,7 +529,8 @@ version 0.70
   as drive string. Speeds up subsequent opens.
 
 version 0.69
-============
+-------------
+
 2004-06-25
 
 - Add interface returning drive capabilities (`cdio_get_drive_cap()`).
@@ -482,7 +551,8 @@ version 0.69
 - `cd-info`: X-Box CD detection (via xbox team mediacenter)
 
 version 0.68
-============
+-------------
+
 2004-03-23
 
 - More honest about mode1 reading in backends. Remove some of the bogusness.
@@ -493,10 +563,11 @@ version 0.68
 - option `--with-versioned-libs` now checks for GNU ld.
 
 version 0.67
-============
+-------------
+
 2004-03-01
 
--  portability for ARM
+- portability for ARM
 - add `iso-read` program and regression tests
 - `libiso9960`: stat routines that match level 1 ISO-9600 filenames
   translating them into Unix-style names (i.e. lowercase letters,
@@ -508,117 +579,120 @@ version 0.67
   without GNU make
 
 version 0.66
-============
+-------------
+
 2004-02-15
 
--  Add interface for reading an ISO-9660 image
--  portability fixes (Solaris, cygwin)
--  Microsoft Windows ASPI/ DeviceIoControl code reorganization
--  NRG image reading improvements
--  Remove memory leaks
--  library symbol versioning (from Nicolas Boullis)
--  Go over documentation
+- Add interface for reading an ISO-9660 image
+- portability fixes (Solaris, cygwin)
+- Microsoft Windows ASPI/ DeviceIoControl code reorganization
+- NRG image reading improvements
+- Remove memory leaks
+- library symbol versioning (from Nicolas Boullis)
+- Go over documentation
 
 version 0.65
-============
+-------------
+
 2003-12-13
 
--  tag headers to give doxygen API documentation
--  `cd-info`/`cd-read` now can specify library level of output
--  sample program using `libiso9660` added.
+- tag headers to give doxygen API documentation
+- `cd-info`/`cd-read` now can specify library level of output
+- sample program using `libiso9660` added.
 
 version 0.64
-============
+-------------
+
 2003-11-22
 
--  add routines to return a list of devices or scan a list of devices
+- add routines to return a list of devices or scan a list of devices
    which satisfy any/all things in a capability mask. Should be useful
    for plugins that want to find a CD-DA to play or find a plugin that handles
    a particular device.
--  cd-read: new program to help diagnose reading problems.
--  cd-info: now displays date on iso9660 listing and translates filename
+- cd-read: new program to help diagnose reading problems.
+- cd-info: now displays date on iso9660 listing and translates filename
    to normal conventions, gives track "green" info
--  Add/expose routines to get/set time. time is reported back in entry
+- Add/expose routines to get/set time. time is reported back in entry
    stat. Routines to create ISO-9660 directories and entries must now
    supply the time to set on the entry.
--  Darwin and FreeBSD drivers closer to having native CD support, MinGW
+- Darwin and FreeBSD drivers closer to having native CD support, MinGW
    fixes (but not complete either)
--  BSDI fixes
--  Document more functions.
+- BSDI fixes
+- Document more functions.
 
 version 0.63
-============
+-------------
 
--  create libiso9660 library and install that.
--  More sample programs.
--  add library routine cdio_guess_cd_type to analyze/guess what type of
+- create libiso9660 library and install that.
+- More sample programs.
+- add library routine cdio_guess_cd_type to analyze/guess what type of
    CD or CD image we've got.
--  `cd-info` can list the files of a ISO-9660 filesystem via libiso9660 with option `--iso9660`
+- `cd-info` can list the files of a ISO-9660 filesystem via libiso9660 with option `--iso9660`
 
 version 0.62
-============
+-------------
 
--  Some minimal documentation. More will follow.
--  Add a simple sample programs.
--  Add a simple regression test driver.
--  "Smart" open was scanning devices rather than devices + image drivers.
+- Some minimal documentation. More will follow.
+- Add a simple sample programs.
+- Add a simple regression test driver.
+- "Smart" open was scanning devices rather than devices + image drivers.
 
 version 0.61
-============
+-------------
 
--   Cygwin/MinGW port.
--   get-default-device reworked to be smarter about finding devices.
--   cd-info: add `--no-headers`. version ID is from package now. Show default device on `--version` output.
--   API: add routine report if string refers to a device or not
--   Make use of features in libcddb 0.9.4.
+- Cygwin/MinGW port.
+- get-default-device reworked to be smarter about finding devices.
+- cd-info: add `--no-headers`. version ID is from package now. Show default device on `--version` output.
+- API: add routine report if string refers to a device or not
+- Make use of features in libcddb 0.9.4.
 
 version 0.6
-===========
+-------------
 
--   Bug: eject wouldn't.
--   If given `.bin`, find corresponding `.cue`. If no cue, complain.
+- Bug: eject wouldn't.
+- If given `.bin`, find corresponding `.cue`. If no cue, complain.
 
 version 0.5
-===========
+-------------
 
--  Add RPM spec file. Thanks to Manfred Tremmel <Manfred.Tremmel@iiv.de>
--  `cdinfo` renamed to `cd-info` to avoid conflicts with other existing programs
--  bug in ejecting CD's fixed
--  find `cue` file if given `bin`.
--  `cd-info`: If `libvcdinfo` is installed show general Video CD properties
+- Add RPM spec file. Thanks to Manfred Tremmel <Manfred.Tremmel@iiv.de>
+- `cdinfo` renamed to `cd-info` to avoid conflicts with other existing programs
+- bug in ejecting CD's fixed
+- find `cue` file if given `bin`.
+- `cd-info`: If `libvcdinfo` is installed show general Video CD properties
 
 version 0.4
-===========
+-------------
 
--  More regression tests.
--  Use `pkg-config(1)` support
--  NRG may be closer to being correct.
+- More regression tests.
+- Use `pkg-config(1)` support
+- NRG may be closer to being correct.
 
 version 0.3
-===========
+-------------
 
--  reduced overall size of package. Some regression moved to a separate (large)
+- reduced overall size of package. Some regression moved to a separate (large)
    package.
--  facilitate inclusion into another project's local source tree (e.g. xine)
--  version number in include
--  `cdinfo`: lists number of CDDB matches, display error message on failure,
+- facilitate inclusion into another project's local source tree (e.g. xine)
+- version number in include
+- `cdinfo`: lists number of CDDB matches, display error message on failure,
    and can set CDDB port and http proxy
--  Bug: Narrow drivers to devices when source is a device.
--  fix some small compile warnings and configure bugs. Require libcddb 0.9.0
+- Bug: Narrow drivers to devices when source is a device.
+- fix some small compile warnings and configure bugs. Require libcddb 0.9.0
    or greater.
 
 version 0.2
-===========
+-------------
 
--  Added Support for reading audio sectors
--  cdinfo can use [libcddb](http://libcddb.sourceforge.net). If installed and
+- Added Support for reading audio sectors
+- cdinfo can use [libcddb](http://libcddb.sourceforge.net). If installed and
    we have a CD-DA disk, we dump out CDDB information.
--  Regression tests added.
--  Don't need to open device to give get a default device.
--  Better device driver selection: We test for file/device-ness.
--  Bugs fixed (default device name on GNU/Linux),
+- Regression tests added.
+- Don't need to open device to give get a default device.
+- Better device driver selection: We test for file/device-ness.
+- Bugs fixed (default device name on GNU/Linux),
 
 version 0.1
-===========
+-------------
 
 Routines split off from VCDImager.

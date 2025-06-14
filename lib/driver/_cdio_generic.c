@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2004-2009, 2011-2013, 2017
+  Copyright (C) 2004-2009, 2011-2013, 2017, 2024
   Rocky Bernstein <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -70,7 +70,7 @@
   Eject media -- there's nothing to do here. We always return -2.
   Should we also free resources?
  */
-int
+driver_return_code_t
 cdio_generic_unimplemented_eject_media (void *p_user_data) {
   /* Sort of a stub here. Perhaps log a message? */
   return DRIVER_OP_UNSUPPORTED;
@@ -79,7 +79,7 @@ cdio_generic_unimplemented_eject_media (void *p_user_data) {
 /*!
   Set the blocksize for subsequent reads.
 */
-int
+driver_return_code_t
 cdio_generic_unimplemented_set_blocksize (void *p_user_data,
                                           uint16_t i_blocksize) {
   /* Sort of a stub here. Perhaps log a message? */
@@ -89,7 +89,7 @@ cdio_generic_unimplemented_set_blocksize (void *p_user_data,
 /*!
   Set the drive speed.
 */
-int
+driver_return_code_t
 cdio_generic_unimplemented_set_speed (void *p_user_data, int i_speed) {
   /* Sort of a stub here. Perhaps log a message? */
   return DRIVER_OP_UNSUPPORTED;
@@ -154,7 +154,7 @@ cdio_generic_init (void *user_data, int open_flags)
    Reads a single form1 sector from cd device into data starting
    from lsn.
  */
-driver_return_code_t
+int
 cdio_generic_read_form1_sector (void * user_data, void *data, lsn_t lsn)
 {
   if (0 > cdio_generic_lseek(user_data, CDIO_CD_FRAMESIZE*lsn, SEEK_SET))
@@ -254,6 +254,8 @@ cdio_add_device_list(char **device_list[], const char *drive,
       /* Drive not in list. Add it. */
       (*num_drives)++;
       *device_list = realloc(*device_list, (*num_drives) * sizeof(char *));
+      if (NULL == *device_list)
+        return;
       cdio_debug("Adding drive %s to list of devices", drive);
       (*device_list)[*num_drives-1] = strdup(drive);
       }
@@ -265,6 +267,8 @@ cdio_add_device_list(char **device_list[], const char *drive,
     } else {
       *device_list = malloc((*num_drives) * sizeof(char *));
     }
+    if (NULL == *device_list)
+      return;
     cdio_debug("Adding NULL to end of drive list of size %d", (*num_drives)-1);
     (*device_list)[*num_drives-1] = NULL;
   }

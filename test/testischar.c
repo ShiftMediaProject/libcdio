@@ -61,7 +61,7 @@ main (int argc, const char *argv[])
 	{
 	  int c = (j << 4) + i;
 
-	  printf (" %c", iso9660_isachar (c) ? c : ' ');
+	  printf (" %c", iso9660_is_achar (c) ? c : ' ');
 	}
       
       printf ("\n-- ");

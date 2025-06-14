@@ -155,7 +155,7 @@ have_aspi( HMODULE *hASPI,
            long (**lpSendCommand)( void* ) )
 {
   /* check if aspi is available */
-  *hASPI = LoadLibraryW( L"wnaspi32.dll" );
+  *hASPI = LoadLibraryA( "wnaspi32.dll" );
 
   if( *hASPI == NULL ) {
     cdio_warn("Unable to load ASPI DLL");

@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>17.0</VCProjectVersion>
+    <ProjectGuid>{E465056A-C6F3-45EE-B791-CAF8E0CE629D}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>17.0.35527.80</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>.;..\include;..\lib\driver;..\libcdio\driver</IncludePath>
+    <OutDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</OutDir>
+    <IntDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>.;..\include;..\lib\driver;..\libcdio\driver</IncludePath>
+    <OutDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</OutDir>
+    <IntDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>.;..\include;..\lib\driver;..\libcdio\driver</IncludePath>
+    <OutDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</OutDir>
+    <IntDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IncludePath>.;..\include;..\lib\driver;..\libcdio\driver</IncludePath>
+    <OutDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</OutDir>
+    <IntDir>..\$(PlatformShortName)\$(Configuration)\$(ShortProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
+    </ClCompile>
+    <Lib />
+    <PreBuildEvent>
+      <Command>powershell.exe -File "$(ProjectDir)set_version.ps1"</Command>
+      <Message>Create version.h</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
+    </ClCompile>
+    <PreBuildEvent>
+      <Command>powershell.exe -File "$(ProjectDir)set_version.ps1"</Command>
+      <Message>Create version.h</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='XBOX_Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)libcdio.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)libcdio.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='XBOX_Release|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <OutputFile>$(OutDir)libcdio.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)libcdio.pdb</ProgramDatabaseFile>
+      <SubSystem>Console</SubSystem>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
+      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+    </ClCompile>
+    <PreBuildEvent>
+      <Command>powershell.exe -File "$(ProjectDir)set_version.ps1"</Command>
+      <Message>Create version.h</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <DisableSpecificWarnings>4018;4133;4333;4996;28159</DisableSpecificWarnings>
+      <PreprocessorDefinitions>WIN32;HAVE_CONFIG_H;_CONSOLE;_MBCS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <PreBuildEvent>
+      <Command>powershell.exe -File "$(ProjectDir)set_version.ps1"</Command>
+      <Message>Create version.h</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\lib\driver\abs_path.c" />
+    <ClCompile Include="..\lib\driver\aix.c" />
+    <ClCompile Include="..\lib\driver\audio.c" />
+    <ClCompile Include="..\lib\driver\cdio.c" />
+    <ClCompile Include="..\lib\driver\cdtext.c" />
+    <ClCompile Include="..\lib\driver\cd_types.c" />
+    <ClCompile Include="..\lib\driver\device.c" />
+    <ClCompile Include="..\lib\driver\disc.c" />
+    <ClCompile Include="..\lib\driver\ds.c" />
+    <ClCompile Include="..\lib\driver\FreeBSD\freebsd.c" />
+    <ClCompile Include="..\lib\driver\gnu_linux.c" />
+    <ClCompile Include="..\lib\driver\image\bincue.c" />
+    <ClCompile Include="..\lib\driver\image\cdrdao.c" />
+    <ClCompile Include="..\lib\driver\image\nrg.c" />
+    <ClCompile Include="..\lib\driver\image_common.c" />
+    <ClCompile Include="..\lib\driver\logging.c" />
+    <ClCompile Include="..\lib\driver\memory.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc_hl_cmds.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc_ll_cmds.c" />
+    <ClCompile Include="..\lib\driver\mmc\mmc_util.c" />
+    <ClCompile Include="..\lib\driver\MSWindows\aspi32.c" />
+    <ClCompile Include="..\lib\driver\MSWindows\win32.c" />
+    <ClCompile Include="..\lib\driver\MSWindows\win32_ioctl.c" />
+    <ClCompile Include="..\lib\driver\netbsd.c" />
+    <ClCompile Include="..\lib\driver\osx.c" />
+    <ClCompile Include="..\lib\driver\read.c" />
+    <ClCompile Include="..\lib\driver\realpath.c" />
+    <ClCompile Include="..\lib\driver\sector.c" />
+    <ClCompile Include="..\lib\driver\solaris.c" />
+    <ClCompile Include="..\lib\driver\track.c" />
+    <ClCompile Include="..\lib\driver\utf8.c" />
+    <ClCompile Include="..\lib\driver\util.c" />
+    <ClCompile Include="..\lib\driver\_cdio_generic.c" />
+    <ClCompile Include="..\lib\driver\_cdio_stdio.c" />
+    <ClCompile Include="..\lib\driver\_cdio_stream.c" />
+    <ClCompile Include="..\lib\iso9660\iso9660.c" />
+    <ClCompile Include="..\lib\iso9660\iso9660_fs.c" />
+    <ClCompile Include="..\lib\iso9660\rock.c" />
+    <ClCompile Include="..\lib\iso9660\xa.c" />
+    <ClCompile Include="..\lib\udf\filemode.c" />
+    <ClCompile Include="..\lib\udf\udf.c" />
+    <ClCompile Include="..\lib\udf\udf_file.c" />
+    <ClCompile Include="..\lib\udf\udf_fs.c" />
+    <ClCompile Include="..\lib\udf\udf_time.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\lib\driver\MSWindows\aspi32.h" />
+    <ClInclude Include="..\lib\driver\MSWindows\win32.h" />
+    <ClInclude Include="config.h" />
+    <ClInclude Include="unistd.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,6 +1,6 @@
 /*
   Copyright (C) 2001 Herbert Valerio Riedel <hvr@gnu.org>
-  Copyright (C) 2002-2006, 2008-2013, 2017 Rocky Bernstein
+  Copyright (C) 2002-2006, 2008-2013, 2017, 2022 Rocky Bernstein
   <rocky@gnu.org>
 
   This program is free software: you can redistribute it and/or modify
@@ -52,6 +52,9 @@
 # else
 #  error "You need a kernel greater than 2.2.16 to have CDROM support"
 # endif
+# if LINUX_VERSION_CODE >= KERNEL_VERSION(5,16,0)
+#   define __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
+# endif
 #else
 #  error "You need <linux/version.h> to have CDROM support"
 #endif
@@ -98,6 +101,16 @@ typedef struct {
   struct cdrom_tocentry  tocent[CDIO_CD_MAX_TRACKS+1];
 
   struct cdrom_tochdr    tochdr;
+
+#if defined(__CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED)
+  /* The new TIMED_MEDIA_CHANGED ioctl requires us
+    to store the timestamp of our last check. Since
+    cdio_media_changed takes user data through a constant
+    pointer, we cannot use a direct field, as that would
+    not be writable in that method. Therefore, make this
+    a pointer. */
+  __s64 *last_changed_timestamp;
+#endif
 
 } _img_private_t;
 
@@ -168,8 +181,8 @@ check_mounts_linux(const char *mtab)
         continue;
       }
 
-      strncpy(mnt_type, mntent->mnt_type, i_mnt_type);
-      strncpy(mnt_dev, mntent->mnt_fsname, i_mnt_dev);
+      strcpy(mnt_type, mntent->mnt_type);
+      strcpy(mnt_dev, mntent->mnt_fsname);
 
       /* Handle "supermount" filesystem mounts */
       if ( strcmp(mnt_type, "supermount") == 0 ) {
@@ -360,6 +373,23 @@ audio_stop_linux (void *p_user_data)
   return ioctl(p_env->gen.fd, CDROMSTOP);
 }
 
+/*!
+  Release and free resources associated with cd for linux driver.
+ */
+static void
+free_linux (void *p_user_data)
+{
+#ifdef __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
+  _img_private_t *p_env = p_user_data;
+  if (p_env->last_changed_timestamp) {
+    free(p_env->last_changed_timestamp);
+    p_env->last_changed_timestamp = 0;
+  }
+#endif
+
+  cdio_generic_free(p_user_data);
+}
+
 static bool
 is_mmc_supported(void *user_data)
 {
@@ -505,7 +535,19 @@ get_last_session_linux (void *p_user_data,
 static int
 get_media_changed_linux (const void *p_user_data) {
   const _img_private_t *p_env = p_user_data;
+#if defined(__CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED)
+  struct cdrom_timed_media_change_info info = {
+    .last_media_change  = *(p_env->last_changed_timestamp),
+    .media_flags        = 0
+  };
+  if (ioctl(p_env->gen.fd, CDROM_TIMED_MEDIA_CHANGE, &info)) {
+    return DRIVER_OP_ERROR;
+  }
+  *(p_env->last_changed_timestamp) = info.last_media_change;
+  return info.media_flags & MEDIA_CHANGED_FLAG;
+#else
   return ioctl(p_env->gen.fd, CDROM_MEDIA_CHANGED, 0);
+#endif
 }
 
 /*!
@@ -647,13 +689,13 @@ static int is_mounted (const char * device, char * target) {
   char real_device_1[PATH_MAX];
   char real_device_2[PATH_MAX];
 
-  char file_device[PATH_MAX];
-  char file_target[PATH_MAX];
+  struct mntent *fs;
 
-  fp = fopen ( "/proc/mounts", "r");
+  fp = setmntent("/proc/mounts", "r");
+
   /* Older systems just have /etc/mtab */
   if(!fp)
-    fp = fopen ( "/etc/mtab", "r");
+    fp = setmntent("/etc/mtab", "r");
 
   /* Neither /proc/mounts nor /etc/mtab could be opened, give up here */
   if(!fp) return 0;
@@ -666,19 +708,19 @@ static int is_mounted (const char * device, char * target) {
 
   /* Read entries */
 
-  while ( fscanf(fp, "%s %s %*s %*s %*d %*d\n", file_device, file_target) != EOF ) {
-      if (NULL == cdio_realpath(file_device, real_device_2)) {
+  while ((fs = getmntent(fp)) != NULL) {
+      if (NULL == cdio_realpath(fs->mnt_fsname, real_device_2)) {
           cdio_debug("Problems resolving device %s: %s\n",
-                     file_device, strerror(errno));
+                     fs->mnt_fsname, strerror(errno));
       }
     if(!strcmp(real_device_1, real_device_2)) {
-      strcpy(target, file_target);
-      fclose(fp);
+      strcpy(target, fs->mnt_dir);
+      endmntent(fp);
       return 1;
     }
 
   }
-  fclose(fp);
+  endmntent(fp);
   return 0;
 }
 
@@ -1654,7 +1696,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
     .audio_set_volume      = audio_set_volume_linux,
     .audio_stop            = audio_stop_linux,
     .eject_media           = eject_media_linux,
-    .free                  = cdio_generic_free,
+    .free                  = free_linux,
     .get_arg               = get_arg_linux,
     .get_blocksize         = get_blocksize_mmc,
     .get_cdtext            = get_cdtext_generic,
@@ -1712,6 +1754,10 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   _data->gen.toc_init   = false;
   _data->gen.fd         = -1;
   _data->gen.b_cdtext_error = false;
+#ifdef __CDIO_LINUXCD_USE_TIMED_MEDIA_CHANGED
+  _data->last_changed_timestamp = calloc(1, sizeof (__s64));
+  *(_data->last_changed_timestamp) = 0;
+#endif
 
   if (NULL == psz_orig_source) {
     psz_source=cdio_get_default_device_linux();
@@ -1754,7 +1800,7 @@ cdio_open_am_linux (const char *psz_orig_source, const char *access_mode)
   free(ret);
 
  err_exit:
-    cdio_generic_free(_data);
+    free_linux(_data);
     return NULL;
 
 #else

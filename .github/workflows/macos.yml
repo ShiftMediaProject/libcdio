@@ -1,0 +1,17 @@
+name: MacOS, gcc
+
+on: [push, pull_request]
+
+jobs:
+  build-and-test:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup
+        run: brew install automake libtool help2man texinfo
+      - name: Build
+        run: |
+          ./autogen.sh
+          make -j4
+      - name: Test
+        run: make check

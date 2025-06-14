@@ -1,4 +1,5 @@
 *.sh            eol=lf
 *.ac            eol=lf
 *.am            eol=lf
+*.regex         eol=lf
 config.rpath    eol=lf

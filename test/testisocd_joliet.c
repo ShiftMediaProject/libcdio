@@ -112,18 +112,21 @@ main(int argc, const char *argv[])
 	iso9660_ifs_find_lsn_with_path (p_iso, i_lsn, &psz_path);
       int rc=0;
       const unsigned int statbuf_test_size = 100;
+      double total_size;
 
       /* Compare the two statbufs. */
       if (p_statbuf->lsn != p_statbuf2->lsn ||
-	  p_statbuf->size != p_statbuf2->size ||
+	  p_statbuf->total_size != p_statbuf2->total_size ||
 	  p_statbuf->type != p_statbuf2->type) {
 
 	  fprintf(stderr, "File stat information between fs_stat and "
 		  "iso9660_ifs_find_lsn isn't the same\n");
-	  printf("statbuf  lsn: %d, size: %d, type: %d\n",
-		 p_statbuf->lsn, p_statbuf->size, p_statbuf->type);
-	  printf("statbuf2 lsn: %d, size: %d, type: %d\n",
-		 p_statbuf2->lsn, p_statbuf2->size, p_statbuf2->type);
+	  total_size = p_statbuf->total_size;
+	  printf("statbuf  lsn: %d, size: %4.f, type: %d\n",
+		 p_statbuf->lsn, total_size, p_statbuf->type);
+	  total_size = p_statbuf2->total_size;
+	  printf("statbuf2 lsn: %d, size: %4.f, type: %d\n",
+		 p_statbuf2->lsn, total_size, p_statbuf2->type);
 	  rc=3;
 	  goto exit;
       }

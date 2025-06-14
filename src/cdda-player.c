@@ -1,5 +1,5 @@
 /*
-  Copyright (C) 2005-2012, 2017, 2019
+  Copyright (C) 2005-2012, 2017, 2019, 2021
   Rocky Bernstein <rocky@gnu.org>
 
   Adapted from Gerd Knorr's player.c program  <kraxel@bytesex.org>
@@ -298,7 +298,7 @@ action(const char *psz_action)
              psz_action);
   else
     snprintf(psz_action_line, sizeof(psz_action_line), "%s", "" );
-  mvprintw(LINE_ACTION, 0, psz_action_line);
+  mvprintw(LINE_ACTION, 0, "%s", psz_action_line);
   clrtoeol();
   refresh();
 }
@@ -1029,10 +1029,10 @@ display_tracks(void)
       }
       if (sub.track == i) {
         attron(A_STANDOUT);
-        mvprintw(i_line++, 0, line);
+        mvprintw(i_line++, 0, "%s", line);
         attroff(A_STANDOUT);
       } else
-        mvprintw(i_line++, 0, line);
+        mvprintw(i_line++, 0, "%s", line);
       clrtoeol();
     }
   }

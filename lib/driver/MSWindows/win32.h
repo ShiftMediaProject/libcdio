@@ -135,7 +135,7 @@ driver_return_code_t close_tray_win32ioctl (const char *psz_win32_drive);
    starting from lsn.  Returns 0 if no error.
 */
 driver_return_code_t read_audio_sectors_win32ioctl (_img_private_t *p_obj,
-    void *p_data, lsn_t lsn, unsigned int nblocks);
+				  void *p_data, lsn_t lsn, unsigned int nblocks);
 /*!
    Reads a single mode2 sector using the DeviceIoControl method into
    data starting from lsn. Returns 0 if no error.
@@ -192,6 +192,16 @@ bool read_toc_win32ioctl (_img_private_t *p_env);
 driver_return_code_t
 get_last_session_win32ioctl (void *p_user_data,
                              /*out*/ lsn_t *i_last_session);
+
+/*!
+  Read CD-Text binary data.
+ */
+uint8_t *read_cdtext_win32ioctl (void *p_user_data);
+
+/*!
+  Read CD-Text and return cdtext_t structure.
+ */
+cdtext_t *get_cdtext_win32ioctl (void *p_user_data);
 
 /*!
   Return the media catalog number MCN.

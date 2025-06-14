@@ -78,6 +78,9 @@
 
 #if defined (_MSC_VER) || defined (_XBOX)
 #undef IN
+extern const char* is_cdrom_aspi(const char drive_letter);
+#else
+#include "aspi32.h"
 #endif
 #include "aspi32.h"
 
@@ -716,6 +719,36 @@ get_arg_win32 (void *p_user_data, const char key[])
   return NULL;
 }
 
+/**
+  Read CD-Text binary data.
+*/
+static uint8_t *
+read_cdtext_win32(void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if( p_env->hASPI ) {
+    return read_cdtext_generic(p_user_data);
+  } else {
+    return read_cdtext_win32ioctl(p_user_data);
+  }
+}
+
+/**
+  Read CD-Text and return cdtext_t structure.
+*/
+static cdtext_t *
+get_cdtext_win32 (void *p_user_data)
+{
+  const _img_private_t *p_env = p_user_data;
+
+  if( p_env->hASPI ) {
+    return get_cdtext_generic(p_user_data);
+  } else {
+    return get_cdtext_win32ioctl(p_user_data);
+  }
+}
+
 /*!
   Return the media catalog number MCN.
 
@@ -826,12 +859,15 @@ _cdio_get_track_msf(void *p_user_data, track_t i_tracks, msf_t *p_msf)
   if (!p_env->gen.toc_init)
     if (!read_toc_win32 (p_env)) return false;
 
-  if (i_tracks == CDIO_CDROM_LEADOUT_TRACK) i_tracks = p_env->gen.i_tracks+1;
+  if (i_tracks == CDIO_CDROM_LEADOUT_TRACK)
+    i_tracks = p_env->gen.i_tracks + p_env->gen.i_first_track;
 
-  if (i_tracks > p_env->gen.i_tracks+1 || i_tracks == 0) {
+  if (i_tracks > (p_env->gen.i_tracks + p_env->gen.i_first_track)
+      || i_tracks < p_env->gen.i_first_track) {
     return false;
   } else {
-    cdio_lsn_to_msf(p_env->tocent[i_tracks-1].start_lsn, p_msf);
+    cdio_lsn_to_msf(
+          p_env->tocent[i_tracks - p_env->gen.i_first_track].start_lsn, p_msf);
     return true;
   }
 }
@@ -1002,8 +1038,8 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.eject_media            = eject_media_win32;
   _funcs.free                   = free_win32;
   _funcs.get_arg                = get_arg_win32;
-  _funcs.get_cdtext             = get_cdtext_generic;
-  _funcs.get_cdtext_raw         = read_cdtext_generic;
+  _funcs.get_cdtext             = get_cdtext_win32;
+  _funcs.get_cdtext_raw         = read_cdtext_win32;
   _funcs.get_default_device     = cdio_get_default_device_win32;
   _funcs.get_devices            = cdio_get_devices_win32;
   _funcs.get_disc_last_lsn      = get_disc_last_lsn_win32;
@@ -1038,6 +1074,9 @@ cdio_open_am_win32 (const char *psz_orig_source, const char *psz_access_mode)
   _funcs.set_speed              = set_drive_speed_mmc;
 
   _data                 = calloc(1, sizeof (_img_private_t));
+  if (NULL == _data) {
+    goto error_exit;
+  }
   _data->access_mode    = str_to_access_mode_win32(psz_access_mode);
   _data->gen.init       = false;
   _data->gen.fd         = -1;
