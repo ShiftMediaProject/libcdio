@@ -3,15 +3,32 @@ NEWS
 
 Here we have a summary of the major changes by release. See the git commit history or `ChangeLog` for more fine-grained changes.
 
+Version 2.2.0
+-------------
+
+2025-01-09
+
+Revised to note ABI change in ISO-9660 shared library (`.so`) version
+numbers; bump release version from 2.1.1 to 2.2.0 to note both API and
+ABI changes. These are the last three bullet items under Version 2.1.1
+below.
+
+Remove `LIBCDIO_SOURCE_PATH` from `configure.ac`. See https://github.com/libcdio/libcdio/issues/13.
+
+Changes noticed and offered by Jan Alexander Steffens.
+
+
 Version 2.1.1
 -------------
 
 2025-01-07
 
-- More checks of potentially NULL buffers. More check of the result of malloc/calloc.
-- Enforce the use of non widestring (A suffixed) calls when we pass char* parameters. (Pete Batard)
+*Note: there was ABI and API breakage between this release and 2.1.0 which is not reflected in dynamic library `.so` version numbers. Please use release 2.2.0 for these corrections.*
+
+- More checks of potentially NULL buffers. More `malloc()`/`calloc()` result checks.
+- Enforce non-widestring ("A" suffixed) calls when we pass `char*` parameters. (Pete Batard)
 - Use widestring API calls unless otherwise specified.
-- Remove a warning about the declaration of is_cdrom_aspi() and about GetVersion() being deprecated. (Pete Batard)
+- Remove a deprecation warning of the declaration of `is_cdrom_aspi() `and `GetVersion()`. (Pete Batard)
 - Updates for compiling on MSVC. (Pete Batard)
 - Move to github (rocky)
 - Add github CI checks. (Pete Batard)
@@ -36,6 +53,9 @@ Version 2.1.1
 - Update freedb references to GnuDB. (Robert Kausch)
 - Fix charset check in Windows cdio_charset_from_utf8 implementation. (Robert Kausch)
 - Add support for reading CD-Text on macOS and Windows (Robert Kausch)
+- API change: Rename some fields in `ecma_167.h` from integer (prefix `i_`)  to unsigned (prefix `u_`) to actually match their type
+- ABI change: Add `u_su_fields` to the end of `iso_rock_statbuf_t`
+- ABI change: Add `total_size` in the middle of `iso9660_stat_t`
 
 Version 2.1.0
 -------------

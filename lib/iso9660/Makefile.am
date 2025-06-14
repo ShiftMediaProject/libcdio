@@ -1,4 +1,4 @@
-#   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2012
+#   Copyright (C) 2003, 2004, 2005, 2006, 2007, 2008, 2012, 2025
 #   Rocky Bernstein <rocky@gnu.org>
 #
 #   This program is free software: you can redistribute it and/or modify
@@ -40,7 +40,7 @@
 #     public release, then set AGE to 0. A changed interface means an
 #     incompatibility with previous versions.
 
-libiso9660_la_CURRENT = 11
+libiso9660_la_CURRENT = 12
 libiso9660_la_REVISION = 0
 libiso9660_la_AGE = 0
 
