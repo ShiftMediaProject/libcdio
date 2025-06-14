@@ -643,6 +643,19 @@ index 5259ac5d..5b04b668 100644
  
  #ifndef HAVE_GMTIME_R
  static struct tm *
+diff --git a/lib/iso9660/iso9660_fs.c b/lib/iso9660/iso9660_fs.c
+index 3b2f07c4..7361ea18 100644
+--- a/lib/iso9660/iso9660_fs.c
++++ b/lib/iso9660/iso9660_fs.c
+@@ -1811,7 +1811,7 @@ iso9660_stat_t *
+ #if defined(__GNUC__) && !defined(__DARWIN_C_ANSI)
+ iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn) __attribute__ ((alias ("iso9660_fs_find_lsn")));
+ #else
+-iso9660_find_fs_lsn(CdIo_t *p_cdio, lsn_t i_lsn);
++iso9660_find_fs_lsn(CdIo_t* p_cdio, lsn_t i_lsn) { return iso9660_fs_find_lsn(p_cdio, i_lsn); }
+ #endif
+ 
+ /*!
 diff --git a/lib/iso9660/libiso9660.sym b/lib/iso9660/libiso9660.sym
 index e2281eb3..3911296f 100644
 --- a/lib/iso9660/libiso9660.sym
