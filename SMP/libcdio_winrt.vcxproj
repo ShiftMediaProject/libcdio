@@ -12,7 +12,7 @@
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libiconvd_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -61,7 +61,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libiconvd_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -110,7 +110,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
@@ -159,7 +159,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
@@ -208,7 +208,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libiconv_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -257,7 +257,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>libiconv_winrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -306,7 +306,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
@@ -355,7 +355,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
@@ -404,7 +404,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>
@@ -453,7 +453,7 @@ del /f /q $(OutDir)\licenses\libcdio.txt
     <ClCompile>
       <PreprocessorDefinitions>inline=__inline;HAVE_CONFIG_H;__PRETTY_FUNCTION__=__FUNCTION__;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>.\;..\include;..\lib\driver;..\lib\iso9660;..\lib\udf;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <DisableSpecificWarnings>4005;4018;4333;4244;4267;4996;4068;4700;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
     <Link>
       <ModuleDefinitionFile>libcdio.def</ModuleDefinitionFile>

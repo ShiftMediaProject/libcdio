@@ -1,8 +1,8 @@
 diff --git a/include/cdio/types.h b/include/cdio/types.h
-index fd735786..98329cbc 100644
+index ad3e09a4..0bfcea66 100644
 --- a/include/cdio/types.h
 +++ b/include/cdio/types.h
-@@ -50,12 +50,11 @@ typedef u_int64_t uint64_t;
+@@ -52,12 +52,11 @@ typedef u_int64_t uint64_t;
  
  typedef uint8_t ubyte;
  
@@ -20,7 +20,7 @@ index fd735786..98329cbc 100644
  
    /* default HP/UX macros are broken */
 diff --git a/lib/driver/MSWindows/aspi32.c b/lib/driver/MSWindows/aspi32.c
-index 20ec8c36..726d6204 100644
+index 51eb0b60..a3bce7b7 100644
 --- a/lib/driver/MSWindows/aspi32.c
 +++ b/lib/driver/MSWindows/aspi32.c
 @@ -41,9 +41,12 @@
@@ -36,24 +36,6 @@ index 20ec8c36..726d6204 100644
  #include <windows.h>
  #include "win32.h"
  
-@@ -136,7 +139,7 @@ mciSendCommand_aspi(int id, UINT msg, DWORD flags, void *arg)
-   if ( mci_error ) {
-     char error[256];
- 
--    mciGetErrorString(mci_error, error, 256);
-+    mciGetErrorStringA(mci_error, error, 256);
-     cdio_warn("mciSendCommand() error: %s", error);
-   }
-   return(mci_error == 0);
-@@ -152,7 +155,7 @@ have_aspi( HMODULE *hASPI,
-            long (**lpSendCommand)( void* ) )
- {
-   /* check if aspi is available */
--  *hASPI = LoadLibrary( "wnaspi32.dll" );
-+  *hASPI = LoadLibraryW( L"wnaspi32.dll" );
- 
-   if( *hASPI == NULL ) {
-     cdio_warn("Unable to load ASPI DLL");
 @@ -486,7 +489,7 @@ init_aspi (_img_private_t *env)
  
    We return 0 if command completed successfully.
@@ -149,7 +131,7 @@ index 9f12c7df..f31af4e2 100644
  		      unsigned int i_cdb, 
  		      const mmc_cdb_t * p_cdb,
 diff --git a/lib/driver/MSWindows/win32.c b/lib/driver/MSWindows/win32.c
-index 6d931514..a6071144 100644
+index 66ec9ef9..6e5cd8e0 100644
 --- a/lib/driver/MSWindows/win32.c
 +++ b/lib/driver/MSWindows/win32.c
 @@ -59,6 +59,7 @@
@@ -160,7 +142,7 @@ index 6d931514..a6071144 100644
  #include <windows.h>
  #include <winioctl.h>
  #include "win32.h"
-@@ -71,19 +72,26 @@
+@@ -71,20 +72,29 @@
  #include <sys/types.h>
  #endif
  
@@ -170,8 +152,9 @@ index 6d931514..a6071144 100644
 +
  #if defined (_MSC_VER) || defined (_XBOX)
  #undef IN
--#else
--#include "aspi32.h"
+ extern const char* is_cdrom_aspi(const char drive_letter);
+ #else
+ #include "aspi32.h"
  #endif
 +#include "aspi32.h"
  
@@ -189,16 +172,7 @@ index 6d931514..a6071144 100644
  
  /* mingw-w64 defines this to lseek64 when LFS is enabled */
  #ifdef lseek
-@@ -209,7 +217,7 @@ _cdio_mciSendCommand(int id, UINT msg, DWORD flags, void *arg)
-   if ( mci_error ) {
-     char error[256];
- 
--    mciGetErrorString(mci_error, error, 256);
-+    mciGetErrorStringA(mci_error, error, 256);
-     cdio_warn("mciSendCommand() error: %s", error);
-   }
-   return(mci_error == 0);
-@@ -291,7 +299,7 @@ is_cdrom_win32(const char drive_letter) {
+@@ -292,7 +302,7 @@ is_cdrom_win32(const char drive_letter) {
  
    Return 0 if command completed successfully.
   */
@@ -207,16 +181,7 @@ index 6d931514..a6071144 100644
  run_mmc_cmd_win32( void *p_user_data, unsigned int i_timeout_ms,
  		   unsigned int i_cdb, const mmc_cdb_t *p_cdb,
  		   cdio_mmc_direction_t e_direction,
-@@ -382,7 +390,7 @@ free_win32 (void *p_user_data)
-    Reads an audio device into data starting from lsn.
-    Returns 0 if no error.
-  */
--static int
-+static driver_return_code_t
- read_audio_sectors (void *p_user_data, void *p_buf, lsn_t i_lsn,
- 		    unsigned int i_blocks)
- {
-@@ -421,7 +429,7 @@ read_data_sectors_win32 (void *p_user_data, void *p_buf, lsn_t i_lsn,
+@@ -422,7 +432,7 @@ read_data_sectors_win32 (void *p_user_data, void *p_buf, lsn_t i_lsn,
     Reads a single mode1 sector from cd device into data starting from
     lsn. Returns 0 if no error.
   */
@@ -225,7 +190,7 @@ index 6d931514..a6071144 100644
  read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
  			 bool b_form2)
  {
-@@ -453,7 +461,7 @@ read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
+@@ -454,7 +464,7 @@ read_mode1_sector_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
     from lsn.
     Returns 0 if no error.
   */
@@ -234,7 +199,7 @@ index 6d931514..a6071144 100644
  read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
  			  bool b_form2, unsigned int nblocks)
  {
-@@ -483,7 +491,7 @@ read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
+@@ -484,7 +494,7 @@ read_mode1_sectors_win32 (void *p_user_data, void *p_buf, lsn_t lsn,
     Reads a single mode2 sector from cd device into data starting
     from lsn. Returns 0 if no error.
   */
@@ -243,7 +208,7 @@ index 6d931514..a6071144 100644
  read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
  			 bool b_form2)
  {
-@@ -523,7 +531,7 @@ read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
+@@ -524,7 +534,7 @@ read_mode2_sector_win32 (void *p_user_data, void *data, lsn_t lsn,
     from lsn.
     Returns 0 if no error.
   */
@@ -252,7 +217,7 @@ index 6d931514..a6071144 100644
  read_mode2_sectors_win32 (void *p_user_data, void *data, lsn_t lsn,
  			  bool b_form2, unsigned int i_blocks)
  {
-@@ -554,7 +562,7 @@ get_disc_last_lsn_win32 (void *p_user_data)
+@@ -555,7 +565,7 @@ get_disc_last_lsn_win32 (void *p_user_data)
  /*!
    Set the key "arg" to "value" in source device.
  */
@@ -261,7 +226,7 @@ index 6d931514..a6071144 100644
  set_arg_win32 (void *p_user_data, const char key[], const char value[])
  {
    _img_private_t *p_env = p_user_data;
-@@ -612,7 +620,7 @@ open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
+@@ -613,7 +623,7 @@ open_close_media_win32 (const char *psz_win32_drive, DWORD command_flags)
  #ifdef _XBOX
    return DRIVER_OP_UNSUPPORTED;
  #else
@@ -271,18 +236,10 @@ index 6d931514..a6071144 100644
    int ret;
  
 diff --git a/lib/driver/MSWindows/win32.h b/lib/driver/MSWindows/win32.h
-index fc703b5d..d66225eb 100644
+index 7bf407fd..e40483a7 100644
 --- a/lib/driver/MSWindows/win32.h
 +++ b/lib/driver/MSWindows/win32.h
-@@ -134,21 +134,21 @@ driver_return_code_t close_tray_win32ioctl (const char *psz_win32_drive);
-    Reads an audio device using the DeviceIoControl method into data
-    starting from lsn.  Returns 0 if no error.
- */
--int read_audio_sectors_win32ioctl (_img_private_t *p_obj, void *p_data, lsn_t lsn,
--				   unsigned int nblocks);
-+driver_return_code_t read_audio_sectors_win32ioctl (_img_private_t *p_obj,
-+    void *p_data, lsn_t lsn, unsigned int nblocks);
- /*!
+@@ -140,15 +140,15 @@ driver_return_code_t read_audio_sectors_win32ioctl (_img_private_t *p_obj,
     Reads a single mode2 sector using the DeviceIoControl method into
     data starting from lsn. Returns 0 if no error.
   */
@@ -312,7 +269,7 @@ index fc703b5d..d66225eb 100644
  			    unsigned int i_cdb,
  			    const mmc_cdb_t * p_cdb,
 diff --git a/lib/driver/MSWindows/win32_ioctl.c b/lib/driver/MSWindows/win32_ioctl.c
-index ea65bae6..331a7189 100644
+index 2d7ae87f..168f8c45 100644
 --- a/lib/driver/MSWindows/win32_ioctl.c
 +++ b/lib/driver/MSWindows/win32_ioctl.c
 @@ -34,6 +34,7 @@
@@ -323,16 +280,7 @@ index ea65bae6..331a7189 100644
  # include <windows.h>
  # ifdef HAVE_DDK_SCSI_H
  #  include <ddk/scsi.h>
-@@ -77,7 +78,7 @@
- #define windows_error(loglevel,i_err) {                                 \
-   char error_msg[80];                                                   \
-   long int count;                                                       \
--  count = FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,                      \
-+  count = FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM,                     \
-                         NULL, i_err, MAKELANGID(LANG_NEUTRAL,            \
-                                                 SUBLANG_DEFAULT),        \
-                         error_msg, sizeof(error_msg), NULL);             \
-@@ -376,7 +377,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
+@@ -377,7 +378,7 @@ close_tray_win32ioctl (const char *psz_win32_drive)
      dw_access_flags = GENERIC_READ|GENERIC_WRITE;  /* add gen write on W2k/XP */
    else dw_access_flags = GENERIC_READ;
  
@@ -341,7 +289,7 @@ index ea65bae6..331a7189 100644
                                  dw_access_flags,
                                  FILE_SHARE_READ | FILE_SHARE_WRITE,
                                  NULL,
-@@ -470,7 +471,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
+@@ -471,7 +472,7 @@ set_scsi_tuple_win32ioctl(_img_private_t *env)
    Return DRIVER_OP_SUCCESS if command completed successfully.
   */
  #ifdef USE_PASSTHROUGH_DIRECT
@@ -350,7 +298,7 @@ index ea65bae6..331a7189 100644
  run_mmc_cmd_win32ioctl( void *p_user_data,
                          unsigned int u_timeout_ms,
                          unsigned int u_cdb, const mmc_cdb_t * p_cdb,
-@@ -567,7 +568,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
+@@ -568,7 +569,7 @@ run_mmc_cmd_win32ioctl( void *p_user_data,
    return rc;
  }
  #else
@@ -359,7 +307,7 @@ index ea65bae6..331a7189 100644
  run_mmc_cmd_win32ioctl( void *p_user_data,
                          unsigned int u_timeout_ms,
                          unsigned int u_cdb, const mmc_cdb_t * p_cdb,
-@@ -790,7 +791,7 @@ is_cdrom_win32ioctl(const char c_drive_letter)
+@@ -792,7 +793,7 @@ is_cdrom_win32ioctl(const char c_drive_letter)
    sz_win32_drive[2]='\\';
    sz_win32_drive[3]='\0';
  
@@ -368,7 +316,7 @@ index ea65bae6..331a7189 100644
  
    switch(uDriveType) {
    case DRIVE_CDROM: {
-@@ -838,7 +839,7 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
+@@ -840,7 +841,7 @@ read_audio_sectors_win32ioctl (_img_private_t *p_env, void *data, lsn_t lsn,
     Reads a single raw sector using the DeviceIoControl method into
     data starting from lsn. Returns 0 if no error.
   */
@@ -377,7 +325,7 @@ index ea65bae6..331a7189 100644
  read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
  {
    mmc_cdb_t cdb = {{0, }};
-@@ -860,7 +861,7 @@ read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
+@@ -862,7 +863,7 @@ read_raw_sector (_img_private_t *p_env, void *p_buf, lsn_t lsn)
     Reads a single mode2 sector using the DeviceIoControl method into
     data starting from lsn. Returns 0 if no error.
   */
@@ -386,7 +334,7 @@ index ea65bae6..331a7189 100644
  read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data,
                                lsn_t lsn, bool b_form2)
  {
-@@ -881,7 +882,7 @@ read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data,
+@@ -883,7 +884,7 @@ read_mode2_sector_win32ioctl (_img_private_t *p_env, void *p_data,
     Reads a single mode2 sector using the DeviceIoControl method into
     data starting from lsn. Returns 0 if no error.
   */
@@ -395,7 +343,7 @@ index ea65bae6..331a7189 100644
  read_mode1_sector_win32ioctl (_img_private_t *env, void *data,
                                lsn_t lsn, bool b_form2)
  {
-@@ -961,7 +962,7 @@ init_win32ioctl (_img_private_t *env)
+@@ -963,7 +964,7 @@ init_win32ioctl (_img_private_t *env)
                                        "\\\\.\\%c:",
                                        env->gen.source_name[len-2] );
  
@@ -404,7 +352,7 @@ index ea65bae6..331a7189 100644
                                         dw_access_flags,
                                         FILE_SHARE_READ | FILE_SHARE_WRITE,
                                         NULL,
-@@ -973,7 +974,7 @@ init_win32ioctl (_img_private_t *env)
+@@ -975,7 +976,7 @@ init_win32ioctl (_img_private_t *env)
      {
            /* No good. try toggle write. */
            dw_access_flags ^= GENERIC_WRITE;
@@ -414,7 +362,7 @@ index ea65bae6..331a7189 100644
                                               FILE_SHARE_READ,
                                               NULL,
 diff --git a/lib/driver/_cdio_generic.c b/lib/driver/_cdio_generic.c
-index 4a7fcadf..194cd973 100644
+index cab76dbe..ff323b66 100644
 --- a/lib/driver/_cdio_generic.c
 +++ b/lib/driver/_cdio_generic.c
 @@ -51,15 +51,16 @@
@@ -438,7 +386,7 @@ index 4a7fcadf..194cd973 100644
  #else
  #define CDIO_LSEEK lseek
 diff --git a/lib/driver/cdio_private.h b/lib/driver/cdio_private.h
-index 0480c316..8dff26d4 100644
+index 5664a989..68e12de7 100644
 --- a/lib/driver/cdio_private.h
 +++ b/lib/driver/cdio_private.h
 @@ -370,8 +370,8 @@ extern "C" {
@@ -509,7 +457,7 @@ index 0480c316..8dff26d4 100644
    } cdio_funcs_t;
  
 diff --git a/lib/driver/image/bincue.c b/lib/driver/image/bincue.c
-index d329cdc9..4493a3f0 100644
+index ae44de94..590a7f92 100644
 --- a/lib/driver/image/bincue.c
 +++ b/lib/driver/image/bincue.c
 @@ -58,6 +58,7 @@
@@ -520,8 +468,12 @@ index d329cdc9..4493a3f0 100644
  #include <windows.h>
  #endif
  
-@@ -1006,31 +1007,33 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
- static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
+@@ -1031,34 +1032,36 @@ _read_mode2_sectors_bincue (void *p_user_data, void *data, lsn_t lsn,
+ }
+ 
+ #if !defined(HAVE_GLOB_H) && defined(_WIN32)
+-static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
++static void Win32Glob(LPCWSTR pattern, LPCWSTR wszCurPath, char ***drives, unsigned int *num_files)
  {
    char szPath[MAX_PATH];
 -  WIN32_FIND_DATAA ffd;
@@ -531,7 +483,7 @@ index d329cdc9..4493a3f0 100644
    BOOL bFound;
  
 -  SetCurrentDirectoryA(szCurPath);
-+  SetCurrentDirectoryW(szCurPath);
++  SetCurrentDirectoryW(wszCurPath);
  
 -  hFind = FindFirstFileA(pattern, &ffd);
 +  hFind = FindFirstFileW(pattern, &ffd);
@@ -558,14 +510,14 @@ index d329cdc9..4493a3f0 100644
 +         (wcscmp(ffd.cFileName, L".") != 0) && (wcscmp(ffd.cFileName, L"..") != 0) ) {
 +      GetFullPathNameW(ffd.cFileName, sizeof(wszPath) / sizeof(wszPath[0]), wszPath, NULL);
 +      Win32Glob(pattern, wszPath, drives, num_files);
-+      SetCurrentDirectoryW(szCurPath);
++      SetCurrentDirectoryW(wszCurPath);
      }
 -    bFound = FindNextFileA(hFind, &ffd);
 +    bFound = FindNextFileW(hFind, &ffd);
    }
    if (hFind != INVALID_HANDLE_VALUE)
      FindClose(hFind);
-@@ -1055,9 +1058,9 @@ cdio_get_devices_bincue (void)
+@@ -1083,9 +1086,9 @@ cdio_get_devices_bincue (void)
    }
    globfree(&globbuf);
  #elif defined(_WIN32)
@@ -579,7 +531,7 @@ index d329cdc9..4493a3f0 100644
    cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
  #endif /*HAVE_GLOB_H*/
 diff --git a/lib/driver/image/cdrdao.c b/lib/driver/image/cdrdao.c
-index 2109fac0..32e0b108 100644
+index fa22e201..da563583 100644
 --- a/lib/driver/image/cdrdao.c
 +++ b/lib/driver/image/cdrdao.c
 @@ -1059,7 +1059,7 @@ _read_mode1_sector_cdrdao (void *user_data, void *data, lsn_t lsn,
@@ -592,11 +544,15 @@ index 2109fac0..32e0b108 100644
  			    bool b_form2, unsigned int nblocks)
  {
 diff --git a/lib/driver/image/nrg.c b/lib/driver/image/nrg.c
-index c4d02731..6bc3274f 100644
+index da56fa73..51158566 100644
 --- a/lib/driver/image/nrg.c
 +++ b/lib/driver/image/nrg.c
-@@ -1128,31 +1128,33 @@ _eject_media_nrg(void *obj)
- static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
+@@ -1129,34 +1129,36 @@ _eject_media_nrg(void *obj)
+ }
+ 
+ #if !defined(HAVE_GLOB_H) && defined(_WIN32)
+-static void Win32Glob(const char* pattern, const char* szCurPath, char ***drives, unsigned int *num_files)
++static void Win32Glob(LPCWSTR pattern, LPCWSTR wszCurPath, char ***drives, unsigned int *num_files)
  {
    char szPath[MAX_PATH];
 -  WIN32_FIND_DATAA ffd;
@@ -606,7 +562,7 @@ index c4d02731..6bc3274f 100644
    BOOL bFound;
  
 -  SetCurrentDirectoryA(szCurPath);
-+  SetCurrentDirectoryW(szCurPath);
++  SetCurrentDirectoryW(wszCurPath);
  
 -  hFind = FindFirstFileA(pattern, &ffd);
 +  hFind = FindFirstFileW(pattern, &ffd);
@@ -633,14 +589,14 @@ index c4d02731..6bc3274f 100644
 +         (wcscmp(ffd.cFileName, L".") != 0) && (wcscmp(ffd.cFileName, L"..") != 0) ) {
 +      GetFullPathNameW(ffd.cFileName, sizeof(wszPath) / sizeof(wszPath[0]), wszPath, NULL);
 +      Win32Glob(pattern, wszPath, drives, num_files);
-+      SetCurrentDirectoryW(szCurPath);
++      SetCurrentDirectoryW(wszCurPath);
      }
 -    bFound = FindNextFileA(hFind, &ffd);
 +    bFound = FindNextFileW(hFind, &ffd);
    }
    if (hFind != INVALID_HANDLE_VALUE)
      FindClose(hFind);
-@@ -1177,9 +1179,9 @@ cdio_get_devices_nrg (void)
+@@ -1181,9 +1183,9 @@ cdio_get_devices_nrg (void)
    }
    globfree(&globbuf);
  #elif defined(_WIN32)
@@ -653,98 +609,11 @@ index c4d02731..6bc3274f 100644
  #else
    cdio_add_device_list(&drives, DEFAULT_CDIO_DEVICE, &num_files);
  #endif /*HAVE_GLOB_H*/
-diff --git a/lib/driver/image_common.h b/lib/driver/image_common.h
-index 91f94d21..8790276e 100644
---- a/lib/driver/image_common.h
-+++ b/lib/driver/image_common.h
-@@ -66,7 +66,7 @@ typedef struct {
-  */
- void  _free_image (void *p_user_data);
- 
--int _eject_media_image(void *p_user_data);
-+driver_return_code_t _eject_media_image(void *p_user_data);
- 
- /*!
-   Return the value associated with the key "arg".
-@@ -197,6 +197,7 @@ read_data_sectors_image ( void *p_user_data, void *p_buf,
- 
-   0 is returned if no error was found, and nonzero if there as an error.
- */
--int _set_arg_image (void *user_data, const char key[], const char value[]);
-+driver_return_code_t
-+_set_arg_image (void *user_data, const char key[], const char value[]);
- 
- #endif /* CDIO_DRIVER_IMAGE_COMMON_H_ */
 diff --git a/lib/driver/libcdio.sym b/lib/driver/libcdio.sym
-index 9143ccf5..df3522b4 100644
+index 7d757af9..df58c444 100644
 --- a/lib/driver/libcdio.sym
 +++ b/lib/driver/libcdio.sym
-@@ -48,7 +48,6 @@ cdio_get_cdtext
- cdio_get_cdtext_raw
- cdio_get_default_device
- cdio_get_default_device_bincue
--cdio_get_default_device_bsdi
- cdio_get_default_device_cdrdao
- cdio_get_default_device_driver
- cdio_get_default_device_freebsd
-@@ -59,7 +58,6 @@ cdio_get_default_device_solaris
- cdio_get_default_device_win32
- cdio_get_devices
- cdio_get_devices_bincue
--cdio_get_devices_bsdi
- cdio_get_devices_cdrdao
- cdio_get_devices_freebsd
- cdio_get_devices_linux
-@@ -101,7 +99,6 @@ cdio_get_track_sec_count
- cdio_guess_cd_type
- cdio_have_atapi
- cdio_have_bincue
--cdio_have_bsdi
- cdio_have_cdrdao
- cdio_have_driver
- cdio_have_freebsd
-@@ -135,7 +132,6 @@ cdio_msf_to_str
- cdio_open
- cdio_open_am
- cdio_open_am_bincue
--cdio_open_am_bsdi
- cdio_open_am_cd
- cdio_open_am_cdrdao
- cdio_open_am_freebsd
-@@ -146,7 +142,6 @@ cdio_open_am_osx
- cdio_open_am_solaris
- cdio_open_am_win32
- cdio_open_bincue
--cdio_open_bsdi
- cdio_open_cd
- cdio_open_cdrdao
- cdio_open_cue
-@@ -171,7 +166,6 @@ cdio_read_sectors
- cdio_realpath
- cdio_set_arg
- cdio_set_blocksize
--cdio_set_drive_speed
- cdio_set_speed
- cdio_stdio_destroy
- cdio_stdio_new
-@@ -224,7 +218,7 @@ mmc_get_drive_mmc_cap
- mmc_get_dvd_struct_physical
- mmc_get_event_status
- mmc_get_hwinfo
--mmc_get_last_lsn
-+mmc_get_disc_last_lsn
- mmc_get_mcn
- mmc_get_media_changed
- mmc_get_track_isrc
-@@ -236,7 +230,6 @@ mmc_is_disctype_cdrom
- mmc_is_disctype_dvd
- mmc_is_disctype_hd_dvd
- mmc_is_disctype_overwritable
--mmc_isrc_track_read_subchannel
- mmc_last_cmd_sense
- mmc_mode_select_10
- mmc_mode_sense
-@@ -252,6 +245,7 @@ mmc_run_cmd
+@@ -244,6 +244,7 @@ mmc_run_cmd
  mmc_run_cmd_len
  mmc_sense_key2str
  mmc_set_blocksize
@@ -753,7 +622,7 @@ index 9143ccf5..df3522b4 100644
  mmc_start_stop_unit
  mmc_test_unit_ready
 diff --git a/lib/iso9660/iso9660.c b/lib/iso9660/iso9660.c
-index bb514d95..645560a9 100644
+index 5259ac5d..5b04b668 100644
 --- a/lib/iso9660/iso9660.c
 +++ b/lib/iso9660/iso9660.c
 @@ -72,6 +72,9 @@ unsetenv(const char *envname)

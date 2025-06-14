@@ -219,7 +219,6 @@ mmc_get_drive_mmc_cap
 mmc_get_dvd_struct_physical
 mmc_get_event_status
 mmc_get_hwinfo
-mmc_get_disc_last_lsn
 mmc_get_mcn
 mmc_get_media_changed
 mmc_get_track_isrc
